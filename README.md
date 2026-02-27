@@ -2,7 +2,7 @@
 
 > Ficha de personagem digital e interativa para o RPG **Pokémon: Livro do Jogador**.
 
-## 🚀 Tecnologias
+## Tecnologias & Frameworks
 
 Este projeto foi desenvolvido com:
 
