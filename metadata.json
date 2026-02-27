@@ -1,0 +1,8 @@
+
+{
+  "name": "Trainer Card Pro",
+  "description": "A high-performance RPG trainer character sheet with real-time stat tracking and AI-powered concept generation.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
