@@ -1,6 +1,7 @@
 # Trainer Card Pro
 
-> Ficha de personagem digital e interativa para o RPG **Pokémon: Livro do Jogador**.
+> Ficha de personagem digital e interativa para o Sistema RPG **Pokemon: Tabletop Adventures 2.0 (PTA 2.0)**.
+
 
 ## Tecnologias & Frameworks
 
@@ -73,6 +74,21 @@ A ficha é **salva automaticamente** no `localStorage`. Você também pode expor
 - [ ] Sistema de Evolução de Pokémon — troca de espécie mantendo os dados.
 - [ ] Parser de conteúdo do livro de regras para banco de dados de itens.
 
+---
+
+## 🤝 Créditos & Agradecimentos
+
+Este projeto foi desenvolvido com base no esforço e criatividade de:
+
+* **[DrMrStark](https://www.reddit.com/user/DrMrStark/)** — Criador original do sistema de RPG.
+* **Caio** — Responsável pela tradução primorosa para PT-BR.
+* **@DAVIDFONT** — Mestre da mesa, pela experiência de jogo saudável e divertida que inspirou esta ferramenta.
+
+## ⚖️ Aviso Legal
+*Pokémon e todos os nomes de personagens, músicas e imagens relacionados são marcas registradas da **The Pokémon Company**, Nintendo, Game Freak e Creatures Inc. Este é um projeto de fã, sem fins lucrativos.*
+
 ## 📝 Licença
 
-Este projeto está sob a licença MIT.
+Este projeto é um software de código aberto licenciado sob a [MIT License](LICENSE).
+
+> **Aviso:** Esta licença aplica-se apenas ao código-fonte deste projeto. Todos os direitos sobre a marca Pokémon, personagens e mecânicas originais pertencem à **The Pokémon Company**, Nintendo e Game Freak. Este é um projeto de fã, sem fins lucrativos e para uso educacional.
