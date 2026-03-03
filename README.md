@@ -18,7 +18,7 @@ Como rodar o projeto localmente:
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/trainer-card-pro.git
+   git clone https://github.com/JulioFabio/trainer-card-pro.git
    ```
 2. Acesse a pasta:
    ```bash
