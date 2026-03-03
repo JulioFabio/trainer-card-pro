@@ -14,12 +14,19 @@ Este projeto foi desenvolvido com:
 
 ## 📦 Instalação
 
+### Pré-requisitos
+Antes de começar, você precisa ter o **[Node.js](https://nodejs.org/)** instalado em sua máquina (recomendamos a versão LTS).
+
+> [!IMPORTANT]
+> **Atenção com softwares de segurança:** Alguns antivírus ou firewalls podem bloquear arquivos e execuções "suspeitas" durante o processo. Mesmo validando a confiança do arquivo no VS Code, esses softwares podem barrar a criação da pasta `node_modules` ou a execução de scripts ao rodar o `npm install`. Caso encontre erros de permissão, verifique as notificações do seu sistema de segurança.
+
+### Passo a passo
+
 Como rodar o projeto localmente:
 
-1. Clone o repositório:
+1. **Clone o repositório:**
    ```bash
    git clone https://github.com/JulioFabio/trainer-card-pro.git
-   ```
 2. Acesse a pasta:
    ```bash
    cd trainer-card-pro
