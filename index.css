@@ -3,7 +3,80 @@
 @tailwind utilities;
 
 body {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='1' flood-opacity='0.4'/%3E%3C/filter%3E%3Cg filter='url(%23shadow)'%3E%3C!-- Pokeball Body --%3E%3Ccircle cx='18' cy='18' r='9' fill='%23F43F5E' stroke='%2318181B' stroke-width='2'/%3E%3Cpath d='M9 18 A 9 9 0 0 0 27 18' fill='%23FFFFFF'/%3E%3Cpath d='M9 18h18' stroke='%2318181B' stroke-width='2'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%23FFFFFF' stroke='%2318181B' stroke-width='2'/%3E%3C!-- Rounded Triangle Arrow --%3E%3Cpath d='M2 2 L 13 8 L 8 13 Z' fill='%23FFFFFF' stroke='%2318181B' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E") 2 2, auto;
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='1' flood-opacity='0.4'/%3E%3C/filter%3E%3Cg filter='url(%23shadow)'%3E%3C!-- Pokeball Body --%3E%3Ccircle cx='18' cy='18' r='9' fill='%23F43F5E' stroke='%2318181B' stroke-width='2'/%3E%3Cpath d='M9 18 A 9 9 0 0 0 27 18' fill='%23FFFFFF'/%3E%3Cpath d='M9 18h18' stroke='%2318181B' stroke-width='2'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%23FFFFFF' stroke='%2318181B' stroke-width='2'/%3E%3C!-- Rounded Triangle Arrow --%3E%3Cpath d='M2 2 L 13 8 L 8 13 Z' fill='%23FFFFFF' stroke='%2318181B' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E")
+      2 2,
+    auto;
+}
+
+/* ===== HOVER & CURSOR GLOBAL FIXES ===== */
+/* Garante cursor pointer em todos os elementos interativos */
+button,
+[role='button'],
+label[for],
+label:has(input),
+select,
+a,
+[tabindex]:not([tabindex='-1']),
+[onClick],
+.cursor-pointer {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='1' flood-opacity='0.4'/%3E%3C/filter%3E%3Cg filter='url(%23shadow)'%3E%3Ccircle cx='18' cy='18' r='9' fill='%23F43F5E' stroke='%2318181B' stroke-width='2'/%3E%3Cpath d='M9 18 A 9 9 0 0 0 27 18' fill='%23FFFFFF'/%3E%3Cpath d='M9 18h18' stroke='%2318181B' stroke-width='2'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%23FFFFFF' stroke='%2318181B' stroke-width='2'/%3E%3Cpath d='M5 5 L 16 11 L 11 16 Z' fill='%23F43F5E' stroke='%2318181B' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E")
+      5 5,
+    pointer !important;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* Garante que hover effects funcionem mesmo com select-none */
+* {
+  pointer-events: auto;
+}
+
+/* Exceção para elementos com pointer-events explicitamente none */
+.pointer-events-none {
+  pointer-events: none !important;
+}
+
+/* Garante transições de hover suaves */
+button,
+[role='button'],
+a,
+.transition-all,
+.transition-colors,
+.transition-transform {
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Fix: hover states nunca são bloqueados pelo select-none do pai */
+.select-none button,
+.select-none a,
+.select-none [role='button'],
+.select-none select,
+.select-none label {
+  user-select: none;
+  pointer-events: auto;
+}
+
+/* ===== CURSOR DE TEXTO CUSTOMIZADO (I-beam + Pokébola) ===== */
+input,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+[contenteditable="true"],
+[contenteditable] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cfilter id='shadow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='1' dy='1' stdDeviation='1' flood-opacity='0.4'/%3E%3C/filter%3E%3Cg filter='url(%23shadow)'%3E%3Cline x1='10' y1='6' x2='10' y2='26' stroke='%2318181B' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='5' y1='9' x2='15' y2='9' stroke='%2318181B' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='5' y1='23' x2='15' y2='23' stroke='%2318181B' stroke-width='3.5' stroke-linecap='round'/%3E%3Cline x1='10' y1='6' x2='10' y2='26' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='5' y1='9' x2='15' y2='9' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='5' y1='23' x2='15' y2='23' stroke='white' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='28' cy='29' r='9' fill='%23F43F5E' stroke='%2318181B' stroke-width='1.5'/%3E%3Cpath d='M19 29 A 9 9 0 0 0 37 29' fill='%23FFFFFF'/%3E%3Cpath d='M19 29h18' stroke='%2318181B' stroke-width='1.5'/%3E%3Ccircle cx='28' cy='29' r='3' fill='%23FFFFFF' stroke='%2318181B' stroke-width='1.5'/%3E%3C/g%3E%3C/svg%3E") 10 16, text !important;
 }
 
 /* Custom Scrollbar Styles maintained from original HTML */
