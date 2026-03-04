@@ -179,14 +179,39 @@ const App: React.FC = () => {
     }
   };
 
-  const exportData = () => {
+  const exportData = async () => {
     const dataStr = JSON.stringify(trainer, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `ficha_${trainer.nomePersonagem.toLowerCase().replace(/\s/g, '_') || 'treinador'}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    const fileName = `ficha_${trainer.nomePersonagem.toLowerCase().replace(/\s/g, '_') || 'treinador'}.json`;
+
+    // Método 1: File System Access API (Chrome 86+) — abre "Salvar Como" nativo
+    if ('showSaveFilePicker' in window) {
+      try {
+        const fileHandle = await (window as any).showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{ description: 'Arquivo JSON', accept: { 'application/json': ['.json'] } }],
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(dataStr);
+        await writable.close();
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return; // Usuário cancelou
+      }
+    }
+
+    // Fallback: blob URL
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
   };
 
   const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,7 +309,7 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div style={rootStyle} className="min-h-screen bg-zinc-900 flex items-center justify-center p-2 sm:p-6 font-sans select-none overflow-hidden">
+    <div style={rootStyle} className="min-h-screen bg-zinc-900 flex items-center justify-center p-2 sm:p-6 font-sans overflow-hidden">
       <div className={`${currentTheme.main} w-full max-w-7xl h-[95vh] rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
         
         {/* Header Superior */}
@@ -297,35 +322,66 @@ const App: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="hidden sm:flex gap-4 text-[10px] font-bold text-white tracking-widest uppercase items-center">
-            <div className="bg-black/40 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1">
+          <div className="hidden sm:flex gap-2 text-[12px] font-bold text-white tracking-widest uppercase items-center">
+            <div className="bg-black/40 px-4 py-2 rounded-full border border-white/10 flex items-center gap-1.5">
               <span className="opacity-80 font-black tracking-tighter">DIAS JORNADA:</span>
-              <input type="number" value={trainer.diasJornada} onChange={(e) => handleProfileChange('diasJornada', parseInt(e.target.value) || 0)} className="bg-transparent w-8 text-center text-white font-black outline-none" />
+              <input type="number" value={trainer.diasJornada} onChange={(e) => handleProfileChange('diasJornada', parseInt(e.target.value) || 0)} className="bg-transparent w-10 text-center text-white font-black outline-none" />
             </div>
-            <div className="bg-black/40 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1">
+            <div className="bg-black/40 px-4 py-2 rounded-full border border-white/10 flex items-center gap-1.5">
               <span className="opacity-80 font-black tracking-tighter">POKEDEX:</span>
-              <input type="number" value={trainer.pokedexCount} onChange={(e) => handleProfileChange('pokedexCount', parseInt(e.target.value) || 0)} className="bg-transparent w-8 text-center text-white font-black outline-none" />
+              <input type="number" value={trainer.pokedexCount} onChange={(e) => handleProfileChange('pokedexCount', parseInt(e.target.value) || 0)} className="bg-transparent w-10 text-center text-white font-black outline-none" />
             </div>
+
+            {/* Divisor */}
+            <div className="w-px h-6 bg-white/20 mx-1" />
+
+            {/* Botões de Gestão - compactos */}
+            <button onClick={exportData} title="Exportar Ficha (.json)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-white/30 transition-all">
+              <i className="fa-solid fa-file-export text-[13px]" />
+            </button>
+            <label title="Importar Ficha (.json)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-white/30 transition-all cursor-pointer">
+              <i className="fa-solid fa-file-import text-[13px]" />
+              <input type="file" accept=".json" onChange={importData} className="hidden" />
+            </label>
+            <button onClick={resetTrainer} title="Resetar Ficha" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-rose-400 hover:bg-black/50 hover:border-rose-400/50 transition-all">
+              <i className="fa-solid fa-rotate-left text-[13px]" />
+            </button>
           </div>
         </div>
 
-        {/* Sistema de Abas */}
-        <div className="flex flex-wrap bg-black/10 px-2 pt-2 gap-1 border-b border-white/5 overflow-x-auto no-scrollbar">
-          {([
-            { id: 'treinador', label: 'Treinador' },
-            { id: 'combate', label: 'Combate' },
-            { id: 'equipe', label: 'Equipe' },
-            { id: 'mochila', label: 'Mochila' },
-            { id: 'computador', label: 'PC' },
-            { id: 'notas', label: 'Notas' }
-          ]).map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id as Tab)} className={`px-6 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === tab.id ? 'bg-zinc-100 text-zinc-900 shadow-lg translate-y-0' : 'bg-black/30 text-white/70 hover:text-white translate-y-1'}`}>{tab.label}</button>
-          ))}
-        </div>
 
-        {/* Conteúdo Principal */}
-        <div className="flex-1 bg-zinc-100 m-2 rounded-3xl p-4 sm:p-6 shadow-inner overflow-y-auto custom-scrollbar border-b-8 border-black/5">
-          
+        {/* Conteúdo Principal + Abas Integradas */}
+        <div className="flex-1 bg-zinc-100 m-2 rounded-3xl shadow-inner border-b-8 border-black/5 flex flex-col overflow-hidden">
+
+          {/* Abas dentro do painel */}
+          <div className="flex flex-wrap px-4 pt-4 pb-3 gap-2 shrink-0 border-b border-zinc-200/80">
+            {([
+              { id: 'treinador', label: 'Treinador', icon: 'fa-user' },
+              { id: 'combate', label: 'Combate', icon: 'fa-shield-halved' },
+              { id: 'equipe', label: 'Equipe', icon: 'fa-users' },
+              { id: 'mochila', label: 'Mochila', icon: 'fa-bag-shopping' },
+              { id: 'computador', label: 'PC', icon: 'fa-desktop' },
+              { id: 'notas', label: 'Notas', icon: 'fa-book' }
+            ]).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as Tab)}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center gap-1.5 ${
+                  activeTab === tab.id
+                    ? 'text-white shadow-md scale-105'
+                    : 'bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700 hover:scale-105'
+                }`}
+                style={activeTab === tab.id ? { backgroundColor: currentTheme.color } : {}}
+              >
+                <i className={`fa-solid ${tab.icon} text-[9px]`} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Área de conteúdo com scroll */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6">
+
           {activeTab === 'treinador' && (
             <div className="animate-in fade-in zoom-in-95 h-full flex flex-col">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
@@ -462,19 +518,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Botões de Gestão */}
-              <div className="mt-8 flex flex-wrap gap-4 border-t-2 border-zinc-200 pt-6">
-                <button onClick={exportData} className="px-6 py-3 rounded-2xl border-2 border-zinc-200 text-zinc-400 font-black uppercase text-xs italic flex items-center gap-2 hover:border-black hover:text-black transition-all">
-                  <i className="fa-solid fa-file-export" /> Exportar (.json)
-                </button>
-                <label className="px-6 py-3 rounded-2xl border-2 border-zinc-200 text-zinc-400 font-black uppercase text-xs italic flex items-center gap-2 hover:border-black hover:text-black transition-all cursor-pointer">
-                  <i className="fa-solid fa-file-import" /> Importar Ficha
-                  <input type="file" accept=".json" onChange={importData} className="hidden" />
-                </label>
-                <button onClick={resetTrainer} className="px-6 py-3 rounded-2xl border-2 border-zinc-200 text-zinc-400 font-black uppercase text-xs italic flex items-center gap-2 hover:border-rose-500 hover:text-rose-500 transition-all ml-auto">
-                  <i className="fa-solid fa-rotate-left" /> Resetar Ficha
-                </button>
-              </div>
+
             </div>
           )}
 
@@ -538,14 +582,15 @@ const App: React.FC = () => {
                   <div className="bg-white p-4 rounded-3xl shadow-sm border-2 border-black overflow-hidden">
                     <div className="space-y-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
                       {trainer.skills
-                        .filter(skill => !showOnlyTrained || skill.ranks > 0)
-                        .map((skill, idx) => {
+                        .map((skill, realIdx) => ({ skill, realIdx }))
+                        .filter(({ skill }) => !showOnlyTrained || skill.ranks > 0)
+                        .map(({ skill, realIdx }) => {
                         const total = calculateSkillTotal(skill, trainer.stats);
                         const isHealth = skill.attr === 'saude';
                         const mod = Math.floor((trainer.stats[skill.attr] - 10) / 2);
                         
                         return (
-                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between text-xs p-2 border-b-2 border-zinc-50 hover:bg-zinc-50 transition-colors gap-2">
+                        <div key={realIdx} className="flex flex-col sm:flex-row sm:items-center justify-between text-xs p-2 border-b-2 border-zinc-50 hover:bg-zinc-50 transition-colors gap-2">
                           <div className="flex-1 min-w-[120px]">
                              <span className="font-black text-zinc-800 italic uppercase text-[10px] tracking-tighter block">{skill.name}</span>
                              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">{STAT_LABELS[skill.attr]} ({mod >= 0 ? '+' : ''}{mod})</span>
@@ -557,7 +602,7 @@ const App: React.FC = () => {
                                {[0, 1, 2].map(r => (
                                   (!isHealth || r <= 1) && (
                                   <button key={r} 
-                                    onClick={() => handleSkillChange(idx, 'ranks', r as 0|1|2)}
+                                    onClick={() => handleSkillChange(realIdx, 'ranks', r as 0|1|2)}
                                     className={`w-6 h-6 rounded flex items-center justify-center text-[9px] font-black transition-all ${skill.ranks === r ? 'text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}
                                     style={{ backgroundColor: skill.ranks === r ? currentTheme.color : 'transparent' }}
                                     title={r === 0 ? 'Untrained' : r === 1 ? 'Trained' : 'Expert'}
@@ -574,7 +619,7 @@ const App: React.FC = () => {
                                 <input 
                                   type="number" 
                                   value={skill.bonus} 
-                                  onChange={(e) => handleSkillChange(idx, 'bonus', parseInt(e.target.value) || 0)}
+                                  onChange={(e) => handleSkillChange(realIdx, 'bonus', parseInt(e.target.value) || 0)}
                                   className="w-full text-center bg-zinc-50 border border-zinc-200 rounded-lg py-1 font-bold text-zinc-600 outline-none focus:border-black text-[10px]"
                                   placeholder="Bn"
                                 />
@@ -695,10 +740,11 @@ const App: React.FC = () => {
             />
           )}
 
-        </div>
+          </div>{/* fim scroll */}
+        </div>{/* fim painel */}
 
         {/* Footer */}
-        <div className="bg-black/20 p-4 text-center text-[8px] font-black text-white/60 uppercase tracking-[0.5em]">ADVANCED POKEDEX OS // SESSÃO CRIPTOGRAFADA // JOGADOR: {trainer.jogador.toUpperCase()}</div>
+        <div className="bg-black/20 py-1.5 px-4 text-center text-[8px] font-black text-white/60 uppercase tracking-[0.5em]">ADVANCED POKEDEX OS // SESSÃO CRIPTOGRAFADA // JOGADOR: {trainer.jogador.toUpperCase()}</div>
       </div>
 
       {hoveredTalent && (
