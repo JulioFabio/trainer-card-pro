@@ -7,6 +7,7 @@ import { DerivedBox } from './components/DerivedBox';
 import { SmartInput } from './components/SmartInput';
 import { NotesTab } from './components/NotesTab';
 import { PcTab } from './components/PcTab';
+import { TeamTab } from './components/TeamTab';
 
 type Tab = 'treinador' | 'combate' | 'equipe' | 'mochila' | 'notas' | 'computador';
 
@@ -31,6 +32,21 @@ const App: React.FC = () => {
            const existingNames = new Set(parsed.skills.map((s: Skill) => s.name));
            const newSkills = DEFAULT_SKILLS.filter(s => !existingNames.has(s.name));
            parsed.skills = [...parsed.skills, ...newSkills];
+        }
+
+        // Migração de pcBoxes para 99 boxes
+        if (!parsed.pcBoxes || parsed.pcBoxes.length < 99) {
+          const existingBoxes: any[] = parsed.pcBoxes || [];
+          parsed.pcBoxes = Array.from({ length: 99 }, (_, i) =>
+            existingBoxes.find((b: any) => b.id === i + 1) || { id: i + 1, name: `Box ${i + 1}`, pokemons: [] }
+          );
+        }
+
+        // Migração de Equipe
+        if (parsed.equipe && parsed.equipe.length > 0 && typeof parsed.equipe[0] === 'object') {
+           parsed.equipe = parsed.equipe.map((p: any) => p.id || String(Date.now()));
+        } else if (!parsed.equipe) {
+           parsed.equipe = [];
         }
 
         return { ...INITIAL_TRAINER_DATA, ...parsed };
@@ -309,7 +325,7 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div style={rootStyle} className="min-h-screen bg-zinc-900 flex items-center justify-center p-2 sm:p-6 font-sans overflow-hidden">
+    <div style={rootStyle} className="min-h-screen bg-[#0f172a] flex items-center justify-center p-2 sm:p-6 font-sans overflow-hidden">
       <div className={`${currentTheme.main} w-full max-w-7xl h-[95vh] rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
         
         {/* Header Superior */}
@@ -667,21 +683,13 @@ const App: React.FC = () => {
 
           {/* Abas restantes: Equipe, Mochila e Notas */}
           {activeTab === 'equipe' && (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in">
-                {trainer.equipe.map((pkmn) => (
-                  <div key={pkmn.id} className="bg-white p-5 rounded-[2.5rem] shadow-sm border-2 border-black flex flex-col items-center group hover:scale-105 transition-transform cursor-pointer">
-                    <div className="w-24 h-24 rounded-full mb-3 flex items-center justify-center border-4 border-zinc-50 relative overflow-hidden transition-colors" style={{ backgroundColor: `${currentTheme.color}22` }}>
-                      <i className="fa-solid fa-paw text-3xl opacity-30" style={{ color: currentTheme.color }} />
-                    </div>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{pkmn.species}</span>
-                    <h4 className="text-xl font-black text-zinc-900 uppercase tracking-tighter italic">{pkmn.name}</h4>
-                  </div>
-                ))}
-                <div className="bg-white/50 p-5 rounded-[2.5rem] border-4 border-dashed border-zinc-300 flex flex-col items-center justify-center text-zinc-500 hover:border-black hover:text-black transition-all cursor-pointer">
-                  <i className="fa-solid fa-plus text-2xl mb-2" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Adicionar Membro</span>
-                </div>
-             </div>
+             <TeamTab 
+               equipeIds={trainer.equipe || []}
+               pcBoxes={trainer.pcBoxes}
+               theme={currentTheme}
+               onChange={(newEquipe) => handleProfileChange('equipe', newEquipe)}
+               onUpdateBoxes={(newBoxes) => handleProfileChange('pcBoxes', newBoxes)}
+             />
           )}
 
           {activeTab === 'mochila' && (

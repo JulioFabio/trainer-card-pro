@@ -10,10 +10,10 @@ interface PcTabProps {
 }
 
 export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
-  const [currentBoxIndex] = useState(0);
+  const [currentBoxIndex, setCurrentBoxIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [moveSource, setMoveSource] = useState<number | null>(null);
+  const [moveSource, setMoveSource] = useState<{ boxIndex: number, slot: number } | null>(null);
   const [viewMode, setViewMode] = useState<'box' | 'sheet'>('box');
 
   // Form State
@@ -61,20 +61,45 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
     if (moveSource !== null) {
       // Execute Move
       const newBoxes = [...boxes];
-      const box = { ...newBoxes[currentBoxIndex] };
-      const sourcePkmnIndex = box.pokemons.findIndex(p => p.slot === moveSource);
-      const targetPkmnIndex = box.pokemons.findIndex(p => p.slot === slot);
+      const targetBoxIndex = currentBoxIndex;
+      const sourceBoxIndex = moveSource.boxIndex;
+
+      const sourceBox = { ...newBoxes[sourceBoxIndex] };
+      const targetBox = targetBoxIndex === sourceBoxIndex ? sourceBox : { ...newBoxes[targetBoxIndex] };
+
+      const sourcePkmnIndex = sourceBox.pokemons.findIndex(p => p.slot === moveSource.slot);
+      const targetPkmnIndex = targetBox.pokemons.findIndex(p => p.slot === slot);
 
       if (sourcePkmnIndex !== -1) {
-        // Update source pokemon slot
-        box.pokemons[sourcePkmnIndex] = { ...box.pokemons[sourcePkmnIndex], slot };
+        const sourcePkmn = { ...sourceBox.pokemons[sourcePkmnIndex], slot };
         
-        // If target has pokemon, swap slots
+        let targetPkmn = null;
         if (targetPkmnIndex !== -1) {
-           box.pokemons[targetPkmnIndex] = { ...box.pokemons[targetPkmnIndex], slot: moveSource };
+          targetPkmn = { ...targetBox.pokemons[targetPkmnIndex], slot: moveSource.slot };
         }
-        
-        newBoxes[currentBoxIndex] = box;
+
+        // Remove from old positions
+        sourceBox.pokemons = sourceBox.pokemons.filter((_, idx) => idx !== sourcePkmnIndex);
+        if (targetPkmn && targetBoxIndex !== sourceBoxIndex) {
+            targetBox.pokemons = targetBox.pokemons.filter((_, idx) => idx !== targetPkmnIndex);
+        } else if (targetPkmn && targetBoxIndex === sourceBoxIndex) {
+            // Se for na mesma caixa, o targetPkmnIndex mudou depois do primeiro filter,
+            // então filtramos pelo slot direto
+            sourceBox.pokemons = sourceBox.pokemons.filter(p => p.slot !== slot);
+        }
+
+        // Add to new positions
+        if (targetBoxIndex === sourceBoxIndex) {
+            sourceBox.pokemons.push(sourcePkmn);
+            if (targetPkmn) sourceBox.pokemons.push(targetPkmn);
+            newBoxes[targetBoxIndex] = sourceBox;
+        } else {
+            targetBox.pokemons.push(sourcePkmn);
+            if (targetPkmn) sourceBox.pokemons.push(targetPkmn);
+            newBoxes[sourceBoxIndex] = sourceBox;
+            newBoxes[targetBoxIndex] = targetBox;
+        }
+
         onChange(newBoxes);
       }
       setMoveSource(null);
@@ -107,7 +132,13 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
       hp: { current: 10, max: 10 },
       evasions: { fisica: 0, especial: 0, veloz: 0 },
       movements: { terrestre: 4, voo: 0, natacao: 0, subaquatico: 0, escavacao: 0 },
-      capabilities: { force: 0, intelligence: 0, jump: 0, other: [] },
+       capabilities: { 
+        force: { value: 0, description: '' }, 
+        intelligence: { value: 0, description: '' }, 
+        jump: { value: 0, description: '' }, 
+        other: [] 
+      },
+      capabilityTrait: { name: '', description: '' },
       moves: []
     };
 
@@ -157,28 +188,41 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
   };
 
   const handleStartMove = () => {
-    setMoveSource(selectedSlot);
+    if (selectedSlot === null) return;
+    setMoveSource({ boxIndex: currentBoxIndex, slot: selectedSlot });
     setSelectedSlot(null); // Optional: clear selection to focus on picking destination
   };
 
   const slots = Array.from({ length: 30 }, (_, i) => i);
 
-  if (viewMode === 'sheet') {
-      return (
-          <PokemonCreationSheet 
-            theme={theme}
-            initialData={selectedSlot !== null ? getPokemonAt(selectedSlot) : {}}
-            onSave={handleSaveSheet}
-            onCancel={() => setViewMode('box')}
-          />
-      );
-  }
-
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full animate-in fade-in zoom-in-95">
+    <div className="flex flex-col lg:flex-row gap-6 h-full animate-in fade-in zoom-in-95 relative">
+
+      {/* OVERLAY: Creation Sheet — cobre a Pokédex inteira quando viewMode='sheet' */}
+      {viewMode === 'sheet' && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-2 animate-in fade-in"
+          style={{ background: `radial-gradient(ellipse 80% 40% at 50% 100%, ${theme.color}30 0%, rgba(0,0,0,0.82) 70%)` }}
+        >
+          {/* Feixe de luz saindo da tela */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+            style={{ background: `conic-gradient(from 270deg at 50% 100%, transparent 60deg, ${theme.color}20 90deg, transparent 120deg)`, filter: 'blur(20px)' }}
+          />
+          <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col"
+            style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)', transform: 'scale(1.13)', transformOrigin: 'center center' }}
+          >
+            <PokemonCreationSheet
+              theme={theme}
+              initialData={selectedSlot !== null ? getPokemonAt(selectedSlot) : {}}
+              onSave={handleSaveSheet}
+              onCancel={() => setViewMode('box')}
+            />
+          </div>
+        </div>
+      )}
       {/* LEFT PANEL - DETAILS / FORM */}
       <div className="w-full lg:w-1/3 flex flex-col">
-        <div className="bg-white p-6 rounded-[2.5rem] border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,0.1)] h-full flex flex-col relative overflow-hidden">
+        <div className="bg-white p-6 rounded-[2.5rem] border-[4px] shadow-[8px_8px_0px_rgba(0,0,0,0.1)] h-full flex flex-col relative overflow-hidden" style={{ borderColor: theme.color }}>
             {/* Background Pattern */}
              <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
@@ -199,8 +243,8 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
                 </div>
             ) : (
                 <div className="relative z-10 flex flex-col h-full">
-                     <h3 className="text-sm font-black uppercase text-zinc-800 mb-6 border-b-2 border-zinc-100 pb-2 flex items-center gap-2">
-                        {getPokemonAt(selectedSlot) ? <><i className="fa-solid fa-id-card" /> Detalhes</> : (isCreating ? <><i className="fa-solid fa-pen-to-square" /> Novo Pokemon</> : <><i className="fa-solid fa-box" /> Slot Vazio</>)}
+                     <h3 className="text-sm font-black uppercase mb-6 border-b-2 border-zinc-100 pb-2 flex items-center gap-2" style={{ color: theme.color }}>
+                        {getPokemonAt(selectedSlot) ? <><i className="fa-solid fa-id-card" style={{ color: theme.color }} /> Detalhes</> : (isCreating ? <><i className="fa-solid fa-pen-to-square" style={{ color: theme.color }} /> Novo Pokemon</> : <><i className="fa-solid fa-box" style={{ color: theme.color }} /> Slot Vazio</>)}
                      </h3>
 
                      {(!getPokemonAt(selectedSlot) && !isCreating) ? (
@@ -310,12 +354,32 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
          
          {/* Box Header */}
          <div className={`p-4 flex items-center justify-between text-white relative z-10 shadow-md ${theme.main}`}>
-            <button className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-colors"><i className="fa-solid fa-caret-left text-xl" /></button>
-            <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Armazenamento</span>
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter drop-shadow-md">{currentBox.name}</h2>
+            <button
+              onClick={() => { setCurrentBoxIndex(i => Math.max(0, i - 1)); setSelectedSlot(null); }}
+              disabled={currentBoxIndex === 0}
+              className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <i className="fa-solid fa-caret-left text-xl" />
+            </button>
+            <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{currentBoxIndex + 1} / 99</span>
+                <input
+                  value={boxes[currentBoxIndex]?.name ?? ''}
+                  onChange={e => {
+                    const newBoxes = [...boxes];
+                    newBoxes[currentBoxIndex] = { ...newBoxes[currentBoxIndex], name: e.target.value };
+                    onChange(newBoxes);
+                  }}
+                  className="text-2xl font-black italic uppercase tracking-tighter drop-shadow-md bg-transparent text-white text-center outline-none border-b-2 border-white/0 focus:border-white/50 transition-all w-48"
+                />
             </div>
-            <button className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-colors"><i className="fa-solid fa-caret-right text-xl" /></button>
+            <button
+              onClick={() => { setCurrentBoxIndex(i => Math.min(98, i + 1)); setSelectedSlot(null); }}
+              disabled={currentBoxIndex === 98}
+              className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            >
+              <i className="fa-solid fa-caret-right text-xl" />
+            </button>
          </div>
 
          {/* Box Grid */}
@@ -332,19 +396,33 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
                             relative rounded-2xl border-2 transition-all cursor-pointer group
                             flex items-center justify-center
                             ${isSelected ? 'bg-white shadow-[0_0_15px_rgba(255,255,255,0.6)] scale-110 z-20' : 'bg-white/80 border-white/50 hover:bg-white hover:scale-105'}
-                            ${pkmn && moveSource === slot ? 'animate-bounce' : ''}
+                            ${pkmn && moveSource?.slot === slot && moveSource.boxIndex === currentBoxIndex ? 'animate-bounce' : ''}
                         `}
-                        style={isSelected || (pkmn && moveSource === slot) ? { borderColor: theme.color } : {}}
+                        style={isSelected || (pkmn && moveSource?.slot === slot && moveSource.boxIndex === currentBoxIndex) ? { borderColor: theme.color } : {}}
                     >
                         {pkmn ? (
-                            <div className="flex flex-col items-center animate-in zoom-in spin-in-3 duration-300">
-                                <i className={`fa-solid fa-dragon text-2xl drop-shadow-sm mb-1 ${moveSource === slot ? '' : 'text-zinc-800'}`} style={moveSource === slot ? { color: theme.color } : {}} />
-                                <span className="text-[8px] font-black uppercase text-zinc-600 leading-none">{pkmn.species.slice(0, 6)}</span>
+                            <div className="flex flex-col items-center justify-center w-full h-full animate-in zoom-in spin-in-3 duration-300 p-1">
+                                {pkmn.imageUrl ? (
+                                    <img src={pkmn.imageUrl} alt={pkmn.name || pkmn.species} className="w-full h-full object-contain drop-shadow-sm" />
+                                ) : (
+                                    <>
+                                        <i className={`fa-solid fa-circle-dot text-2xl drop-shadow-sm mb-1 ${moveSource?.slot === slot && moveSource.boxIndex === currentBoxIndex ? '' : 'text-zinc-600'}`} style={moveSource?.slot === slot && moveSource.boxIndex === currentBoxIndex ? { color: theme.color } : {}} />
+                                        <span className="text-[7px] font-black uppercase text-zinc-500 leading-none text-center truncate w-full px-1">{pkmn.species || 'PKMN'}</span>
+                                    </>
+                                )}
                             </div>
                         ) : (
                             isSelected && (
                                 <span className="text-[8px] font-black uppercase animate-pulse" style={{ color: theme.color }}>Vazio</span>
                             )
+                        )}
+                        
+                        {/* Name Tooltip */}
+                        {pkmn && (
+                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-[0_4px_10px_rgba(0,0,0,0.3)] flex items-center justify-center transform" style={{ backgroundColor: theme.color }}>
+                                {pkmn.name || pkmn.species}
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style={{ backgroundColor: theme.color }} />
+                            </div>
                         )}
                         
                         {/* Selected Indicator */}
@@ -353,7 +431,7 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
                         )}
                         
                          {/* Move Source Indicator */}
-                        {moveSource === slot && (
+                        {moveSource?.slot === slot && moveSource.boxIndex === currentBoxIndex && (
                            <div className="absolute -inset-2 border-4 border-dashed rounded-3xl animate-spin-slow pointer-events-none" style={{ borderColor: theme.color }} />
                         )}
                     </div>
