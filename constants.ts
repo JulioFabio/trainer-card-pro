@@ -112,9 +112,7 @@ export const INITIAL_TRAINER_DATA: TrainerData = {
     { id: '1', name: 'Sprigatito', species: 'Sprigatito', ball: 'Poke Ball' },
     { id: '2', name: 'Zigzagoon', species: 'Zigzagoon', ball: 'Poke Ball' }
   ],
-  pcBoxes: [
-    { id: 1, name: 'Box 1', pokemons: [] }
-  ],
+  pcBoxes: Array.from({ length: 99 }, (_, i) => ({ id: i + 1, name: `Box ${i + 1}`, pokemons: [] })),
   anotacoes: 'Cidade - Borges. Amiga Mãe: Alex. Entregar Pacote para Emilia.',
   skills: DEFAULT_SKILLS, // Inicializa com as perícias padrão
 };

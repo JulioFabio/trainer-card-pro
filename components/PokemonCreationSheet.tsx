@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StoredPokemon, Stats, PokemonMove } from '../types';
 import { PokedexTheme } from '../constants';
 import { FORCE_CAPABILITY_DESCRIPTIONS, JUMP_CAPABILITY_DESCRIPTIONS, INTELLIGENCE_CAPABILITY_DESCRIPTIONS } from '../src/data/capabilities';
@@ -11,523 +11,492 @@ interface PokemonCreationSheetProps {
   onCancel: () => void;
 }
 
-export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ initialData, onSave, onCancel }) => {
+const TYPE_COLORS: Record<string, string> = {
+  'NORMAL': '#919aa2', 'LUTADOR': '#ce416b', 'VOADOR': '#89aae3', 'VENENOSO': '#b566ce',
+  'TERRESTRE': '#d97845', 'PEDRA': '#c5b78c', 'INSETO': '#91c130', 'FANTASMA': '#5269ad',
+  'AÇO': '#5a8ea2', 'FOGO': '#fe9d55', 'ÁGUA': '#508fd6', 'PLANTA': '#63BC5A',
+  'ELÉTRICO': '#F4D23C', 'PSÍQUICO': '#FA7179', 'GELO': '#73CEC0', 'DRAGÃO': '#0B6DC3',
+  'SOMBRIO': '#5A5465', 'FADA': '#EC8FE6', 'CRISTAL': '#8E7CC3',
+};
+
+const NATURE_DATA: Record<string, { plus: string; minus: string }> = {
+  'Ousada': { plus: 'Saúde', minus: 'Ataque' }, 'Dócil': { plus: 'Saúde', minus: 'Defesa' },
+  'Orgulhosa': { plus: 'Saúde', minus: 'Atq Esp' }, 'Excêntrica': { plus: 'Saúde', minus: 'Def Esp' },
+  'Preguiçosa': { plus: 'Saúde', minus: 'Velocidade' }, 'Desesperada': { plus: 'Ataque', minus: 'Saúde' },
+  'Solitária': { plus: 'Ataque', minus: 'Defesa' }, 'Firme': { plus: 'Ataque', minus: 'Atq Esp' },
+  'Travessa': { plus: 'Ataque', minus: 'Def Esp' }, 'Brava': { plus: 'Ataque', minus: 'Velocidade' },
+  'Rígida': { plus: 'Defesa', minus: 'Saúde' }, 'Arrojada': { plus: 'Defesa', minus: 'Ataque' },
+  'Endiabrada': { plus: 'Defesa', minus: 'Atq Esp' }, 'Negligente': { plus: 'Defesa', minus: 'Def Esp' },
+  'Relaxada': { plus: 'Defesa', minus: 'Velocidade' }, 'Tímida': { plus: 'Atq Esp', minus: 'Saúde' },
+  'Modesta': { plus: 'Atq Esp', minus: 'Ataque' }, 'Amável': { plus: 'Atq Esp', minus: 'Defesa' },
+  'Imprudente': { plus: 'Atq Esp', minus: 'Def Esp' }, 'Quieta': { plus: 'Atq Esp', minus: 'Velocidade' },
+  'Enjoada': { plus: 'Def Esp', minus: 'Saúde' }, 'Calma': { plus: 'Def Esp', minus: 'Ataque' },
+  'Gentil': { plus: 'Def Esp', minus: 'Defesa' }, 'Meticulosa': { plus: 'Def Esp', minus: 'Atq Esp' },
+  'Atrevida': { plus: 'Def Esp', minus: 'Velocidade' }, 'Séria': { plus: 'Velocidade', minus: 'Saúde' },
+  'Medrosa': { plus: 'Velocidade', minus: 'Ataque' }, 'Apressada': { plus: 'Velocidade', minus: 'Defesa' },
+  'Alegre': { plus: 'Velocidade', minus: 'Atq Esp' }, 'Ingênua': { plus: 'Velocidade', minus: 'Def Esp' },
+  'Comedida': { plus: '', minus: '' }, 'Chata': { plus: '', minus: '' },
+  'Paciente': { plus: '', minus: '' }, 'Sensata': { plus: '', minus: '' }, 'Estoica': { plus: '', minus: '' },
+};
+
+const STAT_LABELS: Record<keyof Stats, string> = {
+  saude: 'Saúde', ataque: 'Ataque', defesa: 'Defesa',
+  atqEspecial: 'Atq. Especial', defEspecial: 'Def. Especial', velocidade: 'Velocidade',
+};
+
+const EMPTY_MOVE: PokemonMove = {
+  id: '', name: '', type: '', category: 'Físico', frequency: '', range: '',
+  damage: '', accuracy: '', description: '', descriptors: [], overhead: '', descriptor: '',
+};
+
+const TABS = [
+  { id: 'stats' as const,        icon: 'fa-chart-bar',             label: 'Stats'       },
+  { id: 'capacidades' as const,  icon: 'fa-star',                  label: 'Capacidades' },
+  { id: 'golpes' as const,       icon: 'fa-bolt',                  label: 'Golpes'      },
+  { id: 'habilidades' as const,  icon: 'fa-wand-magic-sparkles',   label: 'Habilidades' },
+];
+
+export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ initialData, theme, onSave, onCancel }) => {
+  const [activeTab, setActiveTab] = useState<'stats' | 'capacidades' | 'golpes' | 'habilidades'>('stats');
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
   const [pokemon, setPokemon] = useState<Partial<StoredPokemon>>({
-    name: 'Nome',
-    species: 'Espécie',
-    level: 1,
-    gender: 'U',
-    types: ['Normal'],
-    ball: 'Poke Ball',
-    nature: 'Nature',
-    natureFeatures: '-Attr +Attr',
+    name: 'Nome', species: 'Espécie', level: 1, gender: 'U',
+    types: ['NORMAL'], ball: 'Poke Ball', nature: '', natureFeatures: '',
     elementalDamageBonus: 0,
-    capabilityTrait: { name: 'Traço', description: 'Descrição...' },
+    capabilityTrait: { name: '', description: '' },
     hp: { current: 10, max: 10 },
     stats: {
-        saude: 1, ataque: 1, defesa: 1, atqEspecial: 1, defEspecial: 1, velocidade: 1,
-        base: { saude: 1, ataque: 1, defesa: 1, atqEspecial: 1, defEspecial: 1, velocidade: 1 },
-        lvl: { saude: 0, ataque: 0, defesa: 0, atqEspecial: 0, defEspecial: 0, velocidade: 0 }
+      saude: 1, ataque: 1, defesa: 1, atqEspecial: 1, defEspecial: 1, velocidade: 1,
+      base: { saude: 1, ataque: 1, defesa: 1, atqEspecial: 1, defEspecial: 1, velocidade: 1 },
+      lvl:  { saude: 0, ataque: 0, defesa: 0, atqEspecial: 0, defEspecial: 0, velocidade: 0 },
     },
     movements: { terrestre: 4, voo: 0, natacao: 2, subaquatico: 0, escavacao: 0 },
-    evasions: { fisica: 1, especial: 1, veloz: 0 },
-    capabilities: { 
-        force: { value: 1, description: 'Levantar 5kg' }, 
-        intelligence: { value: 2, description: '' }, 
-        jump: { value: 1, description: '' }, 
-        other: [] 
+    evasions:  { fisica: 1, especial: 1, veloz: 0 },
+    capabilities: {
+      force:        { value: 1, description: 'Levantar 5kg' },
+      intelligence: { value: 2, description: '' },
+      jump:         { value: 1, description: '' },
+      other: [],
     },
-    abilities: [],
+    abilities: [{ name: '', description: '' }, { name: '', description: '' }],
     moves: [],
-    ...initialData
+    ...initialData,
   });
 
-  // Helper to update deeply nested state would be good, but for now specific handlers or messy spreads
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setPokemon(prev => ({ ...prev, imageUrl: ev.target?.result as string }));
+    reader.readAsDataURL(file);
+  };
+
   const handleStatChange = (key: keyof Stats, subKey: 'base' | 'lvl', value: number) => {
-      setPokemon(prev => {
-          if (!prev.stats) return prev;
-          const newStats = { ...prev.stats };
-          newStats[subKey] = { ...newStats[subKey], [key]: value };
-          // Calc total
-          const newVal = newStats[subKey][key] + (subKey === 'base' ? newStats.lvl[key] : newStats.base[key]);
-          newStats[key] = newVal;
-          
-          let newHp = prev.hp;
-          if (key === 'saude') {
-              const maxHp = (newStats.saude + (prev.level || 0)) * 3;
-              newHp = { ...prev.hp!, max: maxHp };
-          }
-          
-          return { ...prev, stats: newStats, hp: newHp };
-      });
+    setPokemon(prev => {
+      if (!prev.stats) return prev;
+      const s = { ...prev.stats };
+      s[subKey] = { ...s[subKey], [key]: value };
+      s[key] = s.base[key] + s.lvl[key];
+      const newHp = key === 'saude'
+        ? { ...prev.hp!, max: (s.saude + (prev.level || 0)) * 3 }
+        : prev.hp;
+      return { ...prev, stats: s, hp: newHp };
+    });
   };
 
-  const statLabels: Record<keyof Stats, string> = {
-      saude: 'Saúde',
-      ataque: 'Ataque',
-      defesa: 'Defesa',
-      atqEspecial: 'Ataque SP',
-      defEspecial: 'Defesa SP',
-      velocidade: 'Velocidade'
+  const updateMove = (i: number, field: keyof PokemonMove, value: PokemonMove[keyof PokemonMove]) => {
+    const moves = [...(pokemon.moves || [])];
+    for (let j = 0; j <= i; j++) if (!moves[j]) moves[j] = { ...EMPTY_MOVE, id: `${j}` };
+    moves[i] = { ...moves[i], [field]: value };
+    setPokemon(p => ({ ...p, moves }));
   };
 
-  const TYPE_COLORS: Record<string, string> = {
-      'NORMAL': '#919aa2',
-      'LUTADOR': '#ce416b',
-      'VOADOR': '#89aae3',
-      'VENENOSO': '#b566ce',
-      'TERRESTRE': '#d97845',
-      'PEDRA': '#c5b78c',
-      'INSETO': '#91c130',
-      'FANTASMA': '#5269ad',
-      'AÇO': '#5a8ea2',
-      'FOGO': '#fe9d55',
-      'ÁGUA': '#508fd6',
-      'PLANTA': '#63BC5A',
-      'ELÉTRICO': '#F4D23C',
-      'PSÍQUICO': '#FA7179',
-      'GELO': '#73CEC0',
-      'DRAGÃO': '#0B6DC3',
-      'SOMBRIO': '#5A5465',
-      'FADA': '#EC8FE6',
-      'CRISTAL': '#8E7CC3',
-      '-': '#FFFFFF'
-  };
-
-  const NATURE_DATA: Record<string, { plus: string, minus: string }> = {
-        'Ousada': { plus: 'Saúde', minus: 'Ataque' },
-        'Dócil': { plus: 'Saúde', minus: 'Defesa' },
-        'Orgulhosa': { plus: 'Saúde', minus: 'Ataque Especial' },
-        'Excêntrica': { plus: 'Saúde', minus: 'Defesa Especial' },
-        'Preguiçosa': { plus: 'Saúde', minus: 'Velocidade' },
-        'Desesperada': { plus: 'Ataque', minus: 'Saúde' },
-        'Solitária': { plus: 'Ataque', minus: 'Defesa' },
-        'Firme': { plus: 'Ataque', minus: 'Ataque Especial' },
-        'Travessa': { plus: 'Ataque', minus: 'Defesa Especial' },
-        'Brava': { plus: 'Ataque', minus: 'Velocidade' },
-        'Rígida': { plus: 'Defesa', minus: 'Saúde' },
-        'Arrojada': { plus: 'Defesa', minus: 'Ataque' },
-        'Endiabrada': { plus: 'Defesa', minus: 'Ataque Especial' },
-        'Negligente': { plus: 'Defesa', minus: 'Defesa Especial' },
-        'Relaxada': { plus: 'Defesa', minus: 'Velocidade' },
-        'Tímida': { plus: 'Ataque Especial', minus: 'Saúde' },
-        'Modesta': { plus: 'Ataque Especial', minus: 'Ataque' },
-        'Amável': { plus: 'Ataque Especial', minus: 'Defesa' },
-        'Imprudente': { plus: 'Ataque Especial', minus: 'Defesa Especial' },
-        'Quieta': { plus: 'Ataque Especial', minus: 'Velocidade' },
-        'Enjoada': { plus: 'Defesa Especial', minus: 'Saúde' },
-        'Calma': { plus: 'Defesa Especial', minus: 'Ataque' },
-        'Gentil': { plus: 'Defesa Especial', minus: 'Defesa' },
-        'Meticulosa': { plus: 'Defesa Especial', minus: 'Ataque Especial' },
-        'Atrevida': { plus: 'Defesa Especial', minus: 'Velocidade' },
-        'Séria': { plus: 'Velocidade', minus: 'Saúde' },
-        'Medrosa': { plus: 'Velocidade', minus: 'Ataque' },
-        'Apressada': { plus: 'Velocidade', minus: 'Defesa' },
-        'Alegre': { plus: 'Velocidade', minus: 'Ataque Especial' },
-        'Ingênua': { plus: 'Velocidade', minus: 'Defesa Especial' },
-        'Comedida': { plus: '', minus: '' },
-        'Chata': { plus: '', minus: '' },
-        'Paciente': { plus: '', minus: '' },
-        'Sensata': { plus: '', minus: '' },
-        'Estoica': { plus: '', minus: '' },
-  };
+  const themeColor = theme?.color || '#22d3ee';
 
   return (
-    <div className="flex-1 bg-[#D0E0D0] p-4 rounded-3xl overflow-y-auto custom-scrollbar font-sans text-xs relative text-black flex flex-col gap-4">
-        
-        <div className="flex flex-col lg:flex-row gap-4 max-w-7xl mx-auto flex-1 h-full">
-            
-            {/* COLUMN 1: Visuals & Stats */}
-            <div className="w-full lg:w-1/4 flex flex-col gap-4">
-                {/* Image Area */}
-                <div className="aspect-square bg-gradient-to-b from-green-300 to-green-100 rounded-xl border-4 border-green-800 shadow-inner flex items-center justify-center relative overflow-hidden group">
-                     {/* Placeholder for upload or display */}
-                     <i className="fa-solid fa-image text-5xl text-green-800 opacity-20" />
-                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="bg-white p-2 rounded-full shadow"><i className="fa-solid fa-upload" /></button>
-                     </div>
-                </div>
+    <div className="flex-1 flex flex-col text-gray-800 overflow-hidden bg-white"
+      style={{ fontFamily: 'sans-serif' }}>
 
-                {/* Level / Name Bar */}
-                <div className="flex bg-black rounded-lg overflow-hidden border-2 border-black text-white">
-                    <div className="px-2 py-1 bg-white text-black font-black border-r-2 border-black flex flex-col items-center leading-none justify-center w-12">
-                        <span className="text-[7px] uppercase">Level</span>
-                        <SmartInput 
-                            className="w-full text-center text-lg font-black outline-none bg-transparent [&::-webkit-inner-spin-button]:appearance-none" 
-                            value={pokemon.level}
-                            onChange={(val) => {
-                                const lvl = val || 0;
-                                const totalSaude = pokemon.stats?.saude || 0;
-                                const maxHp = (totalSaude + lvl) * 3;
-                                setPokemon({...pokemon, level: lvl, hp: {...pokemon.hp!, max: maxHp}});
-                            }}
-                        />
-                    </div>
-                    <div className="flex-1 px-2 py-1 flex flex-col justify-center">
-                         <span className="text-[7px] uppercase text-zinc-400">Nome</span>
-                         <input 
-                            type="text" 
-                            className="w-full bg-transparent text-white font-bold outline-none text-base"
-                            value={pokemon.name}
-                            onChange={(e) => setPokemon({...pokemon, name: e.target.value})}
-                         />
-                    </div>
-                </div>
+      {/* ═══════ MAIN AREA (left + right) ═══════ */}
+      <div className="flex-1 flex overflow-hidden">
 
-                {/* HP Bar */}
-                <div className="bg-rose-900/10 p-1 rounded-lg border border-black/10">
-                    <div className="flex items-center gap-1 mb-1">
-                        <div className="bg-[#A04040] text-white font-black px-1.5 py-0.5 rounded text-sm border-2 border-white/50 shadow">HP</div>
-                        <div className="flex-1 bg-zinc-800 h-6 rounded border-2 border-white flex items-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-green-500" style={{ width: `${Math.min(100, Math.max(0, ((pokemon.hp?.current || 0) / (pokemon.hp?.max || 1)) * 100))}%` }} />
-                            <div className="relative z-10 w-full flex justify-between px-2 font-bold text-white drop-shadow-md text-xs">
-                                <SmartInput className="w-8 bg-transparent text-center outline-none" value={pokemon.hp?.current} onChange={val => setPokemon({...pokemon, hp: {...pokemon.hp!, current: val || 0}})} />
-                                <span>/</span>
-                                <SmartInput className="w-8 bg-transparent text-center outline-none" value={pokemon.hp?.max} onChange={val => setPokemon({...pokemon, hp: {...pokemon.hp!, max: val || 0}})} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        {/* ══ LEFT PANEL — 35% ══ */}
+        <div className="w-[35%] shrink-0 flex flex-col gap-3 p-4 overflow-y-auto custom-scrollbar bg-gray-100"
+          style={{ borderRight: `2px solid ${themeColor}40` }}>
 
-                {/* Stats Table */}
-                <div className="bg-white rounded-lg shadow border-2 border-black overflow-hidden relative">
-                     <table className="w-full text-center text-[10px] font-bold">
-                         <thead className="bg-[#402020] text-white">
-                             <tr>
-                                 <th className="py-1 px-1 text-left w-[1%] whitespace-nowrap">Atributo</th>
-                                 <th className="w-7 bg-rose-900">Base</th>
-                                 <th className="w-7 bg-rose-800">Lvl</th>
-                                 <th className="w-7 bg-rose-700">Fase</th>
-                                 <th className="w-7 bg-black">Total</th>
-                             </tr>
-                         </thead>
-                         <tbody className="divide-y divide-black">
-                            {(['saude', 'ataque', 'defesa', 'atqEspecial', 'defEspecial', 'velocidade'] as Array<keyof Stats>).map((stat) => (
-                                <tr key={stat} className="bg-white even:bg-zinc-100">
-                                    <td className="bg-[#202020] text-white uppercase text-[8px] py-1 px-2 text-left border-r border-black whitespace-nowrap w-[1%]">{statLabels[stat]}</td>
-                                    <td className="border-r border-zinc-300"><SmartInput className="w-full text-center bg-transparent outline-none" value={pokemon.stats?.base[stat]} onChange={(val) => handleStatChange(stat, 'base', val || 0)} /></td>
-                                    <td className="border-r border-zinc-300 text-rose-700"><SmartInput className="w-full text-center bg-transparent outline-none" value={pokemon.stats?.lvl[stat]} onChange={(val) => handleStatChange(stat, 'lvl', val || 0)} /></td>
-                                    <td className="border-r border-zinc-300 bg-green-50">0</td>
-                                    <td className="font-black bg-zinc-200">{pokemon.stats?.[stat]}</td>
-                                </tr>
-                            ))}
-                         </tbody>
-                     </table>
+          {/* Image upload */}
+          <div
+            className="relative w-full aspect-square rounded-2xl border-2 border-gray-300 overflow-hidden cursor-pointer group flex items-center justify-center bg-gray-100"
+            onClick={() => imageInputRef.current?.click()}
+          >
+            {pokemon.imageUrl
+              ? <img src={pokemon.imageUrl} alt={pokemon.name} className="w-full h-full object-cover" />
+              : (
+                <div className="flex flex-col items-center gap-3 text-gray-300">
+                  <i className="fa-solid fa-image text-6xl" />
+                  <span className="text-[9px] font-black uppercase tracking-widest">Clique para adicionar foto</span>
                 </div>
+              )
+            }
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2">
+              <i className="fa-solid fa-camera text-white text-3xl" />
+              <span className="text-white text-xs font-black uppercase">{pokemon.imageUrl ? 'Trocar' : 'Adicionar'} foto</span>
             </div>
+            <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          </div>
 
-            {/* COLUMN 2: Info & Details */}
-            <div className="w-full lg:w-1/4 flex flex-col gap-2 h-full">
-                {/* Header Info Grid */}
-                <div className="grid grid-cols-2 gap-1 shrink-0">
-                    {/* Types Row - Using Flex to ensure Select widths are equal */}
-                    <div className="col-span-2 flex h-9 w-full">
-                        {/* Type 1 Group */}
-                        <div className="flex items-center rounded-l border border-black border-r-0 bg-[#303030] text-white overflow-hidden shrink-0">
-                             <span className="px-1 py-0.5 bg-black text-[8px] font-black uppercase h-full flex items-center">Tipagem</span>
-                        </div>
-                        <div className="flex-1 rounded-r border border-black border-l-0 overflow-hidden relative">
-                             <select 
-                                className="w-full font-bold text-center outline-none uppercase text-[9px] appearance-none h-full text-white"
-                                style={{ backgroundColor: TYPE_COLORS[pokemon.types?.[0] || ''] || '#ffffff', color: pokemon.types?.[0] && pokemon.types[0] !== '' ? 'white' : 'black' }} 
-                                value={pokemon.types?.[0] || ''} 
-                                onChange={e => { const newT = [...(pokemon.types || [])]; newT[0] = e.target.value; setPokemon({...pokemon, types: newT})}}
-                            >
-                                <option value="" style={{backgroundColor: '#ffffff', color: '#000000'}}>-</option>
-                                {Object.keys(TYPE_COLORS).filter(k => k !== '-').map(t => <option key={t} value={t} style={{backgroundColor: '#ffffff', color: '#000000'}}>{t}</option>)}
-                            </select>
-                        </div>
-
-                        {/* Gap */}
-                        <div className="w-1 shrink-0"></div>
-
-                        {/* Type 2 Group */}
-                         <div className="flex-1 rounded border border-black overflow-hidden relative">
-                             <select 
-                                className="w-full font-bold text-center outline-none uppercase text-[9px] appearance-none h-full text-white"
-                                style={{ backgroundColor: TYPE_COLORS[pokemon.types?.[1] || '-'] || '#ffffff', color: pokemon.types?.[1] && pokemon.types[1] !== '-' ? 'white' : 'black' }}
-                                value={pokemon.types?.[1] || '-'} 
-                                onChange={e => { const newT = [...(pokemon.types || [])]; newT[1] = e.target.value; setPokemon({...pokemon, types: newT})}}
-                            >
-                                <option value="-" style={{backgroundColor: '#ffffff', color: '#000000'}}>-</option>
-                                {Object.keys(TYPE_COLORS).filter(k => k !== '-').map(t => <option key={t} value={t} style={{backgroundColor: '#ffffff', color: '#000000'}}>{t}</option>)}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Gender Row - Full Width */}
-                    <div className="col-span-2 border-2 border-black bg-white rounded flex items-center overflow-hidden h-9">
-                        <div className="bg-[#202020] text-white px-2 h-full flex items-center justify-center shrink-0 border-r border-black">
-                            <span className="text-[8px] font-black uppercase">Genero</span>
-                        </div>
-                        <select className="flex-1 font-bold text-center bg-transparent outline-none appearance-none text-[10px] h-full" value={pokemon.gender} onChange={e => setPokemon({...pokemon, gender: e.target.value as StoredPokemon['gender']})}>
-                            <option value="M">Macho</option>
-                            <option value="F">Femea</option>
-                            <option value="U">Unknown</option>
-                        </select>
-                    </div>
-
-                    {/* Nature & Modifiers Row */}
-                    <div className="col-span-2 flex gap-1 h-9">
-                        {/* Nature Box */}
-                        <div className="flex-1 border-2 border-black bg-white rounded flex items-center overflow-hidden h-full">
-                            <div className="bg-[#202020] text-white px-2 h-full flex items-center justify-center shrink-0 border-r border-black">
-                                <span className="text-[7px] font-black uppercase">Natureza</span>
-                            </div>
-                            <div className="flex-1 relative h-full min-w-0">
-                                {/* Visual Text Layer (allows wrapping) */}
-                                <div className="absolute inset-0 flex items-center justify-center text-center px-1 pointer-events-none">
-                                    <span className="text-[10px] font-bold leading-none break-words">
-                                        {pokemon.nature || "Selecione"}
-                                    </span>
-                                </div>
-                                {/* Invisible Select Layer */}
-                                <select 
-                                    className="opacity-0 w-full h-full absolute inset-0 z-10 cursor-pointer" 
-                                    value={pokemon.nature || ''} 
-                                    onChange={e => {
-                                        const nat = e.target.value;
-                                        const data = NATURE_DATA[nat];
-                                        const features = data && (data.plus || data.minus) ? `-${data.minus}\n+${data.plus}` : '';
-                                        setPokemon({...pokemon, nature: nat, natureFeatures: features});
-                                    }}
-                                >
-                                    <option value="">Selecione</option>
-                                    {Object.keys(NATURE_DATA).sort().map(n => <option key={n} value={n}>{n}</option>)}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Modifiers Box */}
-                        <div className="flex-1 border-2 border-black bg-white rounded flex overflow-hidden h-full relative">
-                            <textarea 
-                                className="text-[10px] font-bold text-center outline-none w-full h-full resize-none bg-transparent py-1 leading-tight [&::-webkit-scrollbar]:hidden" 
-                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                                value={pokemon.natureFeatures} 
-                                onChange={e => setPokemon({...pokemon, natureFeatures: e.target.value})} 
-                                placeholder="Modificadores" 
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bonus Dano Elemental */}
-                <div className="bg-[#202020] text-white rounded border border-black flex flex-col items-center w-full shrink-0">
-                     <div className="text-[8px] font-black uppercase text-center leading-tight p-0.5 w-full">Bonus Dano Elemental</div>
-                     <SmartInput className="font-black text-lg text-center w-full bg-white text-black outline-none h-7" value={pokemon.elementalDamageBonus} onChange={val => setPokemon({...pokemon, elementalDamageBonus: val || 0})} />
-                </div>
-
-                {/* Traço de Capacidades (Expanded) */}
-                <div className="flex-1 w-full border-2 border-black bg-white rounded flex flex-col min-h-[140px] overflow-hidden shadow-sm">
-                      <div className="bg-[#102010] text-white text-[10px] font-black uppercase text-center shrink-0 py-0.5">Traço de Capacidades</div>
-                      <input className="font-bold text-center text-sm outline-none bg-zinc-100 p-1.5 shrink-0 border-b border-black/10" value={pokemon.capabilityTrait?.name} onChange={e => setPokemon({...pokemon, capabilityTrait: {...pokemon.capabilityTrait!, name: e.target.value}})} placeholder="Nome" />
-                      <textarea className="flex-1 p-2 text-[10px] resize-none outline-none w-full" value={pokemon.capabilityTrait?.description} onChange={e => setPokemon({...pokemon, capabilityTrait: {...pokemon.capabilityTrait!, description: e.target.value}})} placeholder="Descrição..." />
-                </div>
-
-                {/* Bottom Group (Red Block) */}
-                <div className="flex flex-col gap-2 shrink-0">
-                    {/* Capabilities Grid */}
-                    <div className="border-2 border-black bg-white rounded overflow-hidden flex flex-col">
-                        <div className="bg-[#102010] text-white text-[10px] font-black uppercase text-center py-0.5">Capacidades</div>
-                        <div className="grid grid-cols-[auto_30px_1fr] text-[9px] font-bold divide-y divide-black flex-1">
-                             {/* Force */}
-                             <div className="bg-[#202020] text-white p-2 flex items-center justify-center">Força</div>
-                             <SmartInput className="text-center outline-none border-r border-black" value={pokemon.capabilities?.force.value} onChange={val => {
-                                 const desc = FORCE_CAPABILITY_DESCRIPTIONS[val] || pokemon.capabilities?.force.description || '';
-                                 setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, force: {value: val, description: desc}}});
-                             }} />
-                             <input className="px-2 outline-none bg-rose-900/10 text-rose-900" value={pokemon.capabilities?.force.description} onChange={e => setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, force: {...pokemon.capabilities!.force, description: e.target.value}}})} />
-
-                             {/* Int */}
-                             <div className="bg-[#202020] text-white p-2 flex items-center justify-center">Intel</div>
-                             <SmartInput className="text-center outline-none border-r border-black" value={pokemon.capabilities?.intelligence.value} onChange={val => {
-                                 const desc = INTELLIGENCE_CAPABILITY_DESCRIPTIONS[val] || pokemon.capabilities?.intelligence.description || '';
-                                 setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, intelligence: {value: val, description: desc}}});
-                             }} />
-                             <input className="px-2 outline-none bg-rose-900/20 text-rose-900" value={pokemon.capabilities?.intelligence.description} onChange={e => setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, intelligence: {...pokemon.capabilities!.intelligence, description: e.target.value}}})} />
-
-                             {/* Jump */}
-                             <div className="bg-[#202020] text-white p-2 flex items-center justify-center">Salto</div>
-                             <SmartInput className="text-center outline-none border-r border-black" value={pokemon.capabilities?.jump.value} onChange={val => {
-                                 const desc = JUMP_CAPABILITY_DESCRIPTIONS[val] || pokemon.capabilities?.jump.description || '';
-                                 setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, jump: {value: val, description: desc}}});
-                             }} />
-                             <input className="px-2 outline-none bg-rose-900/10 text-rose-900" value={pokemon.capabilities?.jump.description} onChange={e => setPokemon({...pokemon, capabilities: {...pokemon.capabilities!, jump: {...pokemon.capabilities!.jump, description: e.target.value}}})} />
-                        </div>
-                    </div>
-
-                    {/* Movements & Evasions */}
-                    <div className="flex flex-col gap-1">
-                         {/* Move */}
-                         <div className="bg-[#202020] text-white rounded border border-black overflow-hidden flex flex-col">
-                             <div className="text-center text-[9px] font-black uppercase py-0.5 bg-black">Deslocamentos</div>
-                             <div className="grid grid-cols-5 gap-px bg-black flex-1">
-                                 {/* Col 1 */}
-                                  <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-lg text-center w-full outline-none flex-1" value={pokemon.movements?.terrestre} onChange={val => setPokemon({...pokemon, movements: {...pokemon.movements!, terrestre: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Terrestre</div>
-                                 </div>
-                                 <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-lg text-center w-full outline-none flex-1" value={pokemon.movements?.natacao} onChange={val => setPokemon({...pokemon, movements: {...pokemon.movements!, natacao: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Natação</div>
-                                 </div>
-                                  <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-lg text-center w-full outline-none flex-1" value={pokemon.movements?.voo} onChange={val => setPokemon({...pokemon, movements: {...pokemon.movements!, voo: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Voo</div>
-                                 </div>
-                                  <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-lg text-center w-full outline-none flex-1" value={pokemon.movements?.subaquatico} onChange={val => setPokemon({...pokemon, movements: {...pokemon.movements!, subaquatico: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Subaquatico</div>
-                                 </div>
-                                 <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-lg text-center w-full outline-none flex-1" value={pokemon.movements?.escavacao} onChange={val => setPokemon({...pokemon, movements: {...pokemon.movements!, escavacao: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Escavação</div>
-                                 </div>
-                             </div>
-                         </div>
-
-                         {/* Evasion */}
-                         <div className="bg-[#202020] text-white rounded border border-black overflow-hidden flex flex-col">
-                             <div className="text-center text-[9px] font-black uppercase py-0.5 bg-black">Evasões</div>
-                             <div className="grid grid-cols-3 gap-px bg-black h-full">
-                                  <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-xl text-center w-full outline-none flex-1" value={pokemon.evasions?.fisica} onChange={val => setPokemon({...pokemon, evasions: {...pokemon.evasions!, fisica: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Física</div>
-                                 </div>
-                                 <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-xl text-center w-full outline-none flex-1" value={pokemon.evasions?.especial} onChange={val => setPokemon({...pokemon, evasions: {...pokemon.evasions!, especial: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Especial</div>
-                                 </div>
-                                 <div className="bg-white text-black text-center flex flex-col justify-between h-full pt-1">
-                                     <SmartInput className="font-black text-xl text-center w-full outline-none flex-1" value={pokemon.evasions?.veloz} onChange={val => setPokemon({...pokemon, evasions: {...pokemon.evasions!, veloz: val || 0}})} />
-                                     <div className="w-full bg-[#303030] text-white text-[7px] font-bold uppercase py-0.5">Veloz</div>
-                                 </div>
-                             </div>
-                         </div>
-                    </div>
-                </div>
+          {/* Level / Name */}
+          <div className="flex rounded-xl overflow-hidden border-2 bg-white shadow-sm" style={{ borderColor: themeColor + '60' }}>
+            <div className="px-3 py-2 border-r flex flex-col items-center justify-center w-16 shrink-0" style={{ backgroundColor: themeColor + '15', borderColor: themeColor + '40' }}>
+              <span className="text-[7px] uppercase font-black" style={{ color: themeColor }}>Level</span>
+              <SmartInput className="w-full text-center text-xl font-black outline-none bg-transparent text-gray-800"
+                value={pokemon.level}
+                onChange={v => { const lvl = v || 0; setPokemon(p => ({ ...p, level: lvl, hp: { ...p.hp!, max: ((p.stats?.saude || 0) + lvl) * 3 } })); }} />
             </div>
+            <div className="flex-1 px-3 py-2 flex flex-col justify-center">
+              <span className="text-[7px] uppercase text-gray-400">Nome</span>
+              <input type="text" className="w-full bg-transparent text-gray-800 font-bold outline-none text-sm mt-0.5 placeholder-gray-300"
+                placeholder="Ex: Charizard"
+                value={pokemon.name} onChange={e => setPokemon(p => ({ ...p, name: e.target.value }))} />
+            </div>
+          </div>
 
-            {/* COLUMN 3: Moves (The Grid) */}
-            <div className="w-full lg:w-1/2 flex flex-col gap-2">
-                
-                {/* Abilities Block */}
-                 <div className="grid grid-cols-2 gap-2">
-                    {[0, 1].map(i => (
-                        <div key={i} className="border-2 border-black bg-white rounded-lg overflow-hidden shadow h-24 flex flex-col">
-                             <div className="bg-[#304030] text-white flex justify-between items-center px-2 py-1">
-                                 <span className="text-[9px] font-black italic">Habilidade {i+1}</span>
-                                 <input 
-                                    className="bg-[#A06060] text-white px-2 rounded w-2/3 text-[9px] font-bold outline-none placeholder-white/50" 
-                                    placeholder="Nome da Habilidade"
-                                    value={pokemon.abilities?.[i]?.name || ''}
-                                    onChange={e => {
-                                        const newAbs = [...(pokemon.abilities || [])];
-                                        if (!newAbs[i]) newAbs[i] = { name: '', description: '' };
-                                        newAbs[i].name = e.target.value;
-                                        setPokemon({...pokemon, abilities: newAbs});
-                                    }}
-                                 />
-                             </div>
-                             <textarea 
-                                className="flex-1 text-[9px] p-2 font-medium bg-orange-50 outline-none resize-none" 
-                                placeholder="Descrição..."
-                                value={pokemon.abilities?.[i]?.description || ''}
-                                onChange={e => {
-                                    const newAbs = [...(pokemon.abilities || [])];
-                                    if (!newAbs[i]) newAbs[i] = { name: '', description: '' };
-                                    newAbs[i].description = e.target.value;
-                                    setPokemon({...pokemon, abilities: newAbs});
-                                }}
-                             />
+          {/* HP */}
+          <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-300 shadow-sm">
+            <div className="text-white font-black px-2.5 py-1 rounded-lg text-[10px] shrink-0" style={{ backgroundColor: themeColor }}>HP</div>
+            <div className="flex-1 bg-gray-100 h-7 rounded-lg border border-gray-300 flex items-center relative overflow-hidden">
+              <div className="absolute inset-0 transition-all" style={{ width: `${Math.min(100, ((pokemon.hp?.current || 0) / (pokemon.hp?.max || 1)) * 100)}%`, backgroundColor: themeColor + 'aa' }} />
+              <div className="relative z-10 w-full flex justify-between px-3 font-bold text-gray-800 text-xs">
+                <SmartInput className="w-8 bg-transparent text-center outline-none" value={pokemon.hp?.current}
+                  onChange={v => setPokemon(p => ({ ...p, hp: { ...p.hp!, current: v || 0 } }))} />
+                <span className="opacity-50">/</span>
+                <SmartInput className="w-8 bg-transparent text-center outline-none" value={pokemon.hp?.max}
+                  onChange={v => setPokemon(p => ({ ...p, hp: { ...p.hp!, max: v || 0 } }))} />
+              </div>
+            </div>
+          </div>
+
+          {/* Types */}
+          <div>
+            <span className="text-[7px] font-black uppercase text-gray-400 mb-1.5 block">Tipagem</span>
+            <div className="flex gap-2">
+              {[0, 1].map(i => (
+                <div key={i} className="flex-1 rounded-xl overflow-hidden border border-gray-300"
+                  style={{ backgroundColor: TYPE_COLORS[pokemon.types?.[i] || ''] || '#9ca3af' }}>
+                  <select className="w-full h-10 font-black text-center text-white bg-transparent outline-none uppercase text-[9px] appearance-none"
+                    value={pokemon.types?.[i] || (i === 0 ? 'NORMAL' : '')}
+                    onChange={e => { const t = [...(pokemon.types || [])]; t[i] = e.target.value; setPokemon(p => ({ ...p, types: t })); }}>
+                    {i === 1 && <option value="" style={{ backgroundColor: '#fff', color: '#333' }}>— Sem tipo 2 —</option>}
+                    {Object.keys(TYPE_COLORS).map(t => <option key={t} value={t} style={{ backgroundColor: '#fff', color: '#333' }}>{t}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Gender */}
+          <div>
+            <span className="text-[7px] font-black uppercase text-gray-400 mb-1.5 block">Gênero</span>
+            <div className="flex gap-2">
+              {[
+                { v: 'M', label: 'Macho ♂', color: '#3b82f6' },
+                { v: 'F', label: 'Fêmea ♀', color: '#ec4899' },
+                { v: 'U', label: '⊙ Unknown', color: '#6b7280' },
+              ].map(g => (
+                <button key={g.v}
+                  onClick={() => setPokemon(p => ({ ...p, gender: g.v as StoredPokemon['gender'] }))}
+                  className="flex-1 py-2 rounded-xl border-2 font-black text-[10px] transition-all"
+                  style={{
+                    borderColor: pokemon.gender === g.v ? g.color : '#d1d5db',
+                    backgroundColor: pokemon.gender === g.v ? g.color + '20' : 'white',
+                    color: pokemon.gender === g.v ? g.color : '#9ca3af',
+                  }}>
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Nature */}
+          <div>
+            <span className="text-[7px] font-black uppercase text-gray-400 mb-1.5 block">Natureza</span>
+            <div className="flex gap-2">
+              <div className="flex-1 rounded-xl border border-gray-300 bg-white shadow-sm h-10 flex items-center relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-3">
+                  <span className="text-xs font-bold text-gray-700">{pokemon.nature || 'Selecione...'}</span>
+                </div>
+                <select className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  value={pokemon.nature || ''}
+                  onChange={e => {
+                    const nat = e.target.value;
+                    const data = NATURE_DATA[nat];
+                    const features = data?.plus ? `+${data.plus} / -${data.minus}` : '';
+                    setPokemon(p => ({ ...p, nature: nat, natureFeatures: features }));
+                  }}>
+                  <option value="">Selecione...</option>
+                  {Object.keys(NATURE_DATA).sort().map(n => <option key={n} value={n} style={{ backgroundColor: '#0a0a1a' }}>{n}</option>)}
+                </select>
+              </div>
+              {pokemon.natureFeatures && (
+                <div className="rounded-xl border border-gray-300 bg-gray-100 px-3 flex items-center shrink-0">
+                  <span className="text-[9px] font-bold text-gray-500 whitespace-pre">{pokemon.natureFeatures}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bonus Elemental */}
+          <div className="rounded-xl bg-white shadow-sm text-center py-2 border-2" style={{ borderColor: themeColor + '50' }}>
+            <span className="text-[7px] font-black uppercase" style={{ color: themeColor }}>Bonus Dano Elemental</span>
+            <SmartInput className="text-2xl font-black text-gray-800 bg-transparent outline-none text-center w-full mt-1"
+              value={pokemon.elementalDamageBonus}
+              onChange={v => setPokemon(p => ({ ...p, elementalDamageBonus: v || 0 }))} />
+          </div>
+
+        </div>
+
+        {/* ══ RIGHT PANEL — 65% with tabs ══ */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+
+          {/* Tab Bar */}
+          <div className="flex gap-0.5 px-3 pt-3 shrink-0 border-b border-gray-300">
+            {TABS.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-wider transition-all border-b-2 ${
+                  activeTab === tab.id
+                    ? 'border-transparent'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 border-transparent'
+                }`}
+                style={activeTab === tab.id
+                  ? { borderColor: themeColor, color: themeColor, backgroundColor: themeColor + '10' }
+                  : {}}>
+                <i className={`fa-solid ${tab.icon} text-[9px]`} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-5">
+
+            {/* ── STATS ── */}
+            {activeTab === 'stats' && (
+              <div className="flex flex-col gap-4">
+                {/* Tabela de Stats */}
+                <div className="rounded-2xl border border-gray-300 overflow-hidden shadow-sm" style={{ borderTop: `3px solid ${themeColor}` }}>
+                  <table className="w-full text-center font-bold">
+                    <thead>
+                      <tr className="border-b border-gray-200" style={{ backgroundColor: themeColor + '15' }}>
+                        <th className="py-3 px-5 text-left text-[10px] font-black uppercase" style={{ color: themeColor }}>Atributo</th>
+                        <th className="py-3 text-xs w-24" style={{ color: themeColor }}>Base</th>
+                        <th className="py-3 text-rose-500 text-xs w-24">Lvl</th>
+                        <th className="py-3 text-yellow-600 text-xs w-16">Fase</th>
+                        <th className="py-3 text-gray-800 text-xs w-24">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(['saude', 'ataque', 'defesa', 'atqEspecial', 'defEspecial', 'velocidade'] as Array<keyof Stats>).map(stat => (
+                        <tr key={stat} className="hover:bg-gray-100 transition-colors">
+                          <td className="py-3 px-5 text-left text-gray-600 uppercase text-[11px] font-black">{STAT_LABELS[stat]}</td>
+                          <td><SmartInput className="w-full text-center bg-transparent outline-none font-black text-xl py-2"
+                            style={{ color: themeColor }}
+                            value={pokemon.stats?.base[stat]} onChange={v => handleStatChange(stat, 'base', v || 0)} /></td>
+                          <td><SmartInput className="w-full text-center bg-transparent outline-none text-rose-500 font-black text-xl py-2"
+                            value={pokemon.stats?.lvl[stat]} onChange={v => handleStatChange(stat, 'lvl', v || 0)} /></td>
+                          <td className="text-yellow-500 text-xl">0</td>
+                          <td className="font-black text-gray-900 text-2xl">{pokemon.stats?.[stat]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+
+            {/* ── CAPACIDADES ── */}
+            {activeTab === 'capacidades' && (
+              <div className="flex flex-col gap-4">
+                {/* Traço */}
+                <div className="rounded-2xl border border-gray-300 bg-white overflow-hidden shadow-sm" style={{ borderTop: `3px solid ${themeColor}` }}>
+                  <div className="text-[9px] font-black uppercase text-center py-2 border-b border-gray-200"
+                    style={{ backgroundColor: themeColor + '15', color: themeColor }}>Traço de Capacidades</div>
+                  <input className="w-full p-3 bg-transparent text-gray-800 font-bold outline-none text-sm border-b border-gray-200 placeholder-gray-300"
+                    value={pokemon.capabilityTrait?.name}
+                    onChange={e => setPokemon(p => ({ ...p, capabilityTrait: { ...p.capabilityTrait!, name: e.target.value } }))}
+                    placeholder="Nome do Traço" />
+                  <textarea className="w-full p-3 text-xs resize-none outline-none bg-transparent text-gray-600 placeholder-gray-300 h-24"
+                    value={pokemon.capabilityTrait?.description}
+                    onChange={e => setPokemon(p => ({ ...p, capabilityTrait: { ...p.capabilityTrait!, description: e.target.value } }))}
+                    placeholder="Descrição do traço..." />
+                </div>
+
+                {/* Capacidades table */}
+                <div className="rounded-2xl border border-gray-300 overflow-hidden shadow-sm" style={{ borderTop: `3px solid ${themeColor}` }}>
+                  <div className="text-[9px] font-black uppercase text-center py-2 border-b border-gray-200"
+                    style={{ backgroundColor: themeColor + '15', color: themeColor }}>Capacidades</div>
+                  {[
+                    { label: 'Força',        key: 'force' as const,        descs: FORCE_CAPABILITY_DESCRIPTIONS        },
+                    { label: 'Inteligência', key: 'intelligence' as const,  descs: INTELLIGENCE_CAPABILITY_DESCRIPTIONS },
+                    { label: 'Salto',        key: 'jump' as const,         descs: JUMP_CAPABILITY_DESCRIPTIONS         },
+                  ].map(({ label, key, descs }) => (
+                    <div key={key} className="grid grid-cols-[120px_64px_1fr] divide-x divide-gray-200 border-b border-gray-200 last:border-b-0">
+                      <div className="text-xs font-black uppercase flex items-center justify-center py-3"
+                        style={{ backgroundColor: themeColor + '08', color: themeColor }}>{label}</div>
+                      <SmartInput className="text-center outline-none bg-transparent font-black text-xl py-3"
+                        style={{ color: themeColor }}
+                        value={pokemon.capabilities?.[key].value}
+                        onChange={v => {
+                          const desc = descs[v] || pokemon.capabilities?.[key].description || '';
+                          setPokemon(p => ({ ...p, capabilities: { ...p.capabilities!, [key]: { value: v, description: desc } } }));
+                        }} />
+                      <input className="px-4 outline-none bg-transparent text-gray-600 text-xs"
+                        value={pokemon.capabilities?.[key].description || ''}
+                        onChange={e => setPokemon(p => ({ ...p, capabilities: { ...p.capabilities!, [key]: { ...p.capabilities![key], description: e.target.value } } }))} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Deslocamentos */}
+                <div className="rounded-2xl border border-gray-300 overflow-hidden shadow-sm" style={{ borderTop: `3px solid ${themeColor}` }}>
+                  <div className="text-[9px] font-black uppercase text-center py-2 border-b border-gray-200"
+                    style={{ backgroundColor: themeColor + '15', color: themeColor }}>Deslocamentos</div>
+                  <div className="grid grid-cols-5 divide-x divide-gray-200">
+                    {(['terrestre', 'natacao', 'voo', 'subaquatico', 'escavacao'] as const).map(k => (
+                      <div key={k} className="flex flex-col items-center py-3 gap-1">
+                        <SmartInput className="font-black text-2xl text-center w-full outline-none bg-transparent"
+                          style={{ color: themeColor }}
+                          value={pokemon.movements?.[k]} onChange={v => setPokemon(p => ({ ...p, movements: { ...p.movements!, [k]: v || 0 } }))} />
+                        <div className="text-[7px] text-gray-400 uppercase font-bold">
+                          {k === 'natacao' ? 'Natação' : k === 'subaquatico' ? 'Subaq.' : k === 'escavacao' ? 'Escav.' : k}
                         </div>
+                      </div>
                     ))}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                     {/* Move Cards */}
-                     {Array.from({length: 8}).map((_, i) => {
-                         const move = pokemon.moves?.[i] || { id: `${i}`, name: '', type: '', category: 'Físico', frequency: '', range: '', damage: '', accuracy: '', description: '', descriptors: [], overhead: '', descriptor: '' };
-                         const updateMove = (field: keyof PokemonMove, value: PokemonMove[keyof PokemonMove]) => {
-                             const newMoves = [...(pokemon.moves || [])];
-                             // Fill gaps if needed
-                             for(let j=0; j<=i; j++) {
-                                 if(!newMoves[j]) newMoves[j] = { id: `${j}`, name: '', type: '', category: 'Físico', frequency: '', range: '', damage: '', accuracy: '', description: '', descriptors: [], overhead: '', descriptor: '' };
-                             }
-                             newMoves[i] = { ...newMoves[i], [field]: value };
-                             setPokemon({...pokemon, moves: newMoves});
-                         };
-
-                         return (
-                            <div key={i} className="border-2 border-black rounded bg-white flex flex-col overflow-hidden shadow hover:shadow-lg transition-shadow">
-                                <div className="p-1" style={{ backgroundColor: TYPE_COLORS[move.type] || '#DC2626' }}>
-                                    <input 
-                                        className="bg-transparent text-white font-black text-center text-[10px] w-full outline-none placeholder-white/70 italic uppercase" 
-                                        placeholder="nome do golpe"
-                                        value={move.name}
-                                        onChange={e => updateMove('name', e.target.value)}
-                                    />
-                                </div>
-                                
-                                {/* Row 1: Descriptor | Accuracy */}
-                                <div className="grid grid-cols-2 text-[8px] font-bold text-center border-b border-black divide-x divide-black">
-                                    <input className="outline-none text-center bg-transparent min-w-0 placeholder-black/50" placeholder="Descritor" value={move.descriptor} onChange={e => updateMove('descriptor', e.target.value)} />
-                                    <input className="outline-none text-center bg-transparent min-w-0 placeholder-black/50" placeholder="Precisão" value={move.accuracy} onChange={e => updateMove('accuracy', e.target.value)} />
-                                </div>
-                                
-                                {/* Row 2: Frequency | Range */}
-                                <div className="grid grid-cols-2 text-[8px] font-bold text-center border-b border-black divide-x divide-black">
-                                    <input className="outline-none text-center bg-transparent min-w-0 placeholder-black/50" placeholder="Frequencia" value={move.frequency} onChange={e => updateMove('frequency', e.target.value)} />
-                                    <input className="outline-none text-center bg-transparent min-w-0 placeholder-black/50" placeholder="Alcance" value={move.range} onChange={e => updateMove('range', e.target.value)} />
-                                </div>
-
-                                {/* Row 3: Type | Category */}
-                                <div className="grid grid-cols-2 text-[8px] font-bold text-center border-b border-black divide-x divide-black">
-                                     <select 
-                                        className="outline-none text-center min-w-0 appearance-none h-full font-bold uppercase text-[8px]"
-                                        style={{ 
-                                            backgroundColor: TYPE_COLORS[move.type] || 'transparent', 
-                                            color: move.type && TYPE_COLORS[move.type] ? 'white' : 'black' 
-                                        }}
-                                        value={move.type} 
-                                        onChange={e => updateMove('type', e.target.value)}
-                                     >
-                                         <option value="" style={{backgroundColor: '#ffffff', color: '#808080'}}>Tipagem</option>
-                                         {Object.keys(TYPE_COLORS).filter(k => k !== '-').map(t => (
-                                             <option key={t} value={t} style={{backgroundColor: '#ffffff', color: '#000000'}}>{t}</option>
-                                         ))}
-                                     </select>
-                                     <input className="outline-none text-center bg-transparent min-w-0 placeholder-black/50" placeholder="Aprensentação" value={move.category} onChange={e => updateMove('category', e.target.value)} />
-                                </div>
-
-                                {/* Damage Bar */}
-                                <div className="border-b border-black text-[9px] font-black text-center bg-white">
-                                    <input className="w-full text-center bg-transparent outline-none placeholder-black/50" placeholder="Dados de dano" value={move.damage} onChange={e => updateMove('damage', e.target.value)} />
-                                </div>
-                                
-                                <textarea 
-                                    className="flex-1 p-1 text-[8px] resize-none outline-none text-center bg-transparent placeholder-black/80 font-bold" 
-                                    placeholder="Descrição do golpe" 
-                                    value={move.description}
-                                    onChange={e => updateMove('description', e.target.value)}
-                                ></textarea>
-                            </div>
-                         );
-                     })}
+                {/* Evasões */}
+                <div className="rounded-2xl border border-gray-300 overflow-hidden shadow-sm" style={{ borderTop: `3px solid ${themeColor}` }}>
+                  <div className="text-[9px] font-black uppercase text-center py-2 border-b border-gray-200"
+                    style={{ backgroundColor: themeColor + '15', color: themeColor }}>Evasões</div>
+                  <div className="grid grid-cols-3 divide-x divide-gray-200">
+                    {(['fisica', 'especial', 'veloz'] as const).map(k => (
+                      <div key={k} className="flex flex-col items-center py-4 gap-1">
+                        <SmartInput className="font-black text-3xl text-center w-full outline-none bg-transparent"
+                          style={{ color: themeColor }}
+                          value={pokemon.evasions?.[k]} onChange={v => setPokemon(p => ({ ...p, evasions: { ...p.evasions!, [k]: v || 0 } }))} />
+                        <div className="text-[7px] text-gray-400 uppercase font-bold">
+                          {k === 'fisica' ? 'Física' : k === 'especial' ? 'Especial' : 'Veloz'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-            </div>
+              </div>
+            )}
 
+
+            {/* ── GOLPES ── */}
+            {activeTab === 'golpes' && (
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const move = pokemon.moves?.[i] || { ...EMPTY_MOVE, id: `${i}` };
+                  const color = TYPE_COLORS[move.type] || themeColor;
+                  return (
+                    <div key={i} className="rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden flex flex-col">
+                      <div className="flex items-center gap-2 px-3 py-2" style={{ backgroundColor: color }}>
+                        <input className="flex-1 bg-transparent text-white font-black text-sm outline-none placeholder-white/50 uppercase"
+                          placeholder={`Golpe ${i + 1}`} value={move.name} onChange={e => updateMove(i, 'name', e.target.value)} />
+                        <select className="text-[8px] font-black bg-white/20 text-white rounded-lg px-2 py-0.5 outline-none appearance-none border border-white/30 uppercase"
+                          value={move.type} onChange={e => updateMove(i, 'type', e.target.value)}>
+                          <option value="" style={{ backgroundColor: '#fff', color: '#111' }}>Tipo</option>
+                          {Object.keys(TYPE_COLORS).map(t => <option key={t} value={t} style={{ backgroundColor: '#fff', color: '#111' }}>{t}</option>)}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-4 divide-x divide-gray-200 border-y border-gray-300 text-center">
+                        {[
+                          { label: 'Descritor',  field: 'descriptor' as const, val: move.descriptor },
+                          { label: 'Precisão',   field: 'accuracy'   as const, val: move.accuracy   },
+                          { label: 'Frequência', field: 'frequency'  as const, val: move.frequency  },
+                          { label: 'Alcance',    field: 'range'      as const, val: move.range      },
+                        ].map(({ label, field, val }) => (
+                          <div key={field} className="flex flex-col items-center py-1.5">
+                            <span className="text-[6px] text-gray-400 uppercase">{label}</span>
+                            <input className="w-full text-[10px] text-center bg-transparent outline-none text-gray-700 font-bold placeholder-gray-300"
+                              value={val} onChange={e => updateMove(i, field, e.target.value)} placeholder="—" />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 divide-x divide-gray-200 border-b border-gray-300 text-center">
+                        <div className="flex flex-col items-center py-1.5">
+                          <span className="text-[6px] text-gray-400 uppercase">Dano</span>
+                          <input className="w-full text-[11px] text-center bg-transparent outline-none text-gray-900 font-black placeholder-gray-300"
+                            value={move.damage} onChange={e => updateMove(i, 'damage', e.target.value)} placeholder="—" />
+                        </div>
+                        <div className="flex flex-col items-center py-1.5">
+                          <span className="text-[6px] text-gray-400 uppercase">Categoria</span>
+                          <input className="w-full text-[10px] text-center bg-transparent outline-none text-gray-700 font-bold placeholder-gray-300"
+                            value={move.category} onChange={e => updateMove(i, 'category', e.target.value)} placeholder="Físico" />
+                        </div>
+                      </div>
+                      <textarea className="w-full p-2 text-[9px] resize-none outline-none bg-gray-100 text-gray-500 placeholder-gray-300"
+                        rows={2} placeholder="Descrição..." value={move.description} onChange={e => updateMove(i, 'description', e.target.value)} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── HABILIDADES ── */}
+            {activeTab === 'habilidades' && (
+              <div className="flex flex-col gap-5">
+                {[0, 1].map(i => (
+                  <div key={i} className="rounded-2xl border border-gray-300 bg-white shadow-sm overflow-hidden flex flex-col"
+                    style={{ borderTop: `3px solid ${themeColor}` }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200"
+                      style={{ backgroundColor: themeColor + '15' }}>
+                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black shrink-0"
+                        style={{ backgroundColor: themeColor + '30', color: themeColor }}>{i + 1}</span>
+                      <input className="flex-1 bg-white text-gray-800 px-3 py-1.5 rounded-xl text-xs font-bold outline-none border-2 placeholder-gray-300"
+                        style={{ borderColor: themeColor + '40' }}
+                        placeholder="Nome da Habilidade"
+                        value={pokemon.abilities?.[i]?.name || ''}
+                        onChange={e => {
+                          const a = [...(pokemon.abilities || [{ name: '', description: '' }, { name: '', description: '' }])];
+                          a[i] = { ...a[i], name: e.target.value };
+                          setPokemon(p => ({ ...p, abilities: a }));
+                        }} />
+                    </div>
+                    <textarea className="flex-1 w-full text-xs p-5 bg-transparent outline-none resize-none text-gray-600 placeholder-gray-300 min-h-[140px]"
+                      placeholder="Descrição da habilidade..."
+                      value={pokemon.abilities?.[i]?.description || ''}
+                      onChange={e => {
+                        const a = [...(pokemon.abilities || [{ name: '', description: '' }, { name: '', description: '' }])];
+                        a[i] = { ...a[i], description: e.target.value };
+                        setPokemon(p => ({ ...p, abilities: a }));
+                      }} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </div>
         </div>
-        
-        {/* Footer: Controls */}
-        <div className="flex justify-end gap-2 mt-2 border-t border-black/10 pt-2">
-            <button onClick={onCancel} className="bg-transparent text-rose-700 px-4 py-1 rounded font-bold hover:bg-rose-100 transition-colors uppercase text-[10px]">
-                <i className="fa-solid fa-times mr-1" /> Cancelar
-            </button>
-             <button onClick={() => onSave(pokemon as StoredPokemon)} className="bg-green-700 text-white px-6 py-1 rounded font-black shadow hover:bg-green-600 transition-colors uppercase text-[10px] tracking-wider">
-                <i className="fa-solid fa-save mr-1" /> Salvar Pokemon
-            </button>
-        </div>
+      </div>
+
+      {/* ═══════ FOOTER ═══════ */}
+      <div className="flex justify-end gap-2 px-5 py-2.5 border-t border-gray-300 shrink-0 bg-white">
+        <button onClick={onCancel}
+          className="bg-gray-100 text-rose-600 px-4 py-1.5 rounded-lg font-bold hover:bg-rose-50 transition-colors uppercase text-[10px] border border-gray-300">
+          <i className="fa-solid fa-times mr-1" /> Cancelar
+        </button>
+        <button onClick={() => onSave(pokemon as StoredPokemon)}
+          className="text-white px-6 py-1.5 rounded-lg font-black shadow transition-colors uppercase text-[10px] tracking-wider"
+          style={{ backgroundColor: themeColor }}>
+          <i className="fa-solid fa-save mr-1" /> Salvar Pokémon
+        </button>
+      </div>
     </div>
   );
 };
