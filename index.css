@@ -132,3 +132,46 @@ input[type='number']::-webkit-outer-spin-button {
 .dark-spin-buttons input[type='number']::-webkit-inner-spin-button {
   filter: invert(1) brightness(10);
 }
+
+/* ===== HOLOGRAM EFFECT ===== */
+@keyframes hologram-flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.7; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.85; }
+  97%       { opacity: 1; }
+}
+
+@keyframes hologram-scan {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 80px; }
+}
+
+@keyframes hologram-glow-pulse {
+  0%, 100% { box-shadow: 0 0 40px 10px color-mix(in srgb, var(--theme-color) 35%, transparent), 0 0 100px 30px color-mix(in srgb, var(--theme-color) 15%, transparent), inset 0 0 30px color-mix(in srgb, var(--theme-color) 8%, transparent); }
+  50%       { box-shadow: 0 0 70px 20px color-mix(in srgb, var(--theme-color) 55%, transparent), 0 0 150px 50px color-mix(in srgb, var(--theme-color) 25%, transparent), inset 0 0 50px color-mix(in srgb, var(--theme-color) 15%, transparent); }
+}
+
+.hologram-container {
+  animation: hologram-glow-pulse 3s ease-in-out infinite, hologram-flicker 8s linear infinite;
+  border-color: color-mix(in srgb, var(--theme-color) 70%, white) !important;
+}
+
+.hologram-scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    color-mix(in srgb, var(--theme-color) 6%, transparent) 3px,
+    color-mix(in srgb, var(--theme-color) 6%, transparent) 4px
+  );
+  background-size: 100% 4px;
+  animation: hologram-scan 4s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: inherit;
+}

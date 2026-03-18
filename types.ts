@@ -64,6 +64,7 @@ export interface StoredPokemon {
   types: string[]; 
   ball: string; 
   slot: number;
+  imageUrl?: string; // Foto do Pokémon (base64 data URL)
   
   // Extended Fields
   nature: string;
@@ -141,7 +142,7 @@ export interface TrainerData {
   hpMax: number;
   talentos: Talent[];
   inventario: InventoryItem[];
-  equipe: TeamMember[];
+  equipe: string[]; // IDs referenciando Pokémons no pcBoxes
   pcBoxes: PCBox[];
   anotacoes: string;
   // Novos campos solicitados
