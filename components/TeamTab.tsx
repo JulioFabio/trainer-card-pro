@@ -70,10 +70,9 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
             {slots.map(i => {
                 const pokemonId = equipeIds[i];
                 const pkmn = pokemonId ? allPokemons.find(p => p.id === pokemonId) : null;
-
                 if (pkmn) {
                     return (
-                        <div key={`slot-${i}-${pkmn.id}`} onClick={() => setEditingPokemon(pkmn)} className="bg-white p-5 rounded-[2.5rem] shadow-md border-4 border-black flex flex-col items-center group hover:scale-105 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden h-[260px] justify-center">
+                        <div key={`slot-${i}-${pkmn.id}`} onClick={() => setEditingPokemon(pkmn)} className="bg-white p-5 rounded-[2.5rem] shadow-md border-4 border-black flex flex-col items-center group hover:scale-105 hover:z-50 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden h-[260px] justify-center duration-300">
                            <div className="absolute top-0 right-0 p-4 z-20">
                                <button onClick={(e) => handleRemoveMember(e, i)} className="w-8 h-8 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110">
                                    <i className="fa-solid fa-xmark text-sm" />
@@ -107,7 +106,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
                 if (i > equipeIds.length) return null;
 
                 return (
-                    <div key={`empty-${i}`} onClick={() => setIsSelectingForSlot(i)} className="bg-zinc-100/50 p-5 rounded-[2.5rem] border-4 border-dashed border-zinc-300 flex flex-col items-center justify-center text-zinc-400 hover:border-black hover:text-black hover:bg-zinc-50 transition-all cursor-pointer h-[260px] group">
+                    <div key={`empty-${i}`} onClick={() => setIsSelectingForSlot(i)} className="bg-zinc-100/50 p-5 rounded-[2.5rem] border-4 border-dashed border-zinc-300 flex flex-col items-center justify-center text-zinc-400 hover:border-black hover:text-black hover:bg-zinc-50 hover:z-50 hover:shadow-xl hover:scale-[1.02] duration-300 cursor-pointer h-[260px] group transition-all">
                         <div className="w-16 h-16 rounded-full border-4 border-dashed border-zinc-300 group-hover:border-black flex items-center justify-center mb-4 transition-colors">
                            <i className="fa-solid fa-plus text-2xl" />
                         </div>
@@ -161,13 +160,23 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
         )}
 
         {editingPokemon && (
-            <div className="absolute inset-0 z-50 bg-[#0f172a] rounded-[2.5rem] overflow-hidden animate-in zoom-in-95">
+            <div
+              className="fixed inset-0 z-[100] flex items-center justify-center p-2 animate-in fade-in"
+              style={{ background: `radial-gradient(ellipse 80% 40% at 50% 100%, ${theme.color}30 0%, rgba(0,0,0,0.82) 70%)` }}
+            >
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
+                style={{ background: `conic-gradient(from 270deg at 50% 100%, transparent 60deg, ${theme.color}20 90deg, transparent 120deg)`, filter: 'blur(20px)' }}
+              />
+              <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col"
+                style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)', transform: 'scale(1.13)', transformOrigin: 'center center' }}
+              >
                 <PokemonCreationSheet
                     initialData={editingPokemon}
                     onSave={handleSavePokemon}
                     onCancel={() => setEditingPokemon(null)}
                     theme={theme}
                 />
+              </div>
             </div>
         )}
     </div>

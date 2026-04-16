@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { ImageCropper } from './ImageCropper';
 import { StoredPokemon, Stats, PokemonMove } from '../types';
 import { PokedexTheme } from '../constants';
 import { FORCE_CAPABILITY_DESCRIPTIONS, JUMP_CAPABILITY_DESCRIPTIONS, INTELLIGENCE_CAPABILITY_DESCRIPTIONS } from '../src/data/capabilities';
@@ -60,6 +61,8 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
   const [activeTab, setActiveTab] = useState<'stats' | 'capacidades' | 'golpes' | 'habilidades'>('stats');
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+
   const [pokemon, setPokemon] = useState<Partial<StoredPokemon>>({
     name: 'Nome', species: 'Espécie', level: 1, gender: 'U',
     types: ['NORMAL'], ball: 'Poke Ball', nature: '', natureFeatures: '',
@@ -88,8 +91,11 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setPokemon(prev => ({ ...prev, imageUrl: ev.target?.result as string }));
+    reader.onload = (ev) => {
+        setImageToCrop(ev.target?.result as string);
+    };
     reader.readAsDataURL(file);
+    if (e.target) e.target.value = '';
   };
 
   const handleStatChange = (key: keyof Stats, subKey: 'base' | 'lvl', value: number) => {
@@ -146,7 +152,7 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
             <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           </div>
 
-          {/* Level / Name */}
+          {/* Level / Species / Name */}
           <div className="flex rounded-xl overflow-hidden border-2 bg-white shadow-sm" style={{ borderColor: themeColor + '60' }}>
             <div className="px-3 py-2 border-r flex flex-col items-center justify-center w-16 shrink-0" style={{ backgroundColor: themeColor + '15', borderColor: themeColor + '40' }}>
               <span className="text-[7px] uppercase font-black" style={{ color: themeColor }}>Level</span>
@@ -155,9 +161,14 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
                 onChange={v => { const lvl = v || 0; setPokemon(p => ({ ...p, level: lvl, hp: { ...p.hp!, max: ((p.stats?.saude || 0) + lvl) * 3 } })); }} />
             </div>
             <div className="flex-1 px-3 py-2 flex flex-col justify-center">
-              <span className="text-[7px] uppercase text-gray-400">Nome</span>
-              <input type="text" className="w-full bg-transparent text-gray-800 font-bold outline-none text-sm mt-0.5 placeholder-gray-300"
+              <span className="text-[6px] uppercase font-black mb-0.5" style={{ color: themeColor }}>Espécie (Pokémon)</span>
+              <input type="text" className="w-full bg-transparent text-gray-600 font-bold outline-none text-[10px] mb-1.5 placeholder-gray-300 border-b border-gray-100 pb-0.5"
                 placeholder="Ex: Charizard"
+                value={pokemon.species} onChange={e => setPokemon(p => ({ ...p, species: e.target.value }))} />
+
+              <span className="text-[6px] uppercase font-black mb-0.5 text-gray-400">Nome / Apelido</span>
+              <input type="text" className="w-full bg-transparent text-gray-800 font-black outline-none text-sm placeholder-gray-300"
+                placeholder="Ex: Zard"
                 value={pokemon.name} onChange={e => setPokemon(p => ({ ...p, name: e.target.value }))} />
             </div>
           </div>
@@ -224,7 +235,7 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
             <div className="flex gap-2">
               <div className="flex-1 rounded-xl border border-gray-300 bg-white shadow-sm h-10 flex items-center relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-3">
-                  <span className="text-xs font-bold text-gray-700">{pokemon.nature || 'Selecione...'}</span>
+                  <span className="text-xs font-bold" style={{ color: pokemon.nature ? themeColor : '#4b5563' }}>{pokemon.nature || 'Selecione...'}</span>
                 </div>
                 <select className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                   value={pokemon.nature || ''}
@@ -234,8 +245,8 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
                     const features = data?.plus ? `+${data.plus} / -${data.minus}` : '';
                     setPokemon(p => ({ ...p, nature: nat, natureFeatures: features }));
                   }}>
-                  <option value="">Selecione...</option>
-                  {Object.keys(NATURE_DATA).sort().map(n => <option key={n} value={n} style={{ backgroundColor: '#0a0a1a' }}>{n}</option>)}
+                  <option value="" style={{ backgroundColor: '#fff', color: '#374151' }}>Selecione...</option>
+                  {Object.keys(NATURE_DATA).sort().map(n => <option key={n} value={n} style={{ backgroundColor: '#fff', color: themeColor, fontWeight: 'bold' }}>{n}</option>)}
                 </select>
               </div>
               {pokemon.natureFeatures && (
@@ -247,9 +258,9 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
           </div>
 
           {/* Bonus Elemental */}
-          <div className="rounded-xl bg-white shadow-sm text-center py-2 border-2" style={{ borderColor: themeColor + '50' }}>
-            <span className="text-[7px] font-black uppercase" style={{ color: themeColor }}>Bonus Dano Elemental</span>
-            <SmartInput className="text-2xl font-black text-gray-800 bg-transparent outline-none text-center w-full mt-1"
+          <div className="rounded-xl flex items-center justify-between bg-white shadow-sm px-4 py-2 border-2" style={{ borderColor: themeColor + '50' }}>
+            <span className="text-[9px] font-black uppercase" style={{ color: themeColor }}>Modificador / Dano Elemental</span>
+            <SmartInput className="text-sm font-black text-gray-800 bg-gray-100 rounded-lg px-2 py-0.5 outline-none text-center w-14 border border-gray-200"
               value={pokemon.elementalDamageBonus}
               onChange={v => setPokemon(p => ({ ...p, elementalDamageBonus: v || 0 }))} />
           </div>
@@ -497,6 +508,20 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
           <i className="fa-solid fa-save mr-1" /> Salvar Pokémon
         </button>
       </div>
+
+      {/* Modal de Corte de Imagem */}
+      {imageToCrop && (
+        <ImageCropper
+          imageSrc={imageToCrop}
+          themeColor={themeColor}
+          onCancel={() => setImageToCrop(null)}
+          onCropComplete={(croppedImage) => {
+            setPokemon(prev => ({ ...prev, imageUrl: croppedImage }));
+            setImageToCrop(null);
+          }}
+        />
+      )}
+
     </div>
   );
 };
