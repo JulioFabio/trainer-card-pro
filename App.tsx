@@ -8,6 +8,7 @@ import { SmartInput } from './components/SmartInput';
 import { NotesTab } from './components/NotesTab';
 import { PcTab } from './components/PcTab';
 import { TeamTab } from './components/TeamTab';
+import { ImageCropper } from './components/ImageCropper';
 
 type Tab = 'treinador' | 'combate' | 'equipe' | 'mochila' | 'notas' | 'computador';
 
@@ -58,7 +59,13 @@ const App: React.FC = () => {
   });
 
   const [activeTab, setActiveTab] = useState<Tab>('treinador');
-  const [currentTheme, setCurrentTheme] = useState(POKEDEX_THEMES[0]);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    const saved = localStorage.getItem('trainer_card_pro_theme');
+    if (saved) {
+      return POKEDEX_THEMES.find(t => t.id === saved) || POKEDEX_THEMES[0];
+    }
+    return POKEDEX_THEMES[0];
+  });
   const [newItemName, setNewItemName] = useState('');
   const [newItemDesc, setNewItemDesc] = useState('');
   const [newItemQty, setNewItemQty] = useState(1);
@@ -66,6 +73,7 @@ const App: React.FC = () => {
   const [newTalentDesc, setNewTalentDesc] = useState('');
   const [hoveredTalent, setHoveredTalent] = useState<{ content: string, x: number, y: number } | null>(null);
   const [showOnlyTrained, setShowOnlyTrained] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
   // --- CÁLCULOS MATEMÁTICOS AUTOMÁTICOS ---
   
@@ -154,6 +162,10 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trainer));
   }, [trainer]);
 
+  useEffect(() => {
+    localStorage.setItem('trainer_card_pro_theme', currentTheme.id);
+  }, [currentTheme]);
+
   // Aviso de saída (Prevent Data Loss)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -189,10 +201,11 @@ const App: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTrainer(prev => ({ ...prev, avatar: reader.result as string }));
+        setImageToCrop(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
+    if (e.target) e.target.value = '';
   };
 
   const exportData = async () => {
@@ -769,6 +782,18 @@ const App: React.FC = () => {
              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-900/95"></div>
           </div>
         </div>
+      )}
+      
+      {imageToCrop && (
+        <ImageCropper
+          imageSrc={imageToCrop}
+          themeColor={currentTheme.color}
+          onCancel={() => setImageToCrop(null)}
+          onCropComplete={(croppedImage) => {
+            setTrainer(prev => ({ ...prev, avatar: croppedImage }));
+            setImageToCrop(null);
+          }}
+        />
       )}
     </div>
   );
