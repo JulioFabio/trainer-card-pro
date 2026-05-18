@@ -2,8 +2,6 @@
 import { TrainerData } from './types';
 
 export const BASE_POINTS = 66;
-export const POINTS_PER_LEVEL = 2;
-export const MIN_STAT = 6;
 export const MAX_STAT_INITIAL = 14;
 
 export const STAT_LABELS: Record<string, string> = {
@@ -15,14 +13,6 @@ export const STAT_LABELS: Record<string, string> = {
   velocidade: 'Velocidade',
 };
 
-export const STAT_COLORS: Record<string, string> = {
-  saude: 'bg-rose-500',
-  ataque: 'bg-orange-500',
-  defesa: 'bg-blue-500',
-  atqEspecial: 'bg-purple-500',
-  defEspecial: 'bg-emerald-500',
-  velocidade: 'bg-amber-500',
-  };
 
 export const DEFAULT_SKILLS: { name: string; attr: keyof TrainerData['stats']; ranks: 0 | 1 | 2; bonus: number }[] = [
   // Saúde
@@ -88,17 +78,6 @@ export const INITIAL_TRAINER_DATA: TrainerData = {
     velocidade: 17,
   },
   hpActual: 64,
-  hpMax: 64,
-  evasao: {
-    fisica: 1,
-    especial: 2,
-    veloz: 3,
-  },
-  movimento: {
-    terrestre: 14,
-    natacao: 4,
-    subaquatico: 4,
-  },
   talentos: [
     { name: 'No Ponto Fraco!', description: 'Adiciona +1 dano em ataques críticos.' },
     { name: 'Ponto de Captura', description: 'Permite capturar Pokémon com +10% de chance.' },
@@ -108,13 +87,10 @@ export const INITIAL_TRAINER_DATA: TrainerData = {
     { id: '1', name: 'Kit de viagens', description: 'Essencial para jornadas longas.', quantity: 1 },
     { id: '2', name: 'Poke Ball', description: '+25 no teste de captura', quantity: 3 }
   ],
-  equipe: [
-    { id: '1', name: 'Sprigatito', species: 'Sprigatito', ball: 'Poke Ball' },
-    { id: '2', name: 'Zigzagoon', species: 'Zigzagoon', ball: 'Poke Ball' }
-  ],
+  equipe: [],
   pcBoxes: Array.from({ length: 99 }, (_, i) => ({ id: i + 1, name: `Box ${i + 1}`, pokemons: [] })),
   anotacoes: 'Cidade - Borges. Amiga Mãe: Alex. Entregar Pacote para Emilia.',
-  skills: DEFAULT_SKILLS, // Inicializa com as perícias padrão
+  skills: DEFAULT_SKILLS,
 };
 
 export interface PokedexTheme {
