@@ -36,8 +36,6 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
   // Reset states when slot changes
   useEffect(() => {
     setIsCreating(false);
-    // If not creating, viewMode should be box? or strictly controlled by manual trigger?
-    // Let's keep viewMode persistent until canceled/saved.
     if (selectedSlot !== null) {
       const pkmn = getPokemonAt(selectedSlot);
       if (pkmn) {
@@ -55,7 +53,7 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
         setTypesInput('');
       }
     }
-  }, [selectedSlot, currentBox, getPokemonAt]); // Removed boxes dependency to avoid loop, dependent on currentBox memo
+  }, [selectedSlot, currentBox, getPokemonAt]);
 
   const handleSlotClick = (slot: number) => {
     if (moveSource !== null) {
@@ -208,8 +206,8 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
             style={{ background: `conic-gradient(from 270deg at 50% 100%, transparent 60deg, ${theme.color}20 90deg, transparent 120deg)`, filter: 'blur(20px)' }}
           />
-          <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col"
-            style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)', transform: 'scale(1.13)', transformOrigin: 'center center' }}
+          <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col shadow-2xl"
+            style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)' }}
           >
             <PokemonCreationSheet
               theme={theme}
@@ -254,7 +252,6 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
                          </div>
                      ) : (
                         <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                           {/* Show inputs only if creating or if pokemon exists (read-only for view, editable only if creating? user said "fill info" so creating needs edit) */}
                             <div>
                                 <label className="text-[9px] font-black uppercase text-zinc-400 ml-2">Espécie</label>
                                 <input 

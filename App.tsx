@@ -184,7 +184,6 @@ const App: React.FC = () => {
   const handleStatChange = (key: keyof Stats, value: number) => {
     setTrainer(prev => ({
       ...prev,
-      ...prev,
       stats: { ...prev.stats, [key]: Math.max(0, value) }
     }));
   };
@@ -534,7 +533,7 @@ const App: React.FC = () => {
                             type="text" 
                             value={newTalentDesc}
                             onChange={(e) => setNewTalentDesc(e.target.value)} 
-                            onKeyPress={(e) => e.key === 'Enter' && addTalent()}
+                            onKeyDown={(e) => e.key === 'Enter' && addTalent()}
                             className="flex-1 bg-white px-3 py-2 rounded-xl text-[10px] font-medium text-zinc-600 border-2 border-zinc-200 focus:border-black outline-none transition-all placeholder-zinc-300" 
                             placeholder="Descrição breve..." 
                           />

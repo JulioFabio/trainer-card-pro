@@ -11,7 +11,6 @@ export interface Stats {
 export interface Skill {
   name: string;
   attr: keyof Stats;
-  value?: number; // Propriedade legada ou para cache
   ranks: 0 | 1 | 2; // 0=Untrained, 1=Trained, 2=Expert
   bonus: number;
 }
@@ -23,13 +22,6 @@ export interface InventoryItem {
   quantity: number;
 }
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  species: string;
-  ball: string;
-}
-
 export interface Talent {
   name: string;
   description: string;
@@ -39,15 +31,13 @@ export interface PokemonMove {
     id: string;
     name: string;
     type: string;
-    category: 'Físico' | 'Especial' | 'Status'; // "aprensentação" in image seems to be category
+    category: 'Físico' | 'Especial' | 'Status';
     frequency: string;
-    range: string; // "alcance"
+    range: string;
     damage: string;
-    accuracy: string; // "precisão" or "AC"
-    overhead: string; // The top-right number (e.g. "2") - Keeping for backward compat or alternate view
-    descriptor: string; // New field for "Descritor"
+    accuracy: string;
+    descriptor: string;
     description: string;
-    descriptors: string[]; // "descritor" - Leaving for now
 }
 
 export interface PokemonCapability {
@@ -137,15 +127,13 @@ export interface TrainerData {
   diasJornada: number;
   pokedexCount: number;
   stats: Stats;
-  skills: Skill[]; // Nova lista completa de perícias
+  skills: Skill[];
   hpActual: number;
-  hpMax: number;
   talentos: Talent[];
   inventario: InventoryItem[];
-  equipe: string[]; // IDs referenciando Pokémons no pcBoxes
+  equipe: string[];
   pcBoxes: PCBox[];
   anotacoes: string;
-  // Novos campos solicitados
   levelGeral: number;
   idade: number;
   peso: string;
@@ -153,14 +141,4 @@ export interface TrainerData {
   naturalidade: string;
   genero: string;
   campanha: string;
-  evasao: {
-    fisica: number;
-    especial: number;
-    veloz: number;
-  };
-  movimento: {
-    terrestre: number;
-    natacao: number;
-    subaquatico: number;
-  };
 }
