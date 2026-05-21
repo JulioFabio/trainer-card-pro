@@ -7,18 +7,53 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+package-lock.json
+
+# Build outputs
 dist
 dist-ssr
+build
 *.local
 
-# Editor directories and files
+# Environment variables (sensitive data)
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+.agent/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# IDE caches
+.eslintcache
+.stylelintcache
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+._*
+.Spotlight-V100
+.Trashes
+
+# Temporary files
+temp_diff.txt
+temp_diff_utf8.txt
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# VS Code workspace settings (user specific)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
