@@ -20,6 +20,18 @@ Antes de começar, você precisa ter o **[Node.js](https://nodejs.org/)** instal
 > [!IMPORTANT]
 > **Atenção com softwares de segurança:** Alguns antivírus ou firewalls podem bloquear arquivos e execuções "suspeitas" durante o processo. Mesmo validando a confiança do arquivo no VS Code, esses softwares podem barrar a criação da pasta `node_modules` ou a execução de scripts ao rodar o `npm install`. Caso encontre erros de permissão, verifique as notificações do seu sistema de segurança.
 
+> [!TIP]
+> **Atenção ao usar Windows PowerShell (Erros de Execução de Script):**
+> Caso encontre um erro de segurança/permissão como `PSSecurityException` ou `UnauthorizedAccess` ao rodar comandos como `npm` ou `npx` no PowerShell, isso ocorre porque a política padrão do Windows restringe a execução de scripts `.ps1`.
+> 
+> Você pode resolver de duas formas:
+> 1. **Liberar execução no terminal (Recomendado):** Abra o PowerShell e execute o comando abaixo para permitir a execução de scripts locais seguros para o seu usuário atual:
+>    ```powershell
+>    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+>    ```
+> 2. **Contornar via prompt de comando clássico:** Alternativamente, execute os comandos prefixando com `cmd /c` (ex: `cmd /c npx prisma db push` e `cmd /c npm run dev`).
+
+
 ### Passo a passo
 
 Como rodar o projeto localmente:
