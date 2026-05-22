@@ -7,8 +7,8 @@
 
 Este projeto foi desenvolvido com:
 
+- [Next.js 15 (App Router)](https://nextjs.org/) como framework React estrutural e base para futura API/Banco de Dados
 - [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/) como bundler / dev server
 - [TailwindCSS](https://tailwindcss.com/) para estilização
 - [React Markdown](https://github.com/remarkjs/react-markdown) com suporte a GFM
 
@@ -72,9 +72,11 @@ A ficha é **salva automaticamente** no `localStorage`. Você também pode expor
 - [x] **Proteção contra perda de dados** — Prompt de confirmação ao fechar a aba.
 - [x] **SmartInput** — Campo de HP com suporte a expressões matemáticas (ex: `64-10`, `+5`).
 - [x] **Dias de Jornada e Pokédex** — Contadores globais no header do app.
+- [x] **Infraestrutura Next.js (App Router)** — Migração do Vite para Next.js 15, deixando a aplicação preparada para receber uma camada de banco de dados e backend.
 
 ## 🗺️ RoadMap
 
+- [ ] **Fase 1: Integração com Banco de Dados** — Banco de dados robusto com rotas de API no Next.js para persistência de dados.
 - [ ] Implementar naturezas com efeito matemático automático nos atributos (ex: +2 Saúde / -2 Ataque).
 - [ ] Autocomplete de espécies com Stats Base pré-definidos.
 - [ ] Validação visual de ficha — alertas quando atributos excedem o permitido para o nível.
