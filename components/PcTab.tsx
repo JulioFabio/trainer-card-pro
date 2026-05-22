@@ -7,9 +7,10 @@ interface PcTabProps {
   boxes: PCBox[];
   onChange: (boxes: PCBox[]) => void;
   theme: PokedexTheme;
+  characterId: string;
 }
 
-export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
+export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterId }) => {
   const [currentBoxIndex, setCurrentBoxIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -211,6 +212,7 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme }) => {
           >
             <PokemonCreationSheet
               theme={theme}
+              characterId={characterId}
               initialData={selectedSlot !== null ? getPokemonAt(selectedSlot) : {}}
               onSave={handleSaveSheet}
               onCancel={() => setViewMode('box')}

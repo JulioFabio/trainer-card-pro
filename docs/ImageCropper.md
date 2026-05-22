@@ -11,7 +11,8 @@
 ```typescript
 interface ImageCropperProps {
   imageSrc: string;                                          // URL ou Base64 da imagem original
-  onCropComplete: (croppedImageBase64: string) => void;     // Callback com a imagem final cortada
+  characterId: string;                                       // ID do personagem associado à imagem para upload
+  onCropComplete: (imageUrl: string) => void;                // Callback com a URL retornada pela API
   onCancel: () => void;                                      // Callback ao cancelar
   themeColor?: string;                                       // Cor tema para bordas/botões (default: '#22d3ee')
 }
@@ -31,22 +32,22 @@ interface ImageCropperProps {
 
 ## Métodos e Funções
 
-### `getCroppedImg` (Helper estático)
+### `getCroppedImgBlob` (Helper estático)
 Função assíncrona executada fora do escopo do componente para evitar re-renderizações desnecessárias. Utiliza a API do Canvas HTML5:
 
 1. Instancia um elemento `new Image()` e carrega o `imageSrc`.
 2. Cria um `canvas` com as dimensões exatas de pixel de corte (`pixelCrop.width` e `pixelCrop.height`).
 3. Desenha a região correspondente no canvas com `drawImage` informando as coordenadas de origem `x, y` e as dimensões de destino.
-4. Retorna a imagem final via `canvas.toDataURL('image/png')` no formato de uma string Base64 PNG.
+4. Converte o resultado em um Blob (`canvas.toBlob`).
 
 ```typescript
-const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string>
+const getCroppedImgBlob = async (imageSrc: string, pixelCrop: any): Promise<Blob>
 ```
 
 ### Handlers Internos
 
 - `onCropCompleteHandler`: Atualiza as coordenadas em pixels sempre que o usuário arrasta ou dá zoom na imagem. Memoizado via `useCallback` para estabilidade.
-- `handleConfirm`: Função assíncrona que invoca `getCroppedImg` e despacha o resultado via `onCropComplete(croppedImage)`.
+- `handleConfirm`: Função assíncrona que converte o corte para Blob, monta um `FormData` contendo a imagem e o `characterId`, e realiza um `POST /api/upload`. Por fim, despacha a URL retornada via `onCropComplete(data.url)`.
 
 ---
 
