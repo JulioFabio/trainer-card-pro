@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id         String      @id @default(uuid())
+  username   String      @unique
+  role       String      @default("PLAYER") // "GM" ou "PLAYER"
+  characters Character[]
+}
+
+model Character {
+  id        String  @id @default(uuid())
+  name      String
+  level     Int     @default(1)
+  money     Int     @default(0)
+  avatarUrl String?
+  sheetData String  @default("{}") // Campo flexível JSON com atributos, talentos, etc.
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items    Item[]
+  pokemons Pokemon[]
+  notes    Note[]
+}
+
+model Item {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  quantity    Int     @default(1)
+  imageUrl    String?
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model Pokemon {
+  id         String  @id @default(uuid())
+  nickname   String
+  species    String
+  isParty    Boolean @default(false)
+  boxName    String?
+  imageUrl   String?
+  pokemonData String @default("{}") // Campo flexível JSON com stats, golpes, etc.
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model Note {
+  id      String @id @default(uuid())
+  title   String
+  content String // Markdown puro
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model TradeRequest {
+  id         String @id @default(uuid())
+  senderId   String // O Character ID de quem está enviando a troca
+  receiverId String // O Character ID de quem está recebendo a oferta
+  status     String @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED"
+  tradeData  String @default("{}") // Payload JSON com os itens e pokemons ofertados/requisitados
+}

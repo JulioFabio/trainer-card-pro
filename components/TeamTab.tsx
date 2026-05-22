@@ -9,9 +9,10 @@ interface TeamTabProps {
   theme: PokedexTheme;
   onChange: (newEquipeIds: string[]) => void;
   onUpdateBoxes: (newBoxes: PCBox[]) => void;
+  characterId: string;
 }
 
-export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onChange, onUpdateBoxes }) => {
+export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onChange, onUpdateBoxes, characterId }) => {
   const [isSelectingForSlot, setIsSelectingForSlot] = useState<number | null>(null);
   const [editingPokemon, setEditingPokemon] = useState<StoredPokemon | null>(null);
 
@@ -175,6 +176,7 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
                     onSave={handleSavePokemon}
                     onCancel={() => setEditingPokemon(null)}
                     theme={theme}
+                    characterId={characterId}
                 />
               </div>
             </div>

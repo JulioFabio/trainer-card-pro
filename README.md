@@ -35,7 +35,11 @@ Como rodar o projeto localmente:
    ```bash
    npm install
    ```
-4. Inicie o servidor de desenvolvimento:
+4. Configure o Banco de Dados local:
+   ```bash
+   npx prisma db push
+   ```
+5. Inicie o servidor de desenvolvimento:
    ```bash
    npm run dev
    ```
@@ -76,7 +80,7 @@ A ficha é **salva automaticamente** no `localStorage`. Você também pode expor
 
 ## 🗺️ RoadMap
 
-- [ ] **Fase 1: Integração com Banco de Dados** — Banco de dados robusto com rotas de API no Next.js para persistência de dados.
+- [x] **Fase 1: Integração com Banco de Dados** — Banco de dados robusto com rotas de API no Next.js para persistência de dados. Concluída com SQLite, Prisma ORM e rotas CRUD.
 - [ ] Implementar naturezas com efeito matemático automático nos atributos (ex: +2 Saúde / -2 Ataque).
 - [ ] Autocomplete de espécies com Stats Base pré-definidos.
 - [ ] Validação visual de ficha — alertas quando atributos excedem o permitido para o nível.

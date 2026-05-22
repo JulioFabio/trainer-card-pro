@@ -10,54 +10,52 @@ import { NotesTab } from './components/NotesTab';
 import { PcTab } from './components/PcTab';
 import { TeamTab } from './components/TeamTab';
 import { ImageCropper } from './components/ImageCropper';
+import { TradeModal } from './components/TradeModal';
 
 type Tab = 'treinador' | 'combate' | 'equipe' | 'mochila' | 'notas' | 'computador';
 
 const STORAGE_KEY = 'trainer_card_pro_data';
 
 const App: React.FC = () => {
-  // Inicializa o estado tentando carregar do LocalStorage
-  const [trainer, setTrainer] = useState<TrainerData>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+  // Inicializa o estado com os dados padrão
+  const [trainer, setTrainer] = useState<TrainerData>(INITIAL_TRAINER_DATA);
+  const [characterId, setCharacterId] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // 1. CARREGAMENTO INICIAL DO BANCO DE DADOS
+  useEffect(() => {
+    const initCharacter = async () => {
       try {
-        const parsed = JSON.parse(saved);
-        // Migração de dados antigos (string[] -> Talent[])
-        if (parsed.talentos && parsed.talentos.length > 0 && typeof parsed.talentos[0] === 'string') {
-          parsed.talentos = parsed.talentos.map((t: string) => ({ name: t, description: 'Sem descrição.' }));
-        }
-        // Migração de Perícias (Se não existir, usa o padrão)
-        if (!parsed.skills || parsed.skills.length === 0) {
-           parsed.skills = DEFAULT_SKILLS;
-        } else {
-           // Merge para garantir que novas perícias apareçam
-           const existingNames = new Set(parsed.skills.map((s: Skill) => s.name));
-           const newSkills = DEFAULT_SKILLS.filter(s => !existingNames.has(s.name));
-           parsed.skills = [...parsed.skills, ...newSkills];
+        const mockCharId = 'char-123';
+        let response = await fetch(`/api/character?id=${mockCharId}`);
+        
+        if (response.status === 404) {
+          // Cria o mock do primeiro personagem se não existir
+          response = await fetch('/api/character', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Treinador', userId: 'user-123', id: mockCharId })
+          });
         }
 
-        // Migração de pcBoxes para 99 boxes
-        if (!parsed.pcBoxes || parsed.pcBoxes.length < 99) {
-          const existingBoxes: any[] = parsed.pcBoxes || [];
-          parsed.pcBoxes = Array.from({ length: 99 }, (_, i) =>
-            existingBoxes.find((b: any) => b.id === i + 1) || { id: i + 1, name: `Box ${i + 1}`, pokemons: [] }
-          );
+        if (response.ok) {
+          const data = await response.json();
+          setCharacterId(data.id);
+          const loadedTrainer = { 
+             ...INITIAL_TRAINER_DATA, 
+             ...(data.sheetData || {}), 
+             avatar: data.avatarUrl || INITIAL_TRAINER_DATA.avatar
+          };
+          setTrainer(loadedTrainer);
         }
-
-        // Migração de Equipe
-        if (parsed.equipe && parsed.equipe.length > 0 && typeof parsed.equipe[0] === 'object') {
-           parsed.equipe = parsed.equipe.map((p: any) => p.id || String(Date.now()));
-        } else if (!parsed.equipe) {
-           parsed.equipe = [];
-        }
-
-        return { ...INITIAL_TRAINER_DATA, ...parsed };
-      } catch {
-        return INITIAL_TRAINER_DATA;
+      } catch (error) {
+        console.error('Erro ao carregar dados da API:', error);
+      } finally {
+        setIsInitializing(false);
       }
-    }
-    return INITIAL_TRAINER_DATA;
-  });
+    };
+    initCharacter();
+  }, []);
 
   const [activeTab, setActiveTab] = useState<Tab>('treinador');
   const [currentTheme, setCurrentTheme] = useState(() => {
@@ -75,6 +73,7 @@ const App: React.FC = () => {
   const [hoveredTalent, setHoveredTalent] = useState<{ content: string, x: number, y: number } | null>(null);
   const [showOnlyTrained, setShowOnlyTrained] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [showTradeModal, setShowTradeModal] = useState(false);
 
   // --- CÁLCULOS MATEMÁTICOS AUTOMÁTICOS ---
   
@@ -158,10 +157,29 @@ const App: React.FC = () => {
     }
   }, [calculatedHpMax, trainer.hpActual]);
 
-  // Salvamento automático
+  // Salvamento automático via API (Substituindo localStorage)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trainer));
-  }, [trainer]);
+    if (!characterId || isInitializing) return;
+    const saveTimer = setTimeout(async () => {
+      try {
+        await fetch('/api/character', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+             id: characterId, 
+             name: trainer.nomePersonagem, 
+             level: trainer.levelGeral, 
+             avatarUrl: trainer.avatar,
+             sheetData: trainer 
+          })
+        });
+      } catch (e) {
+        console.error('Erro no Auto-Save da Ficha', e);
+      }
+    }, 1000); // 1 segundo de debounce
+    
+    return () => clearTimeout(saveTimer);
+  }, [trainer, characterId, isInitializing]);
 
   useEffect(() => {
     localStorage.setItem('trainer_card_pro_theme', currentTheme.id);
@@ -262,8 +280,8 @@ const App: React.FC = () => {
   const resetTrainer = () => {
     if (confirm("Deseja resetar a ficha? Todos os dados atuais serão perdidos.")) {
       setTrainer(INITIAL_TRAINER_DATA);
-      localStorage.removeItem(STORAGE_KEY);
-      alert("Ficha resetada com sucesso!");
+      // localStorage.removeItem(STORAGE_KEY);
+      alert("Ficha resetada! O backend salvará este novo estado em branco automaticamente.");
     }
   };
 
@@ -339,6 +357,12 @@ const App: React.FC = () => {
 
   return (
     <div style={rootStyle} className="min-h-screen bg-[#0f172a] flex items-center justify-center p-2 sm:p-6 font-sans overflow-hidden">
+      {isInitializing ? (
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+           <div className="w-16 h-16 rounded-full bg-cyan-400 border-4 border-white shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+           <span className="text-white font-black uppercase tracking-widest text-sm">Carregando Banco de Dados...</span>
+        </div>
+      ) : (
       <div className={`${currentTheme.main} w-full max-w-7xl h-[95vh] rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
         
         {/* Header Superior */}
@@ -365,6 +389,9 @@ const App: React.FC = () => {
             <div className="w-px h-6 bg-white/20 mx-1" />
 
             {/* Botões de Gestão - compactos */}
+            <button onClick={() => setShowTradeModal(true)} title="Sistema de Trocas (Link Cable)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-emerald-400 transition-all">
+              <i className="fa-solid fa-right-left text-[13px]" />
+            </button>
             <button onClick={exportData} title="Exportar Ficha (.json)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-white/30 transition-all">
               <i className="fa-solid fa-file-export text-[13px]" />
             </button>
@@ -695,11 +722,12 @@ const App: React.FC = () => {
           )}
 
           {/* Abas restantes: Equipe, Mochila e Notas */}
-          {activeTab === 'equipe' && (
+          {activeTab === 'equipe' && characterId && (
              <TeamTab 
                equipeIds={trainer.equipe || []}
                pcBoxes={trainer.pcBoxes}
                theme={currentTheme}
+               characterId={characterId}
                onChange={(newEquipe) => handleProfileChange('equipe', newEquipe)}
                onUpdateBoxes={(newBoxes) => handleProfileChange('pcBoxes', newBoxes)}
              />
@@ -745,17 +773,17 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'notas' && (
+          {activeTab === 'notas' && characterId && (
              <NotesTab 
-               content={trainer.anotacoes} 
-               onChange={(val) => handleProfileChange('anotacoes', val)} 
-               themeColor={currentTheme.color} 
+               characterId={characterId}
+               themeColor={currentTheme.color}
              />
           )}
 
-          {activeTab === 'computador' && (
+          {activeTab === 'computador' && characterId && (
             <PcTab 
               boxes={trainer.pcBoxes || []} 
+              characterId={characterId}
               onChange={(val) => handleProfileChange('pcBoxes', val)}
               theme={currentTheme}
             />
@@ -767,6 +795,7 @@ const App: React.FC = () => {
         {/* Footer */}
         <div className="bg-black/20 py-1.5 px-4 text-center text-[8px] font-black text-white/60 uppercase tracking-[0.5em]">ADVANCED POKEDEX OS // SESSÃO CRIPTOGRAFADA // JOGADOR: {trainer.jogador.toUpperCase()}</div>
       </div>
+      )}
 
       {hoveredTalent && (
         <div 
@@ -781,18 +810,27 @@ const App: React.FC = () => {
              <div className="text-[10px] italic leading-tight text-center">{hoveredTalent.content}</div>
              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-900/95"></div>
           </div>
-        </div>
+      </div>
       )}
       
-      {imageToCrop && (
+      {imageToCrop && characterId && (
         <ImageCropper
           imageSrc={imageToCrop}
+          characterId={characterId}
           themeColor={currentTheme.color}
           onCancel={() => setImageToCrop(null)}
-          onCropComplete={(croppedImage) => {
-            setTrainer(prev => ({ ...prev, avatar: croppedImage }));
+          onCropComplete={(imageUrl) => {
+            setTrainer(prev => ({ ...prev, avatar: imageUrl }));
             setImageToCrop(null);
           }}
+        />
+      )}
+
+      {showTradeModal && characterId && (
+        <TradeModal
+          characterId={characterId}
+          themeColor={currentTheme.color}
+          onClose={() => setShowTradeModal(false)}
         />
       )}
     </div>
