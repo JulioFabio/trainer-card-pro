@@ -13,9 +13,10 @@ package-lock.json
 
 # Build outputs
 dist
-dist-ssr
+.next
 build
 *.local
+next-env.d.ts
 
 # Environment variables (sensitive data)
 .env

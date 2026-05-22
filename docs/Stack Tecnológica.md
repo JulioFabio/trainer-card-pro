@@ -6,12 +6,15 @@
 
 ## 🛠️ Núcleo Tecnológico
 
-O aplicativo é desenvolvido como uma **Single Page Application (SPA)** moderna, rápida e altamente otimizada:
+O aplicativo é desenvolvido como uma aplicação **Next.js (App Router)** moderna, rápida e altamente otimizada, preparada para expansão futura com backend e banco de dados:
 
 1. **React 19 (v19.2.3)**: Biblioteca de UI robusta focada em componentes reutilizáveis, gerenciamento de estado local reativo e hooks avançados (`useMemo`, `useCallback`, `useEffect`).
 2. **TypeScript (~v5.8.2)**: Fornece tipagem estática e segura para todo o fluxo de dados do personagem e dos Pokémon (veja [[Types]]).
 3. **Tailwind CSS (v3.4.1)**: Framework CSS utilitário para estilização rápida, responsiva e moderna, integrando facilidades como gradientes complexos e efeitos hologramas (veja [[Estilos]]).
-4. **Vite (v6.2.0)**: Ferramenta de build ultra-rápida de próxima geração que substitui o antigo webpack, provendo Hot Module Replacement (HMR) quase instantâneo em desenvolvimento e build de produção altamente otimizado por Rollup.
+4. **Next.js 15 (v15.5.18)**: Framework full-stack React com App Router, Server Components, e infraestrutura para futuro backend. Substitui o Vite como sistema de build e dev server, provendo Hot Module Replacement (HMR), code splitting automático e otimizações de produção.
+
+> [!NOTE]
+> **Migração Vite → Next.js (Fase 0.1)**: O projeto foi migrado do Vite (SPA pura) para o Next.js (App Router) em Maio/2026. Nenhuma regra de negócio foi alterada — apenas a infraestrutura de build, roteamento e ponto de entrada. Todos os componentes usam a diretiva `"use client"` pois dependem de `localStorage`, `useState` e `useEffect`.
 
 ---
 
@@ -21,6 +24,7 @@ As bibliotecas complementares instaladas no projeto resolvem demandas específic
 
 | Pacote | Versão | Função Principal | Referência |
 |---|---|---|---|
+| **`next`** | `^15.3.0` | Framework React full-stack com App Router e otimizações de build | [[Stack Tecnológica]] |
 | **`react-easy-crop`** | `^5.5.6` | Recortador de imagem interativo quadrado em Canvas para fotos e avatares | [[ImageCropper]] |
 | **`react-markdown`** | `^10.1.0` | Converte texto puro em elementos React estruturados com segurança | [[NotesTab]] |
 | **`remark-gfm`** | `^4.0.1` | Adiciona tabelas, links e checklists ao interpretador Markdown | [[NotesTab]] |
@@ -30,13 +34,23 @@ As bibliotecas complementares instaladas no projeto resolvem demandas específic
 
 ## ⚙️ Configurações de Compilação e Build
 
-### 1. Vite (`vite.config.ts`)
-- **Porta**: Configurado estritamente para rodar localmente na porta `3000` (`host: 0.0.0.0` para permitir acesso por dispositivos móveis na mesma rede local).
-- **Aliases**: Mapeamento do caractere `@` para o diretório raiz do projeto para simplificar importações de arquivos.
+### 1. Next.js (`next.config.ts`)
+- **Porta**: Configurado para rodar localmente na porta `3000` (via script `next dev -p 3000`).
+- **reactStrictMode**: Habilitado para detectar problemas durante o desenvolvimento.
 
-### 2. Tailwind (`tailwind.config.js`)
-- **Varredura**: Configurado para ler arquivos HTML na raiz e recursivamente vasculhar todos os arquivos de extensão `.js`, `.ts`, `.jsx` e `.tsx` sob a pasta `src` e subdiretórios para purgar CSS não utilizado na build final.
+### 2. TypeScript (`tsconfig.json`)
+- **JSX**: `preserve` — o Next.js gerencia a compilação JSX internamente.
+- **Plugin Next**: Ativado para type-checking de rotas e layouts do App Router.
+- **Paths**: Mapeamento do caractere `@` para o diretório raiz do projeto (`"@/*": ["./*"]`).
+
+### 3. Tailwind (`tailwind.config.ts`)
+- **Varredura**: Configurado para ler arquivos nos diretórios `app/`, `components/`, `src/` e raiz do projeto para purgar CSS não utilizado na build final.
 - **Plugins**: Injeta `@tailwindcss/typography` como dependência direta do sistema de compilação.
+
+### 4. App Router — Estrutura de Entrada
+- **`app/layout.tsx`**: Layout raiz que define `<html>`, `<head>` (Font Awesome CDN), `<body>` e importa o CSS global.
+- **`app/page.tsx`**: Página raiz com diretiva `"use client"` que renderiza o componente `App` principal.
+- **`App.tsx`**: Componente-mãe da ficha (permanece na raiz do projeto), marcado como `"use client"`.
 
 ---
 
@@ -52,12 +66,18 @@ npm run dev
 Acesse no navegador através de: `http://localhost:3000`.
 
 ### Build de Produção
-Para compilar e otimizar todo o código TypeScript e CSS em arquivos estáticos minificados sob a pasta `dist/` pronta para deploy:
+Para compilar e otimizar todo o código TypeScript e CSS em arquivos estáticos otimizados sob a pasta `.next/` pronta para deploy:
 ```bash
 npm run build
+```
+
+### Preview de Produção
+Para servir localmente o build de produção:
+```bash
+npm run start
 ```
 
 ---
 
 ## 🏷️ Tags
-#tecnologia #react #vite #typescript #tailwind #configuracoes #build
+#tecnologia #react #nextjs #typescript #tailwind #configuracoes #build

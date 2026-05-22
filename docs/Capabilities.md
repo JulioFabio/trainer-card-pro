@@ -53,15 +53,15 @@ Mapeia o nível cognitivo do Pokémon (1 a 7) para rótulos qualitativos de cogn
 export const INTELLIGENCE_CAPABILITY_DESCRIPTIONS: Record<number, string>
 ```
 
-| Nível | Categoria de Inteligência | Descrição no RPG |
-|---|---|---|
-| **1** | Vegetal | Reações puramente automáticas ou instintivas extremas |
-| **2** | Animal | Inteligência típica de um animal selvagem comum |
-| **3** | Animal Inteligente | Capaz de entender comandos complexos e táticas de matilha |
-| **4** | Deficiente | Limiar de inteligência humana rudimentar, necessita de auxílio |
-| **5** | Humano | Nível cognitivo de um ser humano adulto saudável médio |
-| **6** | Superior | Inteligência altamente avançada, raciocínio abstrato superior |
-| **7** | Gênio | QI astronômico, computação rápida, telepatia ou hiper-raciocínio |
+| Nível | Categoria de Inteligência | Descrição no RPG                                                 |
+| ----- | ------------------------- | ---------------------------------------------------------------- |
+| **1** | Vegetal                   | Reações puramente automáticas ou instintivas extremas            |
+| **2** | Animal                    | Inteligência típica de um animal selvagem comum                  |
+| **3** | Animal Inteligente        | Capaz de entender comandos complexos e táticas de matilha        |
+| **4** | Deficiente                | Limiar de inteligência humana rudimentar, necessita de auxílio   |
+| **5** | Humano                    | Nível cognitivo de um ser humano adulto saudável médio           |
+| **6** | Superior                  | Inteligência altamente avançada, raciocínio abstrato superior    |
+| **7** | Gênio                     | QI astronômico, computação rápida, telepatia ou hiper-raciocínio |
 
 ---
 
