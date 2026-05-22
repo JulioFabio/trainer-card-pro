@@ -58,3 +58,16 @@ temp_diff_utf8.txt
 .vscode/settings.json
 .vscode/launch.json
 .vscode/tasks.json
+
+/src/generated/prisma
+
+# SQLite database
+dev.db
+dev.db-journal
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+# Uploaded media (local storage)
+public/uploads/
+

@@ -10,6 +10,7 @@ interface PokemonCreationSheetProps {
   theme: PokedexTheme;
   onSave: (pokemon: StoredPokemon) => void;
   onCancel: () => void;
+  characterId: string;
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -57,7 +58,7 @@ const TABS = [
   { id: 'habilidades' as const,  icon: 'fa-wand-magic-sparkles',   label: 'Habilidades' },
 ];
 
-export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ initialData, theme, onSave, onCancel }) => {
+export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ initialData, theme, onSave, onCancel, characterId }) => {
   const [activeTab, setActiveTab] = useState<'stats' | 'capacidades' | 'golpes' | 'habilidades'>('stats');
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -520,9 +521,10 @@ export const PokemonCreationSheet: React.FC<PokemonCreationSheetProps> = ({ init
       </div>
 
       {/* Modal de Corte de Imagem */}
-      {imageToCrop && (
+      {imageToCrop && characterId && (
         <ImageCropper
           imageSrc={imageToCrop}
+          characterId={characterId}
           themeColor={themeColor}
           onCancel={() => setImageToCrop(null)}
           onCropComplete={(croppedImage) => {

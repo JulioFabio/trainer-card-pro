@@ -42,6 +42,16 @@ Use esta tabela para localizar instantaneamente o arquivo de documentação e o 
 | [[SmartInput]] | [SmartInput.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/SmartInput.md) | [SmartInput.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/SmartInput.tsx) | Input de calculadora matemática inline com sanitização robusta. |
 | [[NotesTab]] | [NotesTab.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/NotesTab.md) | [NotesTab.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/NotesTab.tsx) | Notas livres em formato de diário de campanha com suporte GFM. |
 
+### 🗄️ Backend, Banco de Dados & APIs
+
+| Nota Obsidian | 📁 Arquivo de Documentação (.md) | 💻 Arquivo de Código Fonte Correspondente | Descrição Curta |
+|---|---|---|---|
+| [[\[Arquitetura\] Banco de Dados]] | [[Arquitetura] Banco de Dados.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Banco%20de%20Dados.md) | [schema.prisma](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/prisma/schema.prisma) / [prisma.ts](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/lib/prisma.ts) | Modelagem relacional da Ficha, Pokémons, Itens, Notas e Trocas com SQLite e Prisma. |
+| [[\[Rotas\] API da Ficha]] | [[Rotas] API da Ficha.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BRotas%5D%20API%20da%20Ficha.md) | [api/character](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/character/route.ts) / [api/pokemon](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/pokemon/route.ts) / [api/item](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/item/route.ts) / [api/note](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/note/route.ts) | Endpoints CRUD para persistência de dados de personagens, pokémons, inventário e diário. |
+| [[\[Rotas\] Upload de Arquivos]] | [[Rotas] Upload de Arquivos.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BRotas%5D%20Upload%20de%20Arquivos.md) | [api/upload](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/upload/route.ts) | Upload físico de imagens de avatar e Pokémons em multipart/form-data com salvamento em disco. |
+| [[\[Sistemas\] Sistema de Trocas]] | [[Sistemas] Sistema de Trocas.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BSistemas%5D%20Sistema%20de%20Trocas.md) | [api/trade](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/trade/route.ts) / [TradeModal.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/TradeModal.tsx) | Mecânica assíncrona de link cable para solicitação e aceitação de trocas de itens e pokémons. |
+| [[vault-architect]] | [SKILL.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/skills/vault-architect/SKILL.md) | — | Diretrizes operacionais para sincronização de documentação viva integrada ao Obsidian Vault. |
+
 ---
 
 ## 🧭 Fluxo de Edição / Modus Operandi (Para o Assistente de IA)
@@ -56,5 +66,13 @@ Ao receber solicitações de alteração de código, siga estritamente estas eta
 
 ---
 
+## 🕒 Histórico de Atividades
+
+| Data | Hora | Arquivos Modificados | Descrição da Atividade |
+|---|---|---|---|
+| 2026-05-22 | 17:08 | [_VaultMap.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/_VaultMap.md) / [SKILL.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/skills/vault-architect/SKILL.md) | Criação da skill `vault-architect` e indexação mestre no mapa do Obsidian Vault. |
+
+---
+
 ## 🏷️ Tags
-#mapa #vault #obsidian #index #caminhos #performance
+#mapa #vault #obsidian #index #caminhos #performance #skills

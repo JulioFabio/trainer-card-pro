@@ -3,14 +3,68 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface NotesTabProps {
-  content: string;
-  onChange: (value: string) => void;
+  characterId: string;
   themeColor: string;
 }
 
-export const NotesTab: React.FC<NotesTabProps> = ({ content, onChange, themeColor }) => {
+export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) => {
   const [isPreview, setIsPreview] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [noteId, setNoteId] = useState<string | null>(null);
+  const [title, setTitle] = useState('Diário de Jornada');
+  const [content, setContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Busca inicial
+  React.useEffect(() => {
+    if (!characterId) return;
+    const fetchNote = async () => {
+      try {
+        const res = await fetch(`/api/character?id=${characterId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notes && data.notes.length > 0) {
+            setNoteId(data.notes[0].id);
+            setTitle(data.notes[0].title);
+            setContent(data.notes[0].content);
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao buscar notas:', e);
+      }
+    };
+    fetchNote();
+  }, [characterId]);
+
+  // Auto-save com debounce (simplificado usando setTimeout)
+  React.useEffect(() => {
+    if (!characterId) return;
+    const timer = setTimeout(async () => {
+      setIsSaving(true);
+      try {
+        if (noteId) {
+          await fetch('/api/note', {
+            method: 'PUT',
+            body: JSON.stringify({ id: noteId, title, content })
+          });
+        } else {
+          const res = await fetch('/api/note', {
+            method: 'POST',
+            body: JSON.stringify({ characterId, title, content })
+          });
+          if (res.ok) {
+            const newNote = await res.json();
+            setNoteId(newNote.id);
+          }
+        }
+      } catch (e) {
+        console.error('Erro no auto-save da nota:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [content, title, characterId, noteId]);
 
   return (
     <div className="bg-white rounded-[2.5rem] shadow-xl border-2 border-black p-4 sm:p-8 h-full flex flex-col relative">
@@ -126,7 +180,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({ content, onChange, themeColo
         {!isPreview ? (
           <textarea
             value={content}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
             className="w-full h-full bg-transparent font-serif italic text-zinc-800 outline-none resize-none leading-relaxed text-xl custom-scrollbar p-2"
             placeholder="Escreva as crônicas da sua jornada aqui... (Clique na ? para ver como formatar)"
           />

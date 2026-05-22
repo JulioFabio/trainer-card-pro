@@ -3,12 +3,13 @@ import Cropper from 'react-easy-crop';
 
 interface ImageCropperProps {
   imageSrc: string;
-  onCropComplete: (croppedImageBase64: string) => void;
+  characterId: string;
+  onCropComplete: (imageUrl: string) => void;
   onCancel: () => void;
   themeColor?: string;
 }
 
-const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> => {
+const getCroppedImgBlob = async (imageSrc: string, pixelCrop: any): Promise<Blob> => {
   return new Promise((resolve) => {
     const image = new Image();
     image.src = imageSrc;
@@ -29,24 +30,47 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<string> 
         pixelCrop.width,
         pixelCrop.height
       );
-      resolve(canvas.toDataURL('image/png'));
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+      }, 'image/png');
     };
   });
 };
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComplete, onCancel, themeColor = '#22d3ee' }) => {
+export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, characterId, onCropComplete, onCancel, themeColor = '#22d3ee' }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const onCropCompleteHandler = useCallback((_croppedArea: any, currentCroppedAreaPixels: any) => {
     setCroppedAreaPixels(currentCroppedAreaPixels);
   }, []);
 
   const handleConfirm = async () => {
-    if (croppedAreaPixels) {
-      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-      onCropComplete(croppedImage);
+    if (croppedAreaPixels && !isUploading) {
+      try {
+        setIsUploading(true);
+        const croppedBlob = await getCroppedImgBlob(imageSrc, croppedAreaPixels);
+        
+        const formData = new FormData();
+        formData.append('file', croppedBlob, 'avatar.png');
+        formData.append('characterId', characterId);
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Falha no upload');
+        const data = await response.json();
+        onCropComplete(data.url);
+      } catch (error) {
+        console.error('Erro no upload:', error);
+        alert('Erro ao enviar imagem.');
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -63,9 +87,10 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, onCropComp
           >Cancelar</button>
           <button 
             onClick={handleConfirm}
-            className="text-white px-8 py-2.5 rounded-2xl font-black uppercase text-[10px] shadow-[0_4px_15px_rgba(0,0,0,0.3)] transition-transform hover:scale-105 inline-flex items-center gap-1"
+            disabled={isUploading}
+            className={`text-white px-8 py-2.5 rounded-2xl font-black uppercase text-[10px] shadow-[0_4px_15px_rgba(0,0,0,0.3)] transition-transform ${isUploading ? 'opacity-50' : 'hover:scale-105'} inline-flex items-center gap-1`}
             style={{ backgroundColor: themeColor }}
-          ><i className="fa-solid fa-check" /> Confirmar</button>
+          ><i className="fa-solid fa-check" /> {isUploading ? 'Salvando...' : 'Confirmar'}</button>
         </div>
       </div>
       <div className="relative flex-1 bg-zinc-900 rounded-[2rem] overflow-hidden border-4 shadow-2xl" style={{ borderColor: themeColor }}>
