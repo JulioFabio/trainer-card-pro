@@ -71,8 +71,10 @@ Ao receber solicitações de alteração de código, siga estritamente estas eta
 | Data | Hora | Arquivos Modificados | Descrição da Atividade |
 |---|---|---|---|
 | 2026-05-22 | 17:08 | [_VaultMap.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/_VaultMap.md) / [SKILL.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/skills/vault-architect/SKILL.md) | Criação da skill `vault-architect` e indexação mestre no mapa do Obsidian Vault. |
+| 2026-05-23 | 01:52 | [Stack Tecnológica.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/Stack%20Tecnol%C3%B3gica.md) / [[Arquitetura] Banco de Dados.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Banco%20de%20Dados.md) / [Sistema de Dados.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/Sistema%20de%20Dados.md) / [[Rotas] API da Ficha.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BRotas%5D%20API%20da%20Ficha.md) / [App.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/App.md) / [_VaultMap.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/_VaultMap.md) | Atualização completa da documentação viva do projeto: migração para banco relacional, atualizações do Prisma 7 / better-sqlite3, segurança de endpoints (upsert de User e try-catch de JSON), novo layout de Pokédex em tela inteira e remoção de botões obsoletos. |
 
 ---
 
 ## 🏷️ Tags
-#mapa #vault #obsidian #index #caminhos #performance #skills
+#mapa #vault #obsidian #index #caminhos #performance #skills #documentacao #relacional #sincronizacao
+

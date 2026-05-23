@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET: Lista todas as trocas pendentes envolvendo o personagem
 export async function GET(request: NextRequest) {
@@ -31,12 +31,20 @@ export async function GET(request: NextRequest) {
     
     const charMap = Object.fromEntries(characters.map(c => [c.id, c]));
 
-    const enrichedTrades = trades.map(t => ({
-      ...t,
-      sender: charMap[t.senderId],
-      receiver: charMap[t.receiverId],
-      tradeData: JSON.parse(t.tradeData)
-    }));
+    const enrichedTrades = trades.map(t => {
+      let parsedTradeData = {};
+      try {
+        parsedTradeData = JSON.parse(t.tradeData || '{}');
+      } catch (e) {
+        console.error('GET /api/trade JSON parse error for tradeData:', e);
+      }
+      return {
+        ...t,
+        sender: charMap[t.senderId],
+        receiver: charMap[t.receiverId],
+        tradeData: parsedTradeData
+      };
+    });
 
     return NextResponse.json(enrichedTrades);
   } catch (error) {

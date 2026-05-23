@@ -228,64 +228,7 @@ const App: React.FC = () => {
     if (e.target) e.target.value = '';
   };
 
-  const exportData = async () => {
-    const dataStr = JSON.stringify(trainer, null, 2);
-    const fileName = `ficha_${trainer.nomePersonagem.toLowerCase().replace(/\s/g, '_') || 'treinador'}.json`;
 
-    // Método 1: File System Access API (Chrome 86+) — abre "Salvar Como" nativo
-    if ('showSaveFilePicker' in window) {
-      try {
-        const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: fileName,
-          types: [{ description: 'Arquivo JSON', accept: { 'application/json': ['.json'] } }],
-        });
-        const writable = await fileHandle.createWritable();
-        await writable.write(dataStr);
-        await writable.close();
-        return;
-      } catch (err: any) {
-        if (err.name === 'AbortError') return; // Usuário cancelou
-      }
-    }
-
-    // Fallback: blob URL
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 150);
-  };
-
-  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        setTrainer({ ...INITIAL_TRAINER_DATA, ...json });
-        alert("Ficha importada com sucesso!");
-      } catch {
-        alert("Erro no arquivo JSON.");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const resetTrainer = () => {
-    if (confirm("Deseja resetar a ficha? Todos os dados atuais serão perdidos.")) {
-      setTrainer(INITIAL_TRAINER_DATA);
-      // localStorage.removeItem(STORAGE_KEY);
-      alert("Ficha resetada! O backend salvará este novo estado em branco automaticamente.");
-    }
-  };
 
   const addItem = () => {
     if (!newItemName.trim()) return;
@@ -358,14 +301,14 @@ const App: React.FC = () => {
   } as React.CSSProperties;
 
   return (
-    <div style={rootStyle} className="min-h-screen bg-[#0f172a] flex items-center justify-center p-2 sm:p-6 font-sans overflow-hidden">
+    <div style={rootStyle} className="min-h-screen h-screen bg-[#0f172a] flex items-center justify-center p-[20px] font-sans overflow-hidden">
       {isInitializing ? (
         <div className="flex flex-col items-center gap-4 animate-pulse">
            <div className="w-16 h-16 rounded-full bg-cyan-400 border-4 border-white shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
            <span className="text-white font-black uppercase tracking-widest text-sm">Carregando Banco de Dados...</span>
         </div>
       ) : (
-      <div className={`${currentTheme.main} w-full max-w-7xl h-[95vh] rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
+      <div className={`${currentTheme.main} w-full h-full rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
         
         {/* Header Superior */}
         <div className="bg-black/30 p-4 flex items-center justify-between border-b border-white/10 dark-spin-buttons">
@@ -394,16 +337,7 @@ const App: React.FC = () => {
             <button onClick={() => setShowTradeModal(true)} title="Sistema de Trocas (Link Cable)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-emerald-400 transition-all">
               <i className="fa-solid fa-right-left text-[13px]" />
             </button>
-            <button onClick={exportData} title="Exportar Ficha (.json)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-white/30 transition-all">
-              <i className="fa-solid fa-file-export text-[13px]" />
-            </button>
-            <label title="Importar Ficha (.json)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-white/30 transition-all cursor-pointer">
-              <i className="fa-solid fa-file-import text-[13px]" />
-              <input type="file" accept=".json" onChange={importData} className="hidden" />
-            </label>
-            <button onClick={resetTrainer} title="Resetar Ficha" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-rose-400 hover:bg-black/50 hover:border-rose-400/50 transition-all">
-              <i className="fa-solid fa-rotate-left text-[13px]" />
-            </button>
+
           </div>
         </div>
 

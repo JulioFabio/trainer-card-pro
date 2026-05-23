@@ -1,6 +1,13 @@
+---
+tags: [documentacao-viva, projeto, arquitetura, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-05-23
+autor: "Antigravity"
+---
+
 # 🗄️ Arquitetura de Banco de Dados
 
-> Especificação da estrutura de dados relacionais e modelo de persistência do [[Trainer Card Pro]], implementada com SQLite e Prisma ORM (Fase 1).
+> Especificação da estrutura de dados relacionais e modelo de persistência do [[Trainer Card Pro]], implementada com SQLite, Prisma ORM 7 e `better-sqlite3` (Fase 1).
 
 ---
 
@@ -10,9 +17,9 @@
    - Um **Usuário** (`User`) representa a conta física do jogador ou mestre (GM).
    - Um **Personagem** (`Character`) representa a entidade in-game (Ficha). Um único usuário pode ter vários personagens (ex: jogar em duas mesas diferentes).
 2. **Dados Flexíveis (JSON)**:
-   - Para evitar tabelas gigantes com centenas de colunas esparsas para cada atributo, perícia, talento e HP da ficha, foi adotada a estratégia de "Campos Flexíveis" em JSON (como `sheetData` e `pokemonData`). O Prisma armazena isso como String no SQLite, e o Backend converte para JSON nas requisições da API.
-3. **Escalabilidade (Preparado para PostgreSQL/MySQL)**:
-   - Toda a estrutura foi definida de maneira agnóstica via Prisma. Migrar do SQLite para um banco em nuvem posteriormente exige apenas trocar o *provider* no Prisma.
+   - Para evitar tabelas gigantes com centenas de colunas esparsas para cada atributo, perícia, talento e HP da ficha, foi adotada a estratégia de "Campos Flexíveis" em JSON (como `sheetData` e `pokemonData`). O Prisma armazena isso como String no SQLite, e o Backend converte para JSON nas requisições da API de forma segura.
+3. **Driver Adapter de Alta Performance (Prisma 7)**:
+   - Devido às novas diretrizes do Prisma 7 de remoção dos motores nativos Rust em favor de WASM e adapters leves, o banco SQLite é acessado através do pacote `better-sqlite3` combinado com o `@prisma/adapter-better-sqlite3`. Isso garante excelente performance no desenvolvimento local no Windows.
 
 ---
 
@@ -78,6 +85,33 @@ erDiagram
 
 ---
 
+## 🗃️ Inicialização do PrismaClient (`lib/prisma.ts`)
+
+Para se adequar à nova arquitetura do Prisma 7, o cliente Prisma é inicializado utilizando o adapter do `better-sqlite3` para conexões locais:
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import Database from 'better-sqlite3';
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ||
+  (() => {
+    // Abre a conexão SQLite usando o driver síncrono ultra-rápido better-sqlite3
+    const db = new Database('prisma/dev.db');
+    // Cria o driver adapter exigido pelo Prisma 7
+    const adapter = new PrismaBetterSqlite3(db);
+    // Inicializa o cliente Prisma usando o adapter
+    return new PrismaClient({ adapter });
+  })();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+```
+
+---
+
 ## 🗃️ Modelos Base
 
 ### User
@@ -126,3 +160,8 @@ Controla negociações p2p (trocas de itens ou pokémons entre dois Personagens)
 - **senderId** (`String`): O ID do Character que propôs a troca.
 - **receiverId** (`String`): O ID do Character destino.
 - **status** (`String`): Enum simplificado (`PENDING`, `ACCEPTED`, `REJECTED`).
+
+---
+
+## 🏷️ Tags
+#dados #arquitetura #prisma #sqlite #better-sqlite3 #db #modelagem #relacionamento

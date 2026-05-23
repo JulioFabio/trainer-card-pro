@@ -248,10 +248,10 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterI
                      </h3>
 
                      {(!getPokemonAt(selectedSlot) && !isCreating) ? (
-                         <div className="flex-1 flex flex-col items-center justify-center text-zinc-300">
-                             <span className="text-4xl font-black opacity-20 mb-2">{selectedSlot + 1}</span>
-                             <span className="text-[10px] uppercase font-bold">Slot Disponível</span>
-                         </div>
+                          <div className="flex-1 flex flex-col items-center justify-center text-zinc-300">
+                              <span className="text-4xl font-black opacity-20 mb-2">{selectedSlot + 1}</span>
+                              <span className="text-[10px] uppercase font-bold">Slot Disponível</span>
+                          </div>
                      ) : (
                         <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
                             <div>

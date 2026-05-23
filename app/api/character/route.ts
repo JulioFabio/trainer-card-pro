@@ -23,14 +23,29 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Personagem não encontrado' }, { status: 404 });
     }
 
-    // Fazendo parse dos campos JSON para objetos nativos antes de enviar ao client
+    // Fazendo parse dos campos JSON para objetos nativos antes de enviar ao client com segurança
+    let parsedSheet = {};
+    try {
+      parsedSheet = JSON.parse(character.sheetData || '{}');
+    } catch (e) {
+      console.error('GET /api/character JSON parse error for sheetData:', e);
+    }
+
     const parsedCharacter = {
       ...character,
-      sheetData: JSON.parse(character.sheetData),
-      pokemons: character.pokemons.map(p => ({
-        ...p,
-        pokemonData: JSON.parse(p.pokemonData)
-      }))
+      sheetData: parsedSheet,
+      pokemons: character.pokemons.map(p => {
+        let parsedPkmnData = {};
+        try {
+          parsedPkmnData = JSON.parse(p.pokemonData || '{}');
+        } catch (e) {
+          console.error('GET /api/character JSON parse error for pokemonData:', e, p.id);
+        }
+        return {
+          ...p,
+          pokemonData: parsedPkmnData
+        };
+      })
     };
 
     return NextResponse.json(parsedCharacter);
@@ -48,6 +63,17 @@ export async function POST(request: Request) {
     if (!name || !userId) {
       return NextResponse.json({ error: 'Nome e userId são obrigatórios' }, { status: 400 });
     }
+
+    // Garante que o User com o userId fornecido exista para não violar a chave estrangeira
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
+        id: userId,
+        username: `treinador_${userId}`,
+        role: 'PLAYER',
+      },
+    });
 
     const newCharacter = await prisma.character.create({
       data: {
