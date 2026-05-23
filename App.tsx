@@ -59,9 +59,11 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<Tab>('treinador');
   const [currentTheme, setCurrentTheme] = useState(() => {
-    const saved = localStorage.getItem('trainer_card_pro_theme');
-    if (saved) {
-      return POKEDEX_THEMES.find(t => t.id === saved) || POKEDEX_THEMES[0];
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('trainer_card_pro_theme');
+      if (saved) {
+        return POKEDEX_THEMES.find(t => t.id === saved) || POKEDEX_THEMES[0];
+      }
     }
     return POKEDEX_THEMES[0];
   });
