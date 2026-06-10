@@ -1,7 +1,7 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-05-23
+ultima_atualizacao: 2026-06-04
 autor: "Antigravity"
 ---
 
@@ -15,9 +15,9 @@ autor: "Antigravity"
 ## Visão Geral
 
 O `App` é o **componente-mãe** que orquestra todo o estado, sincronização assíncrona com a API e navegação da ficha. Ele renderiza:
-1. **Header** com tema seletor e contadores do personagem (sem botões locais redundantes).
-2. **Abas** de navegação (6 abas da Pokédex).
-3. **Conteúdo** condicional por aba ativa.
+1. **Header** com tema seletor e contadores do personagem.
+2. **Abas fixas** de navegação (6 abas da Pokédex) + **Abas dinâmicas** de fichas de Pokémon.
+3. **Conteúdo** condicional por aba ativa (incluindo fichas de Pokémon renderizadas inline).
 4. **Footer** temático do SO da Pokédex.
 5. **Modais** flutuantes (tooltip de talentos, [[ImageCropper]] e Trocas).
 
@@ -37,7 +37,8 @@ Visando maximizar o aproveitamento de tela e proporcionar uma experiência premi
 | Variável | Tipo | Descrição |
 |---|---|---|
 | `trainer` | [[Types#TrainerData]] | Estado completo da ficha vindo da API SQLite |
-| `activeTab` | `Tab` | Aba ativa (`'treinador' \| 'combate' \| 'equipe' \| 'mochila' \| 'notas' \| 'computador'`) |
+| `activeTab` | `string` | Aba ativa — aceita IDs fixos (`'treinador'`, `'combate'`, etc.) e dinâmicos (`'pokemon-team-<id>'`, `'pokemon-pc-<box>-<slot>'`) |
+| `pokemonTabs` | `PokemonTab[]` | Array de metadados das abas dinâmicas de Pokémon abertas |
 | `currentTheme` | [[Constants#PokedexTheme]] | Tema de cores atual |
 | `newItemName` | `string` | Nome do novo item (inventário) |
 | `newItemDesc` | `string` | Descrição do novo item |
@@ -47,6 +48,23 @@ Visando maximizar o aproveitamento de tela e proporcionar uma experiência premi
 | `hoveredTalent` | `{ content, x, y } \| null` | Tooltip de talento |
 | `showOnlyTrained` | `boolean` | Filtro de perícias treinadas |
 | `imageToCrop` | `string \| null` | Imagem base64 para recorte |
+
+### Interface PokemonTab
+
+```typescript
+interface PokemonTab {
+  id: string;          // 'pokemon-team-<id>' ou 'pokemon-pc-<boxIndex>-<slot>'
+  label: string;       // Nome exibido na aba
+  type: 'ephemeral' | 'persistent';
+  origin: 'pc' | 'team';
+  pokemonId?: string;  // Se origin === 'team'
+  boxIndex?: number;   // Se origin === 'pc'
+  slot?: number;       // Se origin === 'pc'
+}
+```
+
+- **Efêmeras (PC)**: Fecham automaticamente ao navegar para outra aba.
+- **Persistentes (Equipe)**: Permanecem na barra até serem fechadas manualmente pelo botão `[X]`.
 
 ---
 
@@ -89,6 +107,12 @@ Visando maximizar o aproveitamento de tela e proporcionar uma experiência premi
 | `handleSkillChange` | Altera rank ou bônus de uma perícia |
 | `calculateSkillTotal` | Calcula total da perícia (Trained/Expert) |
 | `calculateModifier` | `floor((valor - 10) / 2)` |
+| `changeTab` | Troca a aba ativa e fecha abas efêmeras ao sair |
+| `openPokemonTab` | Cria ou foca uma aba dinâmica de Pokémon (evita duplicatas) |
+| `closePokemonTab` | Fecha manualmente uma aba dinâmica e redireciona |
+| `resolvePokemonFromTab` | Localiza o `StoredPokemon` a partir dos metadados de uma `PokemonTab` |
+| `handlePokemonTabSave` | Salva alterações da ficha: PC fecha aba (efêmera), Team mantém aberta (persistente) |
+| `handlePcBoxesChangeWithGC` | Atualiza boxes e faz garbage collection de abas que referenciam Pokémon deletados |
 
 ---
 
@@ -134,6 +158,7 @@ graph TD
 | [[NotesTab]] | Notas | Editor de anotações diárias |
 | [[PcTab]] | PC | Sistema de caixas do Computador |
 | [[TeamTab]] | Equipe | Pokémon ativos na party |
+| [[PokemonCreationSheet]] | Abas Dinâmicas | Ficha completa de Pokémon (renderizada inline) |
 | [[ImageCropper]] | Treinador | Crop de imagem de avatar e pokémon |
 
 ---
@@ -147,9 +172,11 @@ graph TD
 │  ┌────────────────────────────────────────┐  │
 │  │ 🧑 Treinador │ ⚔️ Combate │ 👥 Equipe │  │
 │  │ 🎒 Mochila  │ 💻 PC     │ 📝 Notas  │  │
+│  │ ── divisor ── │ 🐾 Sparky │ ⚫ Novo   │  │
 │  ├────────────────────────────────────────┤  │
 │  │                                        │  │
 │  │         CONTEÚDO DA ABA ATIVA          │  │
+│  │   (incluindo fichas inline de Pokémon) │  │
 │  │                                        │  │
 │  └────────────────────────────────────────┘  │
 ├──────────────────────────────────────────────┤

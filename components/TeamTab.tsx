@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PCBox, StoredPokemon } from '../types';
 import { PokedexTheme } from '../constants';
-import { PokemonCreationSheet } from './PokemonCreationSheet';
 
 interface TeamTabProps {
   equipeIds: string[];
@@ -10,11 +9,18 @@ interface TeamTabProps {
   onChange: (newEquipeIds: string[]) => void;
   onUpdateBoxes: (newBoxes: PCBox[]) => void;
   characterId: string;
+  openPokemonTab: (params: {
+    origin: 'pc' | 'team';
+    type: 'ephemeral' | 'persistent';
+    label: string;
+    pokemonId?: string;
+    boxIndex?: number;
+    slot?: number;
+  }) => void;
 }
 
-export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onChange, onUpdateBoxes, characterId }) => {
+export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onChange, onUpdateBoxes, characterId, openPokemonTab }) => {
   const [isSelectingForSlot, setIsSelectingForSlot] = useState<number | null>(null);
-  const [editingPokemon, setEditingPokemon] = useState<StoredPokemon | null>(null);
 
   const allPokemons = useMemo(() => pcBoxes.flatMap(b => b.pokemons.map(p => ({ ...p, boxId: b.id }))), [pcBoxes]);
 
@@ -43,24 +49,6 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
     onChange(newEquipe);
   };
 
-  const handleSavePokemon = (updatedPokemon: StoredPokemon) => {
-    const newBoxes = [...pcBoxes];
-    let found = false;
-    for (const box of newBoxes) {
-      const idx = box.pokemons.findIndex(p => p.id === updatedPokemon.id);
-      if (idx !== -1) {
-        box.pokemons[idx] = updatedPokemon;
-        found = true;
-        break;
-      }
-    }
-    
-    if (found) {
-      onUpdateBoxes(newBoxes);
-    }
-    setEditingPokemon(null);
-  };
-
   return (
     <div className="relative h-full flex flex-col animate-in fade-in">
         <h2 className="text-xl font-black text-zinc-900 uppercase mb-6 flex items-center gap-2 px-4 shadow-sm border-b-2 border-zinc-200/50 pb-2">
@@ -73,7 +61,12 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
                 const pkmn = pokemonId ? allPokemons.find(p => p.id === pokemonId) : null;
                 if (pkmn) {
                     return (
-                        <div key={`slot-${i}-${pkmn.id}`} onClick={() => setEditingPokemon(pkmn)} className="bg-white p-5 rounded-[2.5rem] shadow-md border-4 border-black flex flex-col items-center group hover:scale-105 hover:z-50 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden h-[260px] justify-center duration-300">
+                        <div key={`slot-${i}-${pkmn.id}`} onClick={() => openPokemonTab({
+                          origin: 'team',
+                          type: 'persistent',
+                          pokemonId: pkmn.id,
+                          label: pkmn.name || pkmn.species || 'Equipe'
+                        })} className="bg-white p-5 rounded-[2.5rem] shadow-md border-4 border-black flex flex-col items-center group hover:scale-105 hover:z-50 hover:shadow-2xl transition-all cursor-pointer relative overflow-hidden h-[260px] justify-center duration-300">
                            <div className="absolute top-0 right-0 p-4 z-20">
                                <button onClick={(e) => handleRemoveMember(e, i)} className="w-8 h-8 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110">
                                    <i className="fa-solid fa-xmark text-sm" />
@@ -157,28 +150,6 @@ export const TeamTab: React.FC<TeamTabProps> = ({ equipeIds, pcBoxes, theme, onC
                        )}
                    </div>
                 </div>
-            </div>
-        )}
-
-        {editingPokemon && (
-            <div
-              className="fixed inset-0 z-[100] flex items-center justify-center p-2 animate-in fade-in"
-              style={{ background: `radial-gradient(ellipse 80% 40% at 50% 100%, ${theme.color}30 0%, rgba(0,0,0,0.82) 70%)` }}
-            >
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
-                style={{ background: `conic-gradient(from 270deg at 50% 100%, transparent 60deg, ${theme.color}20 90deg, transparent 120deg)`, filter: 'blur(20px)' }}
-              />
-              <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col"
-                style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)', transform: 'scale(1.13)', transformOrigin: 'center center' }}
-              >
-                <PokemonCreationSheet
-                    initialData={editingPokemon}
-                    onSave={handleSavePokemon}
-                    onCancel={() => setEditingPokemon(null)}
-                    theme={theme}
-                    characterId={characterId}
-                />
-              </div>
             </div>
         )}
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { safeFetch } from '../lib/safeFetch';
 
 interface NotesTabProps {
   characterId: string;
@@ -14,23 +15,23 @@ export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) =
   const [title, setTitle] = useState('Diário de Jornada');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Busca inicial
   React.useEffect(() => {
     if (!characterId) return;
     const fetchNote = async () => {
       try {
-        const res = await fetch(`/api/character?id=${characterId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.notes && data.notes.length > 0) {
-            setNoteId(data.notes[0].id);
-            setTitle(data.notes[0].title);
-            setContent(data.notes[0].content);
-          }
+        setSaveError(null);
+        const data = await safeFetch(`/api/character?id=${characterId}`);
+        if (data.notes && data.notes.length > 0) {
+          setNoteId(data.notes[0].id);
+          setTitle(data.notes[0].title);
+          setContent(data.notes[0].content);
         }
       } catch (e) {
         console.error('Erro ao buscar notas:', e);
+        setSaveError('Erro ao carregar diário.');
       }
     };
     fetchNote();
@@ -41,24 +42,25 @@ export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) =
     if (!characterId) return;
     const timer = setTimeout(async () => {
       setIsSaving(true);
+      setSaveError(null);
       try {
         if (noteId) {
-          await fetch('/api/note', {
+          await safeFetch('/api/note', {
             method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: noteId, title, content })
           });
         } else {
-          const res = await fetch('/api/note', {
+          const newNote = await safeFetch('/api/note', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ characterId, title, content })
           });
-          if (res.ok) {
-            const newNote = await res.json();
-            setNoteId(newNote.id);
-          }
+          setNoteId(newNote.id);
         }
       } catch (e) {
         console.error('Erro no auto-save da nota:', e);
+        setSaveError('Erro ao salvar.');
       } finally {
         setIsSaving(false);
       }
@@ -71,6 +73,21 @@ export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) =
       <div className="flex justify-between items-center mb-4 border-b-2 border-zinc-100 pb-2">
         <h3 className="text-[10px] font-black uppercase text-zinc-800 flex items-center gap-2">
           <i className="fa-solid fa-book opacity-80" /> Notas de Jornada
+          {isSaving && (
+            <span className="text-[9px] text-zinc-400 normal-case font-normal animate-pulse flex items-center gap-1">
+              <i className="fa-solid fa-spinner animate-spin text-zinc-400" /> Salvando...
+            </span>
+          )}
+          {saveError && (
+            <span className="text-[9px] text-rose-500 normal-case font-bold flex items-center gap-1">
+              <i className="fa-solid fa-cloud-exclamation text-rose-500 animate-pulse" /> {saveError}
+            </span>
+          )}
+          {!isSaving && !saveError && noteId && (
+            <span className="text-[9px] text-emerald-500 normal-case font-normal flex items-center gap-1">
+              <i className="fa-solid fa-check text-emerald-500" /> Salvo
+            </span>
+          )}
         </h3>
         <div className="flex gap-2 items-center">
           <div className="relative">

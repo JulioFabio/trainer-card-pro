@@ -13,6 +13,8 @@ interface PcTabProps {
   boxes: PCBox[];                          // Array de 99 boxes
   onChange: (boxes: PCBox[]) => void;       // Callback para atualizar boxes
   theme: PokedexTheme;                     // Tema de cores
+  characterId: string;                     // ID do personagem
+  openPokemonTab: (params: {...}) => void;  // Abre aba dinâmica de Pokémon no App
 }
 ```
 
@@ -26,9 +28,11 @@ interface PcTabProps {
 | `selectedSlot` | `number \| null` | `null` | Slot selecionado (0–29) |
 | `isCreating` | `boolean` | `false` | Modo de criação rápida ativo |
 | `moveSource` | `{ boxIndex, slot } \| null` | `null` | Origem do Pokémon sendo movido |
-| `viewMode` | `'box' \| 'sheet'` | `'box'` | Modo de visualização (grid ou [[PokemonCreationSheet]]) |
 | `formData` | `Partial<StoredPokemon>` | defaults | Dados do formulário de criação rápida |
 | `typesInput` | `string` | `''` | Campo de texto para tipos (separados por vírgula) |
+
+> [!NOTE]
+> O antigo estado `viewMode` (`'box' | 'sheet'`) foi removido. A ficha de criação/edição agora é renderizada como uma aba dinâmica no [[App]] ao invés de um overlay local.
 
 ---
 
@@ -48,7 +52,6 @@ interface PcTabProps {
 |---|---|
 | `handleSlotClick(slot)` | Se em modo mover → executa troca/movimentação. Senão → seleciona o slot. |
 | `handleCreate()` | Cria Pokémon rápido com dados do formulário no slot selecionado. |
-| `handleSaveSheet(pkmn)` | Salva Pokémon completo (vindo do [[PokemonCreationSheet]]) no slot selecionado. |
 | `handleDelete()` | Remove Pokémon do slot (com `confirm()`). "Tem certeza que deseja liberar este Pokémon?" |
 | `handleStartMove()` | Inicia modo de movimentação: salva `moveSource` e limpa seleção. |
 
@@ -125,10 +128,11 @@ sequenceDiagram
 ### Estado: Slot Vazio Selecionado
 - Exibe número do slot
 - Texto "Slot Disponível"
-- Botão **"Criar Pokemon"** → abre [[PokemonCreationSheet]] via `setViewMode('sheet')`
+- Botão **"Criar Pokemon"** → chama `openPokemonTab({ origin: 'pc', type: 'ephemeral', boxIndex, slot, label: 'Novo Pokémon' })`
 
 ### Estado: Slot com Pokémon Selecionado
 - Exibe formulário read-only (Espécie, Nome, Nível, Gênero, Tipos)
+- Botão **"Abrir Ficha"** (cor do tema) → chama `openPokemonTab` para abrir a ficha como aba dinâmica efêmera
 - Botão **"Mover"** → inicia modo de movimentação
 - Botão **"Excluir"** → remove com confirmação
 
@@ -153,15 +157,9 @@ sequenceDiagram
 
 ---
 
-## Overlay: PokemonCreationSheet
+## Integração com Abas Dinâmicas
 
-Quando `viewMode === 'sheet'`:
-
-- **Fullscreen overlay** com gradiente radial
-- Efeito **hologram** (scanlines, glow-pulse, flicker)
-- Renderiza [[PokemonCreationSheet]] com dados existentes ou vazio
-- **Cancel** volta para `viewMode = 'box'`
-- **Save** cria/atualiza Pokémon no slot
+O antigo overlay holográfico fullscreen foi substituído pelo sistema de abas dinâmicas do [[App]]. Quando o usuário clica em "Criar Pokemon" ou "Abrir Ficha", o `PcTab` invoca `openPokemonTab()` com `origin: 'pc'` e `type: 'ephemeral'`, delegando a renderização do [[PokemonCreationSheet]] para o componente pai. A aba fecha automaticamente ao navegar para outra.
 
 ---
 
@@ -169,7 +167,8 @@ Quando `viewMode === 'sheet'`:
 
 ```mermaid
 graph LR
-    PC["PcTab"] --> PCS["PokemonCreationSheet"]
+    PC["PcTab"] -->|openPokemonTab| App["App.tsx"]
+    App --> PCS["PokemonCreationSheet"]
     PC --> Types["types.ts (PCBox, StoredPokemon)"]
     PC --> Const["constants.ts (PokedexTheme)"]
 ```
@@ -177,4 +176,4 @@ graph LR
 ---
 
 ## 🏷️ Tags
-#componente #pc #armazenamento #pokemon #boxes
+#componente #pc #armazenamento #pokemon #boxes #abas-dinamicas

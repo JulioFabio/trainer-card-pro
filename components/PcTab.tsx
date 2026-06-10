@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { PCBox, StoredPokemon } from '../types';
 import { PokedexTheme } from '../constants';
-import { PokemonCreationSheet } from './PokemonCreationSheet';
 
 interface PcTabProps {
   boxes: PCBox[];
   onChange: (boxes: PCBox[]) => void;
   theme: PokedexTheme;
   characterId: string;
+  openPokemonTab: (params: {
+    origin: 'pc' | 'team';
+    type: 'ephemeral' | 'persistent';
+    label: string;
+    pokemonId?: string;
+    boxIndex?: number;
+    slot?: number;
+  }) => void;
 }
 
-export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterId }) => {
+export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterId, openPokemonTab }) => {
   const [currentBoxIndex, setCurrentBoxIndex] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [moveSource, setMoveSource] = useState<{ boxIndex: number, slot: number } | null>(null);
-  const [viewMode, setViewMode] = useState<'box' | 'sheet'>('box');
 
   // Form State
   const [formData, setFormData] = useState<Partial<StoredPokemon>>({
@@ -152,24 +158,6 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterI
     
     onChange(newBoxes);
     setIsCreating(false);
-    setViewMode('box');
-  };
-
-  const handleSaveSheet = (pkmn: StoredPokemon) => {
-      // Integration with new sheet
-      if (selectedSlot === null) return;
-      const newBoxes = [...boxes];
-      if (!newBoxes[currentBoxIndex]) return;
-      
-      const newPkmn = { ...pkmn, id: pkmn.id || Date.now().toString(), slot: selectedSlot };
-      
-      newBoxes[currentBoxIndex] = {
-        ...newBoxes[currentBoxIndex],
-        pokemons: [...newBoxes[currentBoxIndex].pokemons.filter(p => p.slot !== selectedSlot), newPkmn]
-      };
-      
-      onChange(newBoxes);
-      setViewMode('box');
   };
 
   const handleDelete = () => {
@@ -196,30 +184,6 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterI
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full animate-in fade-in zoom-in-95 relative">
-
-      {/* OVERLAY: Creation Sheet — cobre a Pokédex inteira quando viewMode='sheet' */}
-      {viewMode === 'sheet' && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-2 animate-in fade-in"
-          style={{ background: `radial-gradient(ellipse 80% 40% at 50% 100%, ${theme.color}30 0%, rgba(0,0,0,0.82) 70%)` }}
-        >
-          {/* Feixe de luz saindo da tela */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] pointer-events-none"
-            style={{ background: `conic-gradient(from 270deg at 50% 100%, transparent 60deg, ${theme.color}20 90deg, transparent 120deg)`, filter: 'blur(20px)' }}
-          />
-          <div className="w-full max-w-7xl h-[88vh] rounded-[2.5rem] overflow-hidden relative border-2 hologram-container hologram-scanlines animate-in zoom-in-95 flex flex-col shadow-2xl"
-            style={{ background: 'linear-gradient(160deg, rgba(0,10,20,0.85) 0%, rgba(0,30,50,0.75) 100%)', backdropFilter: 'blur(8px)' }}
-          >
-            <PokemonCreationSheet
-              theme={theme}
-              characterId={characterId}
-              initialData={selectedSlot !== null ? getPokemonAt(selectedSlot) : {}}
-              onSave={handleSaveSheet}
-              onCancel={() => setViewMode('box')}
-            />
-          </div>
-        </div>
-      )}
       {/* LEFT PANEL - DETAILS / FORM */}
       <div className="w-full lg:w-1/3 flex flex-col">
         <div className="bg-white p-6 rounded-[2.5rem] border-[4px] shadow-[8px_8px_0px_rgba(0,0,0,0.1)] h-full flex flex-col relative overflow-hidden" style={{ borderColor: theme.color }}>
@@ -318,6 +282,18 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterI
                      <div className="mt-auto pt-4 border-t-2 border-zinc-100 flex flex-col gap-2">
                         {getPokemonAt(selectedSlot) ? (
                             <>
+                                <button onClick={() => {
+                                  const pkmn = getPokemonAt(selectedSlot);
+                                  openPokemonTab({
+                                    origin: 'pc',
+                                    type: 'ephemeral',
+                                    boxIndex: currentBoxIndex,
+                                    slot: selectedSlot,
+                                    label: pkmn?.name || pkmn?.species || 'Pokémon'
+                                  });
+                                }} className="w-full py-3 rounded-xl text-white font-black uppercase text-xs shadow-lg hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: theme.color }}>
+                                    <i className="fa-solid fa-id-card" /> Abrir Ficha
+                                </button>
                                 <button onClick={handleStartMove} className="w-full py-3 rounded-xl bg-orange-400 text-white font-black uppercase text-xs shadow-lg hover:scale-105 active:scale-95 transition-all">
                                     <i className="fa-solid fa-arrows-up-down-left-right" /> Mover
                                 </button>
@@ -336,7 +312,15 @@ export const PcTab: React.FC<PcTabProps> = ({ boxes, onChange, theme, characterI
                                     </button>
                                 </>
                             ) : (
-                                <button onClick={() => setViewMode('sheet')} className="w-full py-3 rounded-xl text-white font-black uppercase text-xs shadow-lg hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: theme.color }}>
+                                <button onClick={() => {
+                                  openPokemonTab({
+                                    origin: 'pc',
+                                    type: 'ephemeral',
+                                    boxIndex: currentBoxIndex,
+                                    slot: selectedSlot,
+                                    label: 'Novo Pokémon'
+                                  });
+                                }} className="w-full py-3 rounded-xl text-white font-black uppercase text-xs shadow-lg hover:scale-105 active:scale-95 transition-all" style={{ backgroundColor: theme.color }}>
                                     <i className="fa-solid fa-plus" /> Criar Pokemon
                                 </button>
                             )

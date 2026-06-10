@@ -42,6 +42,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, characterI
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const onCropCompleteHandler = useCallback((_croppedArea: any, currentCroppedAreaPixels: any) => {
     setCroppedAreaPixels(currentCroppedAreaPixels);
@@ -49,6 +50,7 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, characterI
 
   const handleConfirm = async () => {
     if (croppedAreaPixels && !isUploading) {
+      setUploadError(null);
       try {
         setIsUploading(true);
         const croppedBlob = await getCroppedImgBlob(imageSrc, croppedAreaPixels);
@@ -62,12 +64,19 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, characterI
           body: formData
         });
 
-        if (!response.ok) throw new Error('Falha no upload');
+        if (!response.ok) {
+          let msg = 'Erro no servidor durante upload.';
+          try {
+            const data = await response.json();
+            if (data && data.error) msg = data.error;
+          } catch {}
+          throw new Error(msg);
+        }
         const data = await response.json();
         onCropComplete(data.url);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Erro no upload:', error);
-        alert('Erro ao enviar imagem.');
+        setUploadError(error.message || 'Erro ao enviar imagem.');
       } finally {
         setIsUploading(false);
       }
@@ -79,6 +88,11 @@ export const ImageCropper: React.FC<ImageCropperProps> = ({ imageSrc, characterI
       <div className="flex justify-between items-center mb-6 bg-zinc-900 p-4 rounded-3xl backdrop-blur-md border shadow-xl" style={{ borderColor: `${themeColor}60`, borderBottomWidth: '4px', borderBottomColor: themeColor }}>
         <h3 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-2" style={{ color: themeColor }}>
           <i className="fa-solid fa-crop-simple text-xl" /> Ajustar Imagem
+          {uploadError && (
+            <span className="text-[9px] text-rose-500 normal-case font-bold animate-pulse flex items-center gap-1 bg-rose-500/10 px-2 py-1 rounded-full border border-rose-500/20">
+              <i className="fa-solid fa-triangle-exclamation" /> {uploadError}
+            </span>
+          )}
         </h3>
         <div className="flex gap-3">
           <button 

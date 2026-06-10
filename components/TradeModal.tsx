@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { safeFetch } from '../lib/safeFetch';
 
 interface TradeData {
   items: { id: string, name: string, quantity: number }[];
@@ -25,6 +26,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
   const [trades, setTrades] = useState<TradeRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'new'>('pending');
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   // Para criar nova troca
   const [availableCharacters, setAvailableCharacters] = useState<{id: string, name: string}[]>([]);
@@ -33,13 +35,12 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
 
   const fetchTrades = async () => {
     try {
-      const res = await fetch(`/api/trade?characterId=${characterId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setTrades(data);
-      }
-    } catch (e) {
+      setGeneralError(null);
+      const data = await safeFetch(`/api/trade?characterId=${characterId}`);
+      setTrades(data);
+    } catch (e: any) {
       console.error('Erro ao buscar trocas', e);
+      setGeneralError(e.message || 'Erro ao buscar trocas do servidor.');
     } finally {
       setIsLoading(false);
     }
@@ -48,10 +49,6 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
   // Temporário: Buscar todos os personagens para simular os jogadores disponíveis
   const fetchCharacters = async () => {
     try {
-      // Como não temos uma rota que liste todos (apenas a de buscar um específico ou a /api/character por id),
-      // vamos apenas criar um mock na UI se não tivermos, ou poderiamos criar uma rota /api/characters.
-      // Para a Fase 1, se não existir a rota listagem, o usuário pode digitar o ID, mas isso é ruim.
-      // Vamos assumir que criaremos um endpoint básico ou usar um dropdown fixo para testes.
       const mockChars = [
         { id: 'char-123', name: 'Eu Mesmo (Teste)' },
         { id: 'rival-456', name: 'Rival (Teste)' }
@@ -69,21 +66,25 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
 
   const handleRespond = async (tradeId: string, status: 'ACCEPTED' | 'REJECTED') => {
     try {
-      await fetch('/api/trade', {
+      setGeneralError(null);
+      await safeFetch('/api/trade', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: tradeId, status })
       });
       fetchTrades(); // Recarrega após atualizar
-    } catch (e) {
+    } catch (e: any) {
       console.error('Erro ao responder', e);
+      setGeneralError(`Erro ao responder troca: ${e.message}`);
     }
   };
 
   const handleCreateTrade = async () => {
     if (!selectedReceiver) return;
+    setTradeMessage('');
     try {
-      await fetch('/api/trade', {
+      setGeneralError(null);
+      await safeFetch('/api/trade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,9 +96,9 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
       setTradeMessage('Proposta enviada!');
       setActiveTab('pending');
       fetchTrades();
-    } catch (e) {
+    } catch (e: any) {
       console.error('Erro ao criar troca', e);
-      setTradeMessage('Erro ao enviar.');
+      setTradeMessage(`Erro ao enviar: ${e.message}`);
     }
   };
 
@@ -128,6 +129,12 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
 
         {/* Content */}
         <div className="p-6 bg-zinc-100 min-h-[300px] flex flex-col">
+          {generalError && (
+            <div className="mb-4 bg-rose-50 border-2 border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2">
+              <i className="fa-solid fa-triangle-exclamation text-rose-500 animate-pulse text-sm"></i>
+              <span>{generalError}</span>
+            </div>
+          )}
           {isLoading ? (
              <div className="flex-1 flex items-center justify-center">
                <span className="text-zinc-400 font-bold uppercase animate-pulse">Carregando Rede...</span>

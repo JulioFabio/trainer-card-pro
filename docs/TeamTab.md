@@ -15,6 +15,8 @@ interface TeamTabProps {
   theme: PokedexTheme;                              // Tema de cores
   onChange: (newEquipeIds: string[]) => void;        // Atualiza a equipe
   onUpdateBoxes: (newBoxes: PCBox[]) => void;       // Atualiza os boxes
+  characterId: string;                              // ID do personagem
+  openPokemonTab: (params: {...}) => void;           // Abre aba dinâmica de Pokémon no App
 }
 ```
 
@@ -25,7 +27,9 @@ interface TeamTabProps {
 | Variável | Tipo | Descrição |
 |---|---|---|
 | `isSelectingForSlot` | `number \| null` | Índice do slot sendo preenchido (abre modal de seleção) |
-| `editingPokemon` | `StoredPokemon \| null` | Pokémon sendo editado (abre [[PokemonCreationSheet]]) |
+
+> [!NOTE]
+> O antigo estado `editingPokemon` foi removido. A edição agora acontece em abas dinâmicas persistentes no [[App]].
 
 ---
 
@@ -44,7 +48,6 @@ interface TeamTabProps {
 |---|---|
 | `handleSelectPokemon(id)` | Adiciona o Pokémon ao slot em edição. Filtra entradas vazias com `.filter(Boolean)`. |
 | `handleRemoveMember(e, index)` | Remove membro da equipe por índice. Usa `stopPropagation` para não abrir edição. |
-| `handleSavePokemon(updatedPkmn)` | Atualiza o Pokémon editado em seu box original. Busca por ID em todos os boxes. |
 
 ---
 
@@ -70,7 +73,7 @@ interface TeamTabProps {
 - **Nome** em destaque (cor do tema)
 - **Tipos** como badges
 - **Botão ✕** para remover da equipe (canto superior direito)
-- **Click no card** → abre [[PokemonCreationSheet]] para edição
+- **Click no card** → chama `openPokemonTab({ origin: 'team', type: 'persistent', pokemonId, label })`, abrindo uma aba dinâmica persistente no [[App]]
 - Animação de hover: `scale-105`, `shadow-2xl`, `z-50`
 
 ### Slot Vazio
@@ -93,15 +96,9 @@ Ativado quando `isSelectingForSlot !== null`:
 
 ---
 
-## Modal de Edição
+## Integração com Abas Dinâmicas
 
-Ativado quando `editingPokemon !== null`:
-
-- **Overlay fullscreen** com gradiente radial (cor do tema)
-- **Feixe de luz** decorativo (conic-gradient com blur)
-- Container com efeito **hologram** (scanlines + glow)
-- Renderiza [[PokemonCreationSheet]] com `initialData={editingPokemon}`
-- Scale: `1.13` (13% maior que o normal)
+O antigo modal holográfico fullscreen (com scanlines e efeito de escala 1.13) foi substituído pelo sistema de abas dinâmicas do [[App]]. Ao clicar no card de um Pokémon da equipe, o `TeamTab` invoca `openPokemonTab()` com `origin: 'team'` e `type: 'persistent'`. A aba permanece visível na barra de navegação até ser fechada manualmente pelo botão `[X]`.
 
 ---
 
@@ -109,7 +106,8 @@ Ativado quando `editingPokemon !== null`:
 
 ```mermaid
 graph LR
-    TT["TeamTab"] --> PCS["PokemonCreationSheet"]
+    TT["TeamTab"] -->|openPokemonTab| App["App.tsx"]
+    App --> PCS["PokemonCreationSheet"]
     TT --> Types["types.ts (PCBox, StoredPokemon)"]
     TT --> Const["constants.ts (PokedexTheme)"]
 ```
@@ -117,4 +115,4 @@ graph LR
 ---
 
 ## 🏷️ Tags
-#componente #equipe #pokemon #time
+#componente #equipe #pokemon #time #abas-dinamicas

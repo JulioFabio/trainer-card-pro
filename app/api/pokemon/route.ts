@@ -1,79 +1,64 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { withTelemetry } from '../../../lib/telemetry';
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { nickname, species, isParty, boxName, imageUrl, pokemonData, characterId } = body;
+export const POST = withTelemetry(async function POST(request: Request) {
+  const body = await request.json();
+  const { nickname, species, isParty, boxName, imageUrl, pokemonData, characterId } = body;
 
-    if (!nickname || !species || !characterId) {
-      return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 });
-    }
-
-    const newPokemon = await prisma.pokemon.create({
-      data: {
-        nickname,
-        species,
-        isParty: isParty || false,
-        boxName,
-        imageUrl,
-        pokemonData: pokemonData ? JSON.stringify(pokemonData) : '{}',
-        characterId,
-      }
-    });
-
-    return NextResponse.json(newPokemon, { status: 201 });
-  } catch (error) {
-    console.error('Erro no POST de Pokemon:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+  if (!nickname || !species || !characterId) {
+    return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 });
   }
-}
 
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json();
-    const { id, nickname, species, isParty, boxName, imageUrl, pokemonData, characterId } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID do pokemon é obrigatório para atualização' }, { status: 400 });
+  const newPokemon = await prisma.pokemon.create({
+    data: {
+      nickname,
+      species,
+      isParty: isParty || false,
+      boxName,
+      imageUrl,
+      pokemonData: pokemonData ? JSON.stringify(pokemonData) : '{}',
+      characterId,
     }
+  });
 
-    const updatedPokemon = await prisma.pokemon.update({
-      where: { id },
-      data: {
-        ...(nickname && { nickname }),
-        ...(species && { species }),
-        ...(isParty !== undefined && { isParty }),
-        ...(boxName !== undefined && { boxName }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(pokemonData && { pokemonData: JSON.stringify(pokemonData) }),
-        ...(characterId && { characterId }), // Usado na mecânica de trocas
-      }
-    });
+  return NextResponse.json(newPokemon, { status: 201 });
+});
 
-    return NextResponse.json(updatedPokemon);
-  } catch (error) {
-    console.error('Erro no PUT de Pokemon:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+export const PUT = withTelemetry(async function PUT(request: Request) {
+  const body = await request.json();
+  const { id, nickname, species, isParty, boxName, imageUrl, pokemonData, characterId } = body;
 
   if (!id) {
-    return NextResponse.json({ error: 'ID do pokemon é obrigatório' }, { status: 400 });
+    return NextResponse.json({ error: 'ID do pokemon é obrigatório para atualização' }, { status: 400 });
   }
 
-  try {
-    await prisma.pokemon.delete({
-      where: { id }
-    });
+  const updatedPokemon = await prisma.pokemon.update({
+    where: { id },
+    data: {
+      ...(nickname && { nickname }),
+      ...(species && { species }),
+      ...(isParty !== undefined && { isParty }),
+      ...(boxName !== undefined && { boxName }),
+      ...(imageUrl !== undefined && { imageUrl }),
+      ...(pokemonData && { pokemonData: JSON.stringify(pokemonData) }),
+      ...(characterId && { characterId }), // Usado na mecânica de trocas
+    }
+  });
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Erro no DELETE de Pokemon:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
-  }
-}
+  return NextResponse.json(updatedPokemon);
+});
+
+import { requireQueryParam } from '../../../lib/routeHelpers';
+
+export const DELETE = withTelemetry(async function DELETE(request: Request) {
+  const { value: id, response } = requireQueryParam(request, 'id', 'ID do pokemon é obrigatório');
+  if (response) return response;
+
+  await prisma.pokemon.delete({
+    where: { id: id! }
+  });
+
+  return NextResponse.json({ success: true });
+});
+

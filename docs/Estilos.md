@@ -83,8 +83,20 @@ Substitui a barra de rolagem cinza padrão do navegador por um design minimalist
 - **Alça (Thumb)**: Cantos perfeitamente redondos e cor configurada via variável CSS temática (`var(--scrollbar-color)`).
 - **Hover**: Escurece levemente a alça com `var(--scrollbar-color-hover)` para feedback visual claro de arrasto.
 - **Ocultador (`no-scrollbar`)**: Classe utilitária disponível para esconder totalmente as barras em navegadores Webkit (Chrome/Safari) e Firefox mantendo a rolagem intacta.
+- **Sincronização Dinâmica de Tema**: Para contornar limitações de herança e repintura em navegadores baseados no Chromium, as variáveis CSS de cor da barra de rolagem (`--scrollbar-color` e `--scrollbar-color-hover`) são injetadas diretamente no elemento raiz do documento (`document.documentElement` / `html`) por um efeito no [App.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/App.tsx) sempre que o tema do usuário é alterado, garantindo que todas as barras de rolagem (do documento e dos containers internos) sigam a cor ativa do Pokédex.
+
+---
+
+## 🔤 Sistema de Tipografia
+
+O projeto utiliza a fonte premium **Outfit** (do Google Fonts) de forma global para garantir consistência visual e um visual moderno e arredondado adequado a interfaces de jogos:
+
+1. **Importação Otimizada**: Carregada no [layout.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/layout.tsx) via `next/font/google` com pesos variados (300 a 900) e disponibilizada via variável CSS `--font-outfit`.
+2. **Integração com Tailwind**: Mapeada como a família padrão `font-sans` no [tailwind.config.ts](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/tailwind.config.ts), permitindo o uso automático de classes como `font-sans`, `font-bold` e `font-black`.
+3. **Controle Global e Fallbacks**: Definida no `body` do [index.css](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/index.css) e estendida a todos os botões, seletores, campos de texto (`input`, `select`, `textarea`) para herança obrigatória.
+4. **Exceção Temática**: A aba de Notas ([NotesTab.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/NotesTab.tsx)) utiliza a classe `font-serif` especificamente no editor de texto para evocar o aspecto clássico de um diário físico escrito à mão, enquanto a interface geral mantém a fonte do sistema visual.
 
 ---
 
 ## 🏷️ Tags
-#estilos #css #design #cursores #holograma #scrollbars #animacao
+#estilos #css #design #cursores #holograma #scrollbars #animacao #tipografia #fontes

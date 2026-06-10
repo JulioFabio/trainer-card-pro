@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { TrainerData, Stats, Skill } from './types';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { TrainerData, Stats, Skill, StoredPokemon, PCBox } from './types';
 import { INITIAL_TRAINER_DATA, POKEDEX_THEMES, DEFAULT_SKILLS, STAT_LABELS, BASE_POINTS, MAX_STAT_INITIAL } from './constants';
 import { InfoField } from './components/InfoField';
 import { DerivedBox } from './components/DerivedBox';
@@ -11,8 +11,22 @@ import { PcTab } from './components/PcTab';
 import { TeamTab } from './components/TeamTab';
 import { ImageCropper } from './components/ImageCropper';
 import { TradeModal } from './components/TradeModal';
+import { PokemonCreationSheet } from './components/PokemonCreationSheet';
+import { safeFetch } from './lib/safeFetch';
 
-type Tab = 'treinador' | 'combate' | 'equipe' | 'mochila' | 'notas' | 'computador';
+// Tab agora é string para suportar IDs dinâmicos como 'pokemon-team-abc123'
+type Tab = string;
+
+// Metadados de cada aba dinâmica de Pokémon
+interface PokemonTab {
+  id: string;          // Formato: 'pokemon-team-<id>' ou 'pokemon-pc-<boxIndex>-<slot>'
+  label: string;       // Nome exibido na aba (ex: "Sparky" ou "Novo Pokémon")
+  type: 'ephemeral' | 'persistent';
+  origin: 'pc' | 'team';
+  pokemonId?: string;  // ID único (utilizado se origin === 'team')
+  boxIndex?: number;   // Índice da Box no PC (se origin === 'pc')
+  slot?: number;       // Slot ocupado no PC (se origin === 'pc')
+}
 
 const STORAGE_KEY = 'trainer_card_pro_data';
 
@@ -21,35 +35,58 @@ const App: React.FC = () => {
   const [trainer, setTrainer] = useState<TrainerData>(INITIAL_TRAINER_DATA);
   const [characterId, setCharacterId] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [syncState, setSyncState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [initError, setInitError] = useState<string | null>(null);
 
   // 1. CARREGAMENTO INICIAL DO BANCO DE DADOS
   useEffect(() => {
     const initCharacter = async () => {
       try {
+        setInitError(null);
         const mockCharId = 'char-123';
-        let response = await fetch(`/api/character?id=${mockCharId}`);
+        let data: any = null;
         
-        if (response.status === 404) {
-          // Cria o mock do primeiro personagem se não existir
-          response = await fetch('/api/character', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: 'Treinador', userId: 'user-123', id: mockCharId })
-          });
+        try {
+          data = await safeFetch(`/api/character?id=${mockCharId}`);
+        } catch (fetchErr: any) {
+          if (fetchErr.message.includes('404') || fetchErr.message.includes('não encontrado')) {
+            data = await safeFetch('/api/character', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: 'Treinador', userId: 'user-123', id: mockCharId })
+            });
+          } else {
+            throw fetchErr;
+          }
         }
 
-        if (response.ok) {
-          const data = await response.json();
+        if (data) {
           setCharacterId(data.id);
+          
+          let offlineBackup: any = null;
+          try {
+            const savedBackup = localStorage.getItem('trainer_card_pro_offline_backup');
+            if (savedBackup) {
+              offlineBackup = JSON.parse(savedBackup);
+            }
+          } catch {}
+
+          let finalSheetData = data.sheetData || {};
+          if (offlineBackup && offlineBackup.id === data.id) {
+            finalSheetData = offlineBackup.sheetData || offlineBackup;
+            setSyncState('error'); // Mostra que estamos com pendências offline
+          }
+
           const loadedTrainer = { 
              ...INITIAL_TRAINER_DATA, 
-             ...(data.sheetData || {}), 
+             ...finalSheetData, 
              avatar: data.avatarUrl || INITIAL_TRAINER_DATA.avatar
           };
           setTrainer(loadedTrainer);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Erro ao carregar dados da API:', error);
+        setInitError(error.message || 'Erro de conexão com o servidor.');
       } finally {
         setIsInitializing(false);
       }
@@ -58,15 +95,19 @@ const App: React.FC = () => {
   }, []);
 
   const [activeTab, setActiveTab] = useState<Tab>('treinador');
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('trainer_card_pro_theme');
-      if (saved) {
-        return POKEDEX_THEMES.find(t => t.id === saved) || POKEDEX_THEMES[0];
+  const [pokemonTabs, setPokemonTabs] = useState<PokemonTab[]>([]);
+  const [currentTheme, setCurrentTheme] = useState(POKEDEX_THEMES[0]);
+
+  // Carrega o tema do localStorage após o mount no cliente para evitar hydration mismatches
+  useEffect(() => {
+    const saved = localStorage.getItem('trainer_card_pro_theme');
+    if (saved) {
+      const found = POKEDEX_THEMES.find(t => t.id === saved);
+      if (found) {
+        setCurrentTheme(found);
       }
     }
-    return POKEDEX_THEMES[0];
-  });
+  }, []);
   const [newItemName, setNewItemName] = useState('');
   const [newItemDesc, setNewItemDesc] = useState('');
   const [newItemQty, setNewItemQty] = useState(1);
@@ -76,6 +117,129 @@ const App: React.FC = () => {
   const [showOnlyTrained, setShowOnlyTrained] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
+
+  // --- SISTEMA DE ABAS DINÂMICAS DE POKÉMON ---
+
+  // Troca de aba com limpeza automática de abas efêmeras
+  const changeTab = useCallback((newTabId: string) => {
+    setActiveTab(prev => {
+      if (prev && prev.startsWith('pokemon-')) {
+        const leavingTab = pokemonTabs.find(t => t.id === prev);
+        if (leavingTab && leavingTab.type === 'ephemeral') {
+          setPokemonTabs(tabs => tabs.filter(t => t.id !== prev));
+        }
+      }
+      return newTabId;
+    });
+  }, [pokemonTabs]);
+
+  // Abre (ou foca) uma aba de Pokémon dinâmica
+  const openPokemonTab = useCallback((params: {
+    origin: 'pc' | 'team';
+    type: 'ephemeral' | 'persistent';
+    label: string;
+    pokemonId?: string;
+    boxIndex?: number;
+    slot?: number;
+  }) => {
+    const tabId = params.origin === 'team'
+      ? `pokemon-team-${params.pokemonId}`
+      : `pokemon-pc-${params.boxIndex}-${params.slot}`;
+
+    // Se já existe, apenas foca nela
+    const existing = pokemonTabs.find(t => t.id === tabId);
+    if (existing) {
+      changeTab(tabId);
+      return;
+    }
+
+    const newTab: PokemonTab = {
+      id: tabId,
+      label: params.label,
+      type: params.type,
+      origin: params.origin,
+      pokemonId: params.pokemonId,
+      boxIndex: params.boxIndex,
+      slot: params.slot,
+    };
+
+    setPokemonTabs(prev => [...prev, newTab]);
+    setActiveTab(tabId);
+  }, [pokemonTabs, changeTab]);
+
+  // Fecha manualmente uma aba de Pokémon (botão X)
+  const closePokemonTab = useCallback((tabId: string) => {
+    setPokemonTabs(prev => prev.filter(t => t.id !== tabId));
+    // Se estávamos nessa aba, volta para uma aba segura
+    setActiveTab(prev => prev === tabId ? 'equipe' : prev);
+  }, []);
+
+  // Resolve o StoredPokemon a partir de uma PokemonTab
+  const resolvePokemonFromTab = useCallback((tab: PokemonTab): StoredPokemon | undefined => {
+    if (tab.origin === 'team' && tab.pokemonId) {
+      for (const box of trainer.pcBoxes) {
+        const found = box.pokemons.find(p => p.id === tab.pokemonId);
+        if (found) return found;
+      }
+    } else if (tab.origin === 'pc' && tab.boxIndex !== undefined && tab.slot !== undefined) {
+      const box = trainer.pcBoxes[tab.boxIndex];
+      if (box) return box.pokemons.find(p => p.slot === tab.slot);
+    }
+    return undefined;
+  }, [trainer.pcBoxes]);
+
+  // Handler de Save para fichas de Pokémon abertas em abas dinâmicas
+  const handlePokemonTabSave = useCallback((tab: PokemonTab, updatedPokemon: StoredPokemon) => {
+    const newBoxes = [...trainer.pcBoxes];
+
+    if (tab.origin === 'pc' && tab.boxIndex !== undefined && tab.slot !== undefined) {
+      // PC Save: atualiza slot correto na box
+      const box = { ...newBoxes[tab.boxIndex] };
+      const newPkmn = { ...updatedPokemon, id: updatedPokemon.id || Date.now().toString(), slot: tab.slot };
+      box.pokemons = [...box.pokemons.filter(p => p.slot !== tab.slot), newPkmn];
+      newBoxes[tab.boxIndex] = box;
+      handleProfileChange('pcBoxes', newBoxes);
+      // Efêmera: fecha a aba e volta ao PC
+      setPokemonTabs(prev => prev.filter(t => t.id !== tab.id));
+      setActiveTab('computador');
+    } else if (tab.origin === 'team' && tab.pokemonId) {
+      // Team Save: localiza e atualiza o Pokémon na box de origem
+      let found = false;
+      for (let i = 0; i < newBoxes.length; i++) {
+        const idx = newBoxes[i].pokemons.findIndex(p => p.id === tab.pokemonId);
+        if (idx !== -1) {
+          newBoxes[i] = { ...newBoxes[i], pokemons: [...newBoxes[i].pokemons] };
+          newBoxes[i].pokemons[idx] = updatedPokemon;
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        handleProfileChange('pcBoxes', newBoxes);
+        // Atualiza o label da aba se o nome mudou
+        const newLabel = updatedPokemon.name || updatedPokemon.species || 'Pokémon';
+        setPokemonTabs(prev => prev.map(t =>
+          t.id === tab.id ? { ...t, label: newLabel } : t
+        ));
+      }
+    }
+  }, [trainer.pcBoxes]);
+
+  // Garbage Collection: limpa abas de Pokémon deletados
+  const handlePcBoxesChangeWithGC = useCallback((newBoxes: PCBox[]) => {
+    handleProfileChange('pcBoxes', newBoxes);
+    // Verifica se alguma aba aponta para um Pokémon que não existe mais
+    setPokemonTabs(prev => prev.filter(tab => {
+      if (tab.origin === 'pc' && tab.boxIndex !== undefined && tab.slot !== undefined) {
+        const box = newBoxes[tab.boxIndex];
+        return box && box.pokemons.some(p => p.slot === tab.slot);
+      }
+      if (tab.origin === 'team' && tab.pokemonId) {
+        return newBoxes.some(box => box.pokemons.some(p => p.id === tab.pokemonId));
+      }
+      return true;
+    }));
+  }, []);
 
   // --- CÁLCULOS MATEMÁTICOS AUTOMÁTICOS ---
   
@@ -161,10 +325,11 @@ const App: React.FC = () => {
 
   // Salvamento automático via API (Substituindo localStorage)
   useEffect(() => {
-    if (!characterId || isInitializing) return;
+    if (!characterId || isInitializing || initError) return;
     const saveTimer = setTimeout(async () => {
       try {
-        await fetch('/api/character', {
+        setSyncState('saving');
+        await safeFetch('/api/character', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -175,16 +340,32 @@ const App: React.FC = () => {
              sheetData: trainer 
           })
         });
+        setSyncState('saved');
+        localStorage.removeItem('trainer_card_pro_offline_backup');
       } catch (e) {
         console.error('Erro no Auto-Save da Ficha', e);
+        setSyncState('error');
+        try {
+          localStorage.setItem('trainer_card_pro_offline_backup', JSON.stringify({
+            id: characterId,
+            sheetData: trainer
+          }));
+        } catch {}
       }
     }, 1000); // 1 segundo de debounce
     
     return () => clearTimeout(saveTimer);
-  }, [trainer, characterId, isInitializing]);
+  }, [trainer, characterId, isInitializing, initError]);
 
   useEffect(() => {
     localStorage.setItem('trainer_card_pro_theme', currentTheme.id);
+    
+    // Atualiza as variáveis CSS no elemento raiz do documento (html) para que as barras
+    // de rolagem (que pertencem ao escopo do documento) sigam dinamicamente a cor do tema.
+    const root = document.documentElement;
+    root.style.setProperty('--theme-color', currentTheme.color);
+    root.style.setProperty('--scrollbar-color', `${currentTheme.color}66`);
+    root.style.setProperty('--scrollbar-color-hover', `${currentTheme.color}aa`);
   }, [currentTheme]);
 
   // Aviso de saída (Prevent Data Loss)
@@ -296,16 +477,35 @@ const App: React.FC = () => {
 
   const rootStyle = {
     '--theme-color': currentTheme.color,
-    '--scrollbar-color': `${currentTheme.color}66`,
-    '--scrollbar-color-hover': `${currentTheme.color}aa`,
   } as React.CSSProperties;
 
   return (
     <div style={rootStyle} className="min-h-screen h-screen bg-[#0f172a] flex items-center justify-center p-[20px] font-sans overflow-hidden">
       {isInitializing ? (
         <div className="flex flex-col items-center gap-4 animate-pulse">
-           <div className="w-16 h-16 rounded-full bg-cyan-400 border-4 border-white shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+           <div className="w-16 h-16 rounded-full bg-cyan-400 border-4 border-white shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse" />
            <span className="text-white font-black uppercase tracking-widest text-sm">Carregando Banco de Dados...</span>
+        </div>
+      ) : initError ? (
+        <div className="max-w-md w-full bg-zinc-900 border-4 border-rose-500 rounded-[2rem] p-8 text-center shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+          <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500 border-2 border-rose-500/30">
+            <i className="fa-solid fa-cloud-slash text-4xl animate-bounce"></i>
+          </div>
+          <h2 className="text-lg font-black uppercase tracking-widest text-rose-500 mb-2">
+            Erro de Conexão
+          </h2>
+          <p className="text-zinc-400 text-xs mb-6 leading-relaxed">
+            Não foi possível carregar os dados da sua Pokédex. Verifique a conexão com o servidor local.
+          </p>
+          <div className="bg-black/40 p-4 rounded-xl text-left font-mono text-xs text-rose-400/80 mb-6 max-h-24 overflow-y-auto">
+            {initError}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95"
+          >
+            Tentar Novamente
+          </button>
         </div>
       ) : (
       <div className={`${currentTheme.main} w-full h-full rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
@@ -333,6 +533,26 @@ const App: React.FC = () => {
             {/* Divisor */}
             <div className="w-px h-6 bg-white/20 mx-1" />
 
+            {/* Ícone de Nuvem de Sincronia */}
+            <div 
+              title={
+                syncState === 'saving' ? "Gravando dados..." :
+                syncState === 'error' ? "Erro ao salvar (Salvo Localmente)" :
+                "Dados totalmente salvos na nuvem"
+              }
+              className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center transition-all select-none"
+            >
+              {syncState === 'saving' && (
+                <i className="fa-solid fa-cloud text-[14px] text-amber-400 animate-pulse" />
+              )}
+              {(syncState === 'saved' || syncState === 'idle') && (
+                <i className="fa-solid fa-cloud text-[14px] text-emerald-400" />
+              )}
+              {syncState === 'error' && (
+                <i className="fa-solid fa-cloud text-[14px] text-rose-500 animate-bounce" />
+              )}
+            </div>
+
             {/* Botões de Gestão - compactos */}
             <button onClick={() => setShowTradeModal(true)} title="Sistema de Trocas (Link Cable)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-emerald-400 transition-all">
               <i className="fa-solid fa-right-left text-[13px]" />
@@ -347,6 +567,7 @@ const App: React.FC = () => {
 
           {/* Abas dentro do painel */}
           <div className="flex flex-wrap px-4 pt-4 pb-3 gap-2 shrink-0 border-b border-zinc-200/80">
+            {/* Abas Fixas */}
             {([
               { id: 'treinador', label: 'Treinador', icon: 'fa-user' },
               { id: 'combate', label: 'Combate', icon: 'fa-shield-halved' },
@@ -357,7 +578,7 @@ const App: React.FC = () => {
             ]).map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as Tab)}
+                onClick={() => changeTab(tab.id)}
                 className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center gap-1.5 ${
                   activeTab === tab.id
                     ? 'text-white shadow-md scale-105'
@@ -369,10 +590,49 @@ const App: React.FC = () => {
                 {tab.label}
               </button>
             ))}
+
+            {/* Divisor visual entre abas fixas e dinâmicas */}
+            {pokemonTabs.length > 0 && (
+              <div className="w-px h-6 bg-zinc-300 self-center mx-1" />
+            )}
+
+            {/* Abas Dinâmicas de Pokémon */}
+            {pokemonTabs.map((pTab) => {
+              const isActive = activeTab === pTab.id;
+              return (
+                <div
+                  key={pTab.id}
+                  onClick={() => changeTab(pTab.id)}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-200 flex items-center gap-2 cursor-pointer ${
+                    isActive
+                      ? 'text-white shadow-md scale-105'
+                      : 'bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700 hover:scale-105'
+                  }`}
+                  style={isActive ? { backgroundColor: currentTheme.color } : {}}
+                >
+                  <i className={`fa-solid ${pTab.origin === 'team' ? 'fa-paw' : 'fa-circle-dot'} text-[9px]`} />
+                  <span className="max-w-[90px] truncate">{pTab.label}</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closePokemonTab(pTab.id);
+                    }}
+                    className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
+                      isActive
+                        ? 'hover:bg-white/20 text-white/70 hover:text-white'
+                        : 'hover:bg-zinc-400/30 text-zinc-400 hover:text-rose-500'
+                    }`}
+                    title="Fechar aba"
+                  >
+                    <i className="fa-solid fa-xmark text-[8px]" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Área de conteúdo com scroll */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6">
+          <div className={`flex-1 overflow-y-auto custom-scrollbar ${activeTab.startsWith('pokemon-') ? 'p-[5px]' : 'p-4 sm:p-6'}`}>
 
           {activeTab === 'treinador' && (
             <div className="animate-in fade-in zoom-in-95 h-full flex flex-col">
@@ -394,12 +654,12 @@ const App: React.FC = () => {
                     <div className="flex-1 w-full space-y-3">
                       <div className="flex border-4 border-black rounded-2xl overflow-hidden shadow-[4px_4px_0px_rgba(0,0,0,0.1)] transition-colors duration-500" style={{ backgroundColor: currentTheme.color }}>
                         <div className="px-4 flex items-center font-black italic uppercase text-[10px] text-white tracking-widest drop-shadow-sm border-r-2 border-black/20">Identidade</div>
-                        <input type="text" value={trainer.nomePersonagem} onChange={(e) => handleProfileChange('nomePersonagem', e.target.value)} className="flex-1 bg-transparent px-4 py-2 text-2xl font-black italic uppercase outline-none text-white placeholder-white/50" placeholder="NOME DO TREINADOR" />
+                        <input type="text" value={trainer.nomePersonagem} onChange={(e) => handleProfileChange('nomePersonagem', e.target.value)} className="flex-1 bg-transparent px-4 py-2 text-2xl font-black italic uppercase outline-none text-white placeholder-white/50" placeholder="Ex: Carlos" />
                       </div>
                       <div className="flex gap-4">
                         <div className="flex-1 border-2 border-black rounded-xl overflow-hidden flex shadow-[2px_2px_0px_rgba(0,0,0,0.05)] transition-colors duration-500" style={{ backgroundColor: currentTheme.color }}>
                            <div className="bg-black/20 px-3 flex items-center font-black italic uppercase text-[9px] border-r-2 border-black/10 text-white tracking-widest">Frase</div>
-                           <input type="text" value={trainer.conceito} onChange={(e) => handleProfileChange('conceito', e.target.value)} className="flex-1 px-3 py-1 font-black italic text-white outline-none text-xs placeholder-white/50 bg-transparent" placeholder="CONCEITO DO PERSONAGEM" />
+                           <input type="text" value={trainer.conceito} onChange={(e) => handleProfileChange('conceito', e.target.value)} className="flex-1 px-3 py-1 font-black italic text-white outline-none text-xs placeholder-white/50 bg-transparent" placeholder="Ex: Gotta catch'em all!" />
                         </div>
                         {/* BOX NÍVEL GERAL - MOTOR DOS CÁLCULOS */}
                         <div className="w-24 border-2 border-black rounded-xl overflow-hidden text-white flex flex-col items-center justify-center p-1 shadow-[2px_2px_0px_rgba(0,0,0,0.1)] transition-colors duration-500" style={{ backgroundColor: currentTheme.color }}>
@@ -415,13 +675,13 @@ const App: React.FC = () => {
                     <div className="bg-white p-4 rounded-3xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,0.05)]">
                       <h3 className="text-[10px] font-black uppercase text-zinc-800 mb-3 border-b-2 border-zinc-100 pb-1 flex items-center gap-2"><i className="fa-solid fa-address-card opacity-80" /> Dados Biográficos</h3>
                       <div className="grid grid-cols-1 gap-2">
-                        <InfoField label="Idade" value={trainer.idade} field="idade" type="number" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Gênero" value={trainer.genero} field="genero" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Peso" value={trainer.peso} field="peso" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Altura" value={trainer.altura} field="altura" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Naturalidade" value={trainer.naturalidade} field="naturalidade" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Jogador" value={trainer.jogador} field="jogador" onChange={handleProfileChange} themeColor={currentTheme.color} />
-                        <InfoField label="Campanha" value={trainer.campanha} field="campanha" onChange={handleProfileChange} themeColor={currentTheme.color} />
+                        <InfoField label="Idade" value={trainer.idade} field="idade" type="number" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: 16" />
+                        <InfoField label="Gênero" value={trainer.genero} field="genero" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: Masculino" />
+                        <InfoField label="Peso" value={trainer.peso} field="peso" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: 60kg" />
+                        <InfoField label="Altura" value={trainer.altura} field="altura" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: 1,64" />
+                        <InfoField label="Naturalidade" value={trainer.naturalidade} field="naturalidade" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: Pallet Town" />
+                        <InfoField label="Jogador" value={trainer.jogador} field="jogador" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: Tulio" />
+                        <InfoField label="Campanha" value={trainer.campanha} field="campanha" onChange={handleProfileChange} themeColor={currentTheme.color} placeholder="Ex: - (Liga)" />
                       </div>
                     </div>
                     {/* Coluna 2: Classes e Movimentos Stackados */}
@@ -430,17 +690,20 @@ const App: React.FC = () => {
                       <div className="bg-white p-3 rounded-3xl border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,0.05)] h-fit">
                         <h3 className="text-[10px] font-black uppercase text-zinc-800 mb-2 border-b-2 border-zinc-100 pb-1 flex items-center gap-2"><i className="fa-solid fa-graduation-cap opacity-80" /> Classes de Carreira</h3>
                         <div className="space-y-2">
-                          {[1, 2, 3, 4].map(num => (
-                            <div key={num} className="flex border-2 border-black rounded-xl overflow-hidden min-h-[2.5rem] h-auto group hover:border-black/50 transition-all shadow-[1px_1px_0px_rgba(0,0,0,0.02)]">
-                              <div className="w-16 flex items-center justify-center border-r-2 border-black border-dotted text-white transition-colors duration-500" style={{ backgroundColor: currentTheme.color }}>
-                                 <span className="text-[8px] font-black uppercase drop-shadow-sm tracking-tighter">Classe {num}</span>
+                          {[1, 2, 3, 4].map(num => {
+                            const classPlaceholders = ["Ex: Captor", "Ex: Colecionador", "Ex: Pokebolista", "Ex: Engenheiro"];
+                            return (
+                              <div key={num} className="flex border-2 border-black rounded-xl overflow-hidden min-h-[2.5rem] h-auto group hover:border-black/50 transition-all shadow-[1px_1px_0px_rgba(0,0,0,0.02)]">
+                                <div className="w-16 flex items-center justify-center border-r-2 border-black border-dotted text-white transition-colors duration-500" style={{ backgroundColor: currentTheme.color }}>
+                                   <span className="text-[8px] font-black uppercase drop-shadow-sm tracking-tighter">Classe {num}</span>
+                                </div>
+                                <input type="text" value={trainer[`classe${num}` as keyof TrainerData] as string} onChange={(e) => handleProfileChange(`classe${num}` as keyof TrainerData, e.target.value)} className="flex-1 bg-white px-3 text-[10px] font-black italic text-zinc-800 outline-none placeholder-zinc-400/60" placeholder={classPlaceholders[num - 1]} />
+                                <div className="w-10 flex items-center justify-center text-white transition-colors duration-500 drop-shadow-sm border-l-2 border-black border-dotted" style={{ backgroundColor: currentTheme.color }}>
+                                    <input type="number" value={trainer[`level${num}` as keyof TrainerData] as number} onChange={(e) => handleProfileChange(`level${num}` as keyof TrainerData, Math.max(0, parseInt(e.target.value) || 0))} className="bg-transparent w-full text-center text-[10px] font-black outline-none" />
+                                </div>
                               </div>
-                              <input type="text" value={trainer[`classe${num}` as keyof TrainerData] as string} onChange={(e) => handleProfileChange(`classe${num}` as keyof TrainerData, e.target.value)} className="flex-1 bg-white px-3 text-[10px] font-black italic text-zinc-800 outline-none" placeholder="Definir..." />
-                              <div className="w-10 flex items-center justify-center text-white transition-colors duration-500 drop-shadow-sm border-l-2 border-black border-dotted" style={{ backgroundColor: currentTheme.color }}>
-                                  <input type="number" value={trainer[`level${num}` as keyof TrainerData] as number} onChange={(e) => handleProfileChange(`level${num}` as keyof TrainerData, Math.max(0, parseInt(e.target.value) || 0))} className="bg-transparent w-full text-center text-[10px] font-black outline-none" />
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -665,7 +928,8 @@ const App: React.FC = () => {
                theme={currentTheme}
                characterId={characterId}
                onChange={(newEquipe) => handleProfileChange('equipe', newEquipe)}
-               onUpdateBoxes={(newBoxes) => handleProfileChange('pcBoxes', newBoxes)}
+               onUpdateBoxes={(newBoxes) => handlePcBoxesChangeWithGC(newBoxes)}
+               openPokemonTab={openPokemonTab}
              />
           )}
 
@@ -720,10 +984,33 @@ const App: React.FC = () => {
             <PcTab 
               boxes={trainer.pcBoxes || []} 
               characterId={characterId}
-              onChange={(val) => handleProfileChange('pcBoxes', val)}
+              onChange={(val) => handlePcBoxesChangeWithGC(val)}
               theme={currentTheme}
+              openPokemonTab={openPokemonTab}
             />
           )}
+
+          {/* Abas Dinâmicas de Pokémon — renderiza PokemonCreationSheet inline */}
+          {activeTab.startsWith('pokemon-') && characterId && (() => {
+            const currentPokemonTab = pokemonTabs.find(t => t.id === activeTab);
+            if (!currentPokemonTab) return null;
+            const pokemonData = resolvePokemonFromTab(currentPokemonTab);
+            return (
+              <div className="animate-in fade-in slide-in-from-left-2 duration-300 h-full">
+                <div className="w-full h-full rounded-[2.5rem] overflow-hidden border-2 flex flex-col shadow-lg"
+                  style={{ borderColor: currentTheme.color + '40', background: 'linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%)' }}
+                >
+                  <PokemonCreationSheet
+                    initialData={pokemonData || {}}
+                    onSave={(pkmn) => handlePokemonTabSave(currentPokemonTab, pkmn)}
+                    onCancel={() => closePokemonTab(currentPokemonTab.id)}
+                    theme={currentTheme}
+                    characterId={characterId}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           </div>{/* fim scroll */}
         </div>{/* fim painel */}
