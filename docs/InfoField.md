@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 📝 InfoField
 
 > Campo de entrada de texto ou número estilizado em formato de Pokédex retrô.
@@ -9,13 +16,14 @@
 ## Props
 
 ```typescript
-interface InfoFieldProps {
+interface InfoFieldProps<T> {
   label: string;                                              // Rótulo em destaque
   value: string | number;                                     // Valor do input
-  field: keyof TrainerData;                                   // Campo associado na ficha
+  field: T;                                                   // Tipo genérico do campo associado
   type?: string;                                              // Tipo do input HTML (default: "text")
-  onChange: (field: keyof TrainerData, value: string | number) => void; // Callback de atualização
+  onChange: (field: T, value: any) => void;                   // Callback de atualização genérica
   themeColor: string;                                         // Cor tema em hexadecimal
+  placeholder?: string;                                       // Placeholder descritivo opcional
 }
 ```
 

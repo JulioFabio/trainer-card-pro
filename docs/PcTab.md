@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 💻 PcTab
 
 > Sistema de caixas PC para armazenamento de Pokémon (99 boxes × 30 slots).

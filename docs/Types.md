@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 📦 Types
 
 > Todas as interfaces e tipos TypeScript do [[Trainer Card Pro]].
@@ -210,7 +217,7 @@ interface TrainerData {
   classe4: string;
   level4: number;
   conceito: string;
-  avatar: string | null;                   // Base64 da imagem ou null
+  avatar: string | null;                   // Caminho do arquivo de imagem (/uploads/...) ou null
   diasJornada: number;
   pokedexCount: number;
   stats: Stats;
@@ -232,7 +239,7 @@ interface TrainerData {
 ```
 
 > [!IMPORTANT]
-> `TrainerData` é a **interface raiz** de todo o estado da aplicação. É serializada para localStorage e pode ser exportada/importada como JSON.
+> `TrainerData` é a **interface raiz** de todo o estado da aplicação. É persistida no banco de dados SQLite relacional via endpoints Next.js e sincronizada via auto-save, com backup local em `localStorage` sob a chave `trainer_card_pro_offline_backup` em caso de erro de rede.
 
 Usado em:
 - [[App]] — estado principal via `useState<TrainerData>`

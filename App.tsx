@@ -12,6 +12,8 @@ import { TeamTab } from './components/TeamTab';
 import { ImageCropper } from './components/ImageCropper';
 import { TradeModal } from './components/TradeModal';
 import { PokemonCreationSheet } from './components/PokemonCreationSheet';
+import { PokePapo } from './components/PokePapo';
+import { AttackCard } from './components/AttackCard';
 import { safeFetch } from './lib/safeFetch';
 
 // Tab agora é string para suportar IDs dinâmicos como 'pokemon-team-abc123'
@@ -37,6 +39,7 @@ const App: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [syncState, setSyncState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [initError, setInitError] = useState<string | null>(null);
+  const [isPokePapoOpen, setIsPokePapoOpen] = useState(false);
 
   // 1. CARREGAMENTO INICIAL DO BANCO DE DADOS
   useEffect(() => {
@@ -508,7 +511,8 @@ const App: React.FC = () => {
           </button>
         </div>
       ) : (
-      <div className={`${currentTheme.main} w-full h-full rounded-[2.5rem] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500`}>
+      <div className="flex items-center justify-center h-full w-full">
+        <div className={`${currentTheme.main} flex-1 h-full rounded-[36px] shadow-2xl border-[12px] border-black/20 overflow-hidden flex flex-col transition-colors duration-500 relative z-20`}>
         
         {/* Header Superior */}
         <div className="bg-black/30 p-4 flex items-center justify-between border-b border-white/10 dark-spin-buttons">
@@ -563,7 +567,20 @@ const App: React.FC = () => {
 
 
         {/* Conteúdo Principal + Abas Integradas */}
-        <div className="flex-1 bg-zinc-100 m-2 rounded-3xl shadow-inner border-b-8 border-black/5 flex flex-col overflow-hidden">
+        <div className="flex-1 bg-white m-0 rounded-b-3xl flex flex-col overflow-hidden relative z-10">
+          
+          {/* Botão de Ejeção do PokéPapo (três risquinhos verticais) */}
+          <button
+            onClick={() => setIsPokePapoOpen(prev => !prev)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 text-white h-24 w-10 rounded-l-2xl border-y-2 border-l-2 border-gray-600 flex items-center justify-center hover:bg-gray-700 hover:border-gray-500 transition-all shadow-[-2px_0_10px_rgba(0,0,0,0.3)] group z-30 cursor-pointer"
+            title={isPokePapoOpen ? "Fechar PokéPapo" : "Abrir PokéPapo"}
+          >
+            <div className="flex flex-col gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+              <div className="w-1 h-3.5 bg-white rounded-full"></div>
+              <div className="w-1 h-3.5 bg-white rounded-full"></div>
+              <div className="w-1 h-3.5 bg-white rounded-full"></div>
+            </div>
+          </button>
 
           {/* Abas dentro do painel */}
           <div className="flex flex-wrap px-4 pt-4 pb-3 gap-2 shrink-0 border-b border-zinc-200/80">
@@ -1016,9 +1033,32 @@ const App: React.FC = () => {
         </div>{/* fim painel */}
 
         {/* Footer */}
-        <div className="bg-black/20 py-1.5 px-4 text-center text-[8px] font-black text-white/60 uppercase tracking-[0.5em]">ADVANCED POKEDEX OS // SESSÃO CRIPTOGRAFADA // JOGADOR: {trainer.jogador.toUpperCase()}</div>
+        <div className="bg-black/20 pt-[28px] pb-1.5 px-4 text-center text-[8px] font-black text-white/60 uppercase tracking-[0.5em] relative z-0 -mt-6">ADVANCED POKEDEX OS // SESSÃO CRIPTOGRAFADA // JOGADOR: {trainer.jogador.toUpperCase()}</div>
       </div>
-      )}
+
+      {/* PokéPapo Drawer */}
+      <PokePapo isOpen={isPokePapoOpen} onClose={() => setIsPokePapoOpen(false)} theme={currentTheme}>
+        {/* Mensagem demonstrativa contendo o AttackCard */}
+        <div className="self-end mr-1">
+          <span className="text-[10px] font-black uppercase text-gray-500 mb-1.5 block text-right">Seu Golisopod usou:</span>
+          <AttackCard
+            name="Bite"
+            type="Sombrio"
+            frequency="À Vontade"
+            range="Corpo a Corpo"
+            damage="2d10+8"
+            category="Físico"
+            accuracy="-"
+            db="2"
+            descriptor="Modéstia"
+            effect="Se o resultado do Teste de Acurácia for 15 ou mais, o alvo está Atordoado"
+            onRollAccuracy={() => alert('Rolagem de Acurácia (Bite): 1d20 = 14')}
+            onRollDamage={() => alert('Rolagem de Dano (Bite): 2d10+8 = 18 Físico')}
+          />
+        </div>
+      </PokePapo>
+    </div>
+    )}
 
       {hoveredTalent && (
         <div 

@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🧩 Features
 
 > Lista completa de funcionalidades do [[Trainer Card Pro]].
@@ -6,22 +13,16 @@
 
 ## 💾 Persistência de Dados
 
-### LocalStorage Automático
-- **Chave**: `trainer_card_pro_data` — salva toda a [[Types#TrainerData|TrainerData]] automaticamente a cada alteração de estado.
-- **Chave**: `trainer_card_pro_theme` — salva o ID do [[Constants#PokedexTheme|tema]] selecionado.
-- **Migração de dados legados**: Na inicialização, o [[App]] detecta e migra automaticamente:
-  - `talentos` de `string[]` → `Talent[]` (adicionando `description: 'Sem descrição.'`)
-  - `skills` inexistentes → merge com [[Constants#DEFAULT_SKILLS]]
-  - `pcBoxes` com menos de 99 boxes → expande para 99
-  - `equipe` de `object[]` → `string[]` (IDs)
+### Banco de Dados SQLite Relacional (Auto-save)
+- **Primary Source of Truth**: Os dados do personagem (`TrainerData`), itens, pokémons e notas são salvos no banco de dados SQLite por meio do Prisma ORM nas rotas de API `/api/character`, `/api/note`, etc.
+- **Sincronização Atômica**: O componente [[App]] monitora mudanças no estado `trainer` e dispara automaticamente requisições assíncronas `PUT` de auto-save com debounce de 1s.
 
-### Exportar / Importar / Resetar
-- **Exportar**: Usa a `File System Access API` (Chrome 86+) para abrir "Salvar Como" nativo. Fallback: download via blob URL.
-- **Importar**: Lê um arquivo `.json` e faz merge com [[Constants#INITIAL_TRAINER_DATA]].
-- **Resetar**: Limpa o localStorage e restaura os dados iniciais (com confirmação).
+### Fallback em LocalStorage (Resiliência Offline)
+- Se as chamadas para a API de auto-save falharem por problemas de rede, o aplicativo salva uma cópia de segurança em `localStorage` sob a chave `trainer_card_pro_offline_backup` para evitar qualquer perda de dados, exibindo o status visual "Erro ao salvar (Salvo Localmente)" no cabeçalho.
+- O ID do tema selecionado continua sendo gravado localmente na chave `trainer_card_pro_theme`.
 
 ### Proteção contra perda
-- Evento `beforeunload` registrado para mostrar prompt do navegador ao fechar a página.
+- Evento `beforeunload` registrado no navegador para alertar o usuário caso ele tente fechar ou atualizar a aba enquanto a sincronização está pendente ou ativa.
 
 ---
 

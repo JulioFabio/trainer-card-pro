@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, mapa, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🗺️ Vault Map & Index (Trainer Card Pro)
 
 > Este é o **Arquivo de Mapa Principal** da documentação do projeto.
@@ -41,6 +48,7 @@ Use esta tabela para localizar instantaneamente o arquivo de documentação e o 
 | [[InfoField]] | [InfoField.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/InfoField.md) | [InfoField.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/InfoField.tsx) | Entrada de texto Pokédex para dados biográficos e de perfil. |
 | [[SmartInput]] | [SmartInput.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/SmartInput.md) | [SmartInput.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/SmartInput.tsx) | Input de calculadora matemática inline com sanitização robusta. |
 | [[NotesTab]] | [NotesTab.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/NotesTab.md) | [NotesTab.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/NotesTab.tsx) | Notas livres em formato de diário de campanha com suporte GFM. |
+| [[\[Interface\] PokéPapo e Layout]] | [[Interface] PokéPapo e Layout.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BInterface%5D%20Pok%C3%A9Papo%20e%20Layout.md) | [PokePapo.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/PokePapo.tsx) / [AttackCard.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/AttackCard.tsx) | Gaveta lateral retrátil de chat (PokéPapo) e cartões de ataque (PTA 2.0) integrados. |
 
 ### 🗄️ Backend, Banco de Dados & APIs
 
@@ -101,6 +109,8 @@ Ao receber solicitações de alteração de código, siga estritamente estas eta
 | 2026-06-04 | 05:42 | [PokemonCreationSheet.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/PokemonCreationSheet.tsx) | Redesenho e redimensionamento do badge flutuante de Nível (LV) no card de Pokémon para ser maior, usar a cor ativa do tema e ajustar campos de entrada correspondentes. Ampliação da altura (de h-7 para h-9) e do espaçamento vertical da barra de HP para melhor legibilidade e usabilidade. |
 | 2026-06-04 | 05:48 | [route.ts](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/api/character/route.ts) / [test-persistence.js](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/scripts/test-persistence.js) | Correção do endpoint `POST /api/character` para aceitar e gravar o ID customizado (`id`) no SQLite. Criação de script de teste de regressão de persistência simulando preenchimento e reload com sucesso. |
 | 2026-06-10 | 13:25 | [layout.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/app/layout.tsx) | Adição de `suppressHydrationWarning` na tag `<html>` para corrigir erro de mismatch de hidratação causado pela injeção pré-hidratação de estilos/variáveis CSS do tema. |
+| 2026-06-15 | 17:50 | [docs/*.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/) | Revisão geral e alinhamento da documentação viva: adição de blocos de propriedades YAML em todas as notas pendentes (regras do Vault), correção do estado limpo em Constants.md, atualização de genericização e placeholders em InfoField.md, atualização da API de notas em NotesTab.md, e ajuste da arquitetura Next.js 15 em Trainer Card Pro.md. |
+| 2026-06-15 | 23:40 | [PokePapo.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/PokePapo.tsx) / [AttackCard.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/AttackCard.tsx) / [App.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/App.tsx) / [[Interface] PokéPapo e Layout.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BInterface%5D%20Pok%C3%A9Papo%20e%20Layout.md) | Implementação da gaveta lateral retrátil PokéPapo, do card de ataque estilo PTA 2.0 (AttackCard), integração flex layout no App.tsx e documentação viva correspondente. |
 
 ---
 

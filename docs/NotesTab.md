@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 📝 NotesTab
 
 > Editor e visualizador Markdown integrado para anotações de campanha.
@@ -10,9 +17,8 @@
 
 ```typescript
 interface NotesTabProps {
-  content: string;                        // Conteúdo em texto puro Markdown
-  onChange: (value: string) => void;      // Callback executada ao alterar texto
-  themeColor: string;                     // Cor tema para botões ativos
+  characterId: string;                    // ID do personagem para carregar/salvar notas
+  themeColor: string;                     // Cor tema para botões ativos e badges
 }
 ```
 
@@ -24,6 +30,21 @@ interface NotesTabProps {
 |---|---|---|---|
 | `isPreview` | `boolean` | `false` | Alterna entre aba de Edição (textarea) e Visualização (Markdown) |
 | `showHelp` | `boolean` | `false` | Controla exibição do popup flutuante de Ajuda Markdown |
+| `noteId` | `string \| null` | `null` | ID único da nota carregada da API |
+| `title` | `string` | `'Diário de Jornada'` | Título padrão da nota |
+| `content` | `string` | `''` | Conteúdo da nota em Markdown |
+| `isSaving` | `boolean` | `false` | Indica se o salvamento assíncrono para a API está em andamento |
+| `saveError` | `string \| null` | `null` | Mensagem de erro caso ocorra falha na requisição |
+
+---
+
+## Integração com a API (Ciclo de Vida)
+
+O componente gerencia seu próprio ciclo de vida de dados:
+1. **Busca Inicial**: Ao montar, busca as anotações do personagem via `GET /api/character?id={characterId}`. Se houver notas prévias vinculadas, hidrata o estado local (`noteId`, `title`, `content`).
+2. **Auto-Salvar**: Um `useEffect` observa as mudanças no título ou conteúdo e dispara o salvamento automático com debounce de 1s:
+   - Se `noteId` já existir: despacha requisição `PUT` para `/api/note`.
+   - Se for uma nova nota (sem `noteId`): despacha requisição `POST` para `/api/note`, salvando no banco SQLite relacional e atualizando o `noteId` local com o UUID retornado.
 
 ---
 

@@ -29,6 +29,7 @@ Visando maximizar o aproveitamento de tela e proporcionar uma experiência premi
 - **Tamanho da Tela**: Ocupa 100% de largura e altura da viewport (`w-full h-full`).
 - **Margens Internas (Padding)**: Possui um espaçamento uniforme de `20px` (`p-[20px]`) em todas as direções (superior, inferior, esquerda e direita), fazendo com que a Pokédex flutue elegantemente na página.
 - **Bordas**: Mantém as icônicas bordas ultra arredondadas (`rounded-[2.5rem]`) para preservar a estética de console de bolso futurista.
+- **Tela Interna Ampliada (Symmetric Rounding)**: O painel de abas e conteúdo (`.flex-1`) foi expandido para remover a margem interna verde (`m-2` reduzido para `m-0`), usando fundo totalmente branco (`bg-white`) com cantos arredondados simetricamente (`rounded-t-3xl rounded-b-3xl`). Desta forma, a tela estende-se de forma consistente e harmoniosa, alinhando-se com as bordas e cantos do frame externo da Pokédex.
 
 ---
 

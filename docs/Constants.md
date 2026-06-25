@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # ⚙️ Constants
 
 > Todas as constantes, temas e dados iniciais do [[Trainer Card Pro]].
@@ -108,24 +115,24 @@ Todas iniciam com `ranks: 0, bonus: 0`.
 export const INITIAL_TRAINER_DATA: TrainerData
 ```
 
-Dados padrão para uma ficha nova. Valores notáveis:
+Dados padrão para uma ficha nova. Valores notáveis (inicialização limpa/pristina):
 
 | Campo | Valor Inicial |
 |---|---|
-| `nomePersonagem` | `'Carlos'` |
-| `jogador` | `'Tulio'` |
-| `conceito` | `'Gotta catch\'em all!'` |
-| `levelGeral` | `2` |
-| `hpActual` | `64` |
+| `nomePersonagem` | `''` (vazio) |
+| `jogador` | `''` (vazio) |
+| `conceito` | `''` (vazio) |
+| `levelGeral` | `1` |
+| `hpActual` | `0` |
 | `pcBoxes` | 99 boxes vazios |
 | `equipe` | `[]` (vazia) |
-| `anotacoes` | `'Cidade - Borges. Amiga Mãe: Alex. Entregar Pacote para Emilia.'` |
+| `anotacoes` | `''` (vazio) |
 | `skills` | [[#DEFAULT_SKILLS]] |
 
 Stats iniciais:
 ```
-saude: 14, ataque: 6, defesa: 6,
-atqEspecial: 12, defEspecial: 14, velocidade: 17
+saude: 0, ataque: 0, defesa: 0,
+atqEspecial: 0, defEspecial: 0, velocidade: 0
 ```
 
 ---

@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, api, rotas, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 📤 Upload de Arquivos
 
 > Especificação da rota de API de upload do [[Trainer Card Pro]], responsável por substituir o armazenamento de Base64 em localStorage por arquivos físicos no servidor.

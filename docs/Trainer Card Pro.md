@@ -1,7 +1,14 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🎮 Trainer Card Pro
 
-> **Aplicação Web** de ficha digital para o RPG de mesa **Pokémon: Tabletop United (PTU)** — Biblioteca Élfica.
-> Construída com [[Stack Tecnológica|React + Vite + TailwindCSS + TypeScript]].
+|> Aplicação Web de ficha digital para o RPG de mesa Pokémon: Tabletop United (PTU) — Biblioteca Élfica.
+|> Construída com [[Stack Tecnológica|Next.js + React + TailwindCSS + TypeScript]].
 
 ---
 
@@ -61,14 +68,17 @@ graph TD
 
 ```
 trainer-card-pro/
-├── App.tsx                    → [[App|Componente raiz]]
+├── App.tsx                    → [[App|Componente raiz da Pokédex]]
 ├── types.ts                   → [[Types|Definições de tipos]]
 ├── constants.ts               → [[Constants|Constantes e dados iniciais]]
-├── index.tsx                  → [[Index|Entry point React]]
-├── index.html                 → [[Index HTML|HTML base]]
 ├── index.css                  → [[Estilos|CSS global + scrollbar custom]]
-├── vite.config.ts             → [[Stack Tecnológica#Vite|Config Vite]]
-├── tailwind.config.js         → [[Stack Tecnológica#Tailwind|Config Tailwind]]
+├── next.config.ts             → Configuração do Next.js 15
+├── tailwind.config.ts         → Configuração do Tailwind CSS
+├── app/
+│   ├── layout.tsx             → Layout raiz do Next.js
+│   ├── page.tsx               → Página raiz (renderiza o App)
+│   ├── error.tsx              → Error Boundary global (React)
+│   └── api/                   → Rotas do servidor (character, pokemon, item, note, trade, upload, health)
 ├── components/
 │   ├── DerivedBox.tsx         → [[DerivedBox]]
 │   ├── ImageCropper.tsx       → [[ImageCropper]]
@@ -77,7 +87,13 @@ trainer-card-pro/
 │   ├── PcTab.tsx              → [[PcTab]]
 │   ├── PokemonCreationSheet.tsx → [[PokemonCreationSheet]]
 │   ├── SmartInput.tsx         → [[SmartInput]]
-│   └── TeamTab.tsx            → [[TeamTab]]
+│   ├── TeamTab.tsx            → [[TeamTab]]
+│   └── TradeModal.tsx         → Modal do sistema de trocas
+├── lib/
+│   ├── prisma.ts              → Inicialização do Prisma Client com SQLite
+│   ├── telemetry.ts           → Sistema de logs estruturados e telemetria
+│   ├── cache.ts               → Camada de cache em memória
+│   └── safeFetch.ts           → Helper de requisições HTTP seguras
 └── src/
     └── data/
         └── capabilities.ts    → [[Capabilities|Dados de capacidades]]

@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🧮 SmartInput
 
 > Input de texto avançado com suporte a avaliação de expressões matemáticas integradas (calculadora inline).

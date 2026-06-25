@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🧠 Capabilities
 
 > Banco de dados e tradutor automático de métricas de capacidade física e mental de Pokémon no sistema PTU.

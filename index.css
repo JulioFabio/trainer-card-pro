@@ -93,32 +93,16 @@ textarea,
   --scrollbar-color-hover: rgba(225, 29, 72, 0.66);
 }
 
-/* Custom Scrollbar Styles maintained from original HTML */
+/* Oculta barras de rolagem globalmente em todos os navegadores, mantendo a capacidade de scroll */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-color, #888);
-  border-radius: 10px;
-  opacity: 0.5;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-color-hover, #555);
-}
-
-/* Firefox */
-@-moz-document url-prefix() {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-color, #888) transparent;
-  }
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

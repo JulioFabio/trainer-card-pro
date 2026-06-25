@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, sistemas, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🔄 Sistema de Trocas (Link Cable)
 
 > Sistema assíncrono para comunicação e trocas entre personagens/jogadores da campanha.

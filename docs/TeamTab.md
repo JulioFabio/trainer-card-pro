@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 👥 TeamTab
 
 > Gerenciamento da equipe ativa de Pokémon (máximo 6 membros).

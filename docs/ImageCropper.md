@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, componentes, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # ✂️ ImageCropper
 
 > Modal interativo para recorte de imagens com proporção fixa de 1:1.
@@ -27,6 +34,8 @@ interface ImageCropperProps {
 | `crop` | `{ x: number, y: number }` | `{ x: 0, y: 0 }` | Posição de arrasto do corte |
 | `zoom` | `number` | `1` | Nível de zoom da imagem |
 | `croppedAreaPixels` | `any` | `null` | Coordenadas e dimensões em pixels do corte final |
+| `isUploading` | `boolean` | `false` | Indica se o upload do arquivo para a API está em andamento |
+| `uploadError` | `string \| null` | `null` | Mensagem de erro caso ocorra falha na requisição de upload |
 
 ---
 

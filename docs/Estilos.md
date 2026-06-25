@@ -1,3 +1,10 @@
+---
+tags: [documentacao-viva, projeto, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-06-15
+autor: "Antigravity"
+---
+
 # 🎨 Estilos
 
 > Sistema de design visual, animações e cursores personalizados da Pokédex.
@@ -74,16 +81,14 @@ box-shadow: 0 0 15px color-mix(in srgb, var(--theme-color) 40%, transparent);
 
 ---
 
-## 📜 Scrollbars Personalizadas (`custom-scrollbar`)
+## 📜 Ocultação Global de Scrollbars (Rolagem Invisível)
 
-Substitui a barra de rolagem cinza padrão do navegador por um design minimalista, fino e temático:
+Para obter um visual puramente tecnológico e limpo (sem poluição de barras físicas no layout), todas as barras de rolagem vertical e horizontal foram ocultadas globalmente em toda a aplicação, mantendo a capacidade de scroll ativa:
 
-- **Largura**: Fixa em `8px` (`w-2`).
-- **Trilho (Track)**: Transparente para não poluir o layout.
-- **Alça (Thumb)**: Cantos perfeitamente redondos e cor configurada via variável CSS temática (`var(--scrollbar-color)`).
-- **Hover**: Escurece levemente a alça com `var(--scrollbar-color-hover)` para feedback visual claro de arrasto.
-- **Ocultador (`no-scrollbar`)**: Classe utilitária disponível para esconder totalmente as barras em navegadores Webkit (Chrome/Safari) e Firefox mantendo a rolagem intacta.
-- **Sincronização Dinâmica de Tema**: Para contornar limitações de herança e repintura em navegadores baseados no Chromium, as variáveis CSS de cor da barra de rolagem (`--scrollbar-color` e `--scrollbar-color-hover`) são injetadas diretamente no elemento raiz do documento (`document.documentElement` / `html`) por um efeito no [App.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/App.tsx) sempre que o tema do usuário é alterado, garantindo que todas as barras de rolagem (do documento e dos containers internos) sigam a cor ativa do Pokédex.
+- **Navegadores WebKit (Chrome, Safari, Edge)**: Ocultação via regra CSS `::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`.
+- **Firefox**: Ocultação via propriedade standard `scrollbar-width: none !important;`.
+- **Navegadores Legados**: Configurado `-ms-overflow-style: none !important;`.
+- **Capacidade de Rolagem**: O usuário consegue rolar o conteúdo normalmente (mouse wheel, touch ou teclado), mas a alça e o trilho ficam invisíveis.
 
 ---
 
