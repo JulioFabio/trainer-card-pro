@@ -1,119 +1,117 @@
-# Trainer Card Pro
+# 🔴 Trainer Card Pro
 
-> Ficha de personagem digital e interativa para o Sistema RPG **Pokemon: Tabletop Adventures 2.0 (PTA 2.0)**.
+> Ficha digital interativa, relacional e de alta performance para o Sistema RPG **Pokémon: Tabletop Adventures 2.0 (PTA 2.0)**.
 
+---
 
-## Tecnologias & Frameworks
+## 🚀 Tecnologias & Stack
 
-Este projeto foi desenvolvido com:
+- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/) + [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Estilização & Design System**: [TailwindCSS 3.4](https://tailwindcss.com/) + Custom CSS (Variaveis HSL/HEX, Efeitos Holográficos CRT, Google Font Outfit)
+- **Banco de Dados & ORM**: SQLite relacional + [Prisma 7 ORM](https://www.prisma.io/) (`@prisma/adapter-better-sqlite3` / `better-sqlite3`)
+- **DevOps & Observabilidade**: Logs JSON Estruturados, Request IDs únicos, Monitoramento de Métricas (`/api/health`), Testes de Regressão e Deploy com Auto-Rollback
+- **Documentação Viva**: Obsidian Knowledge Graph em `/docs` com indexador `_VaultMap.md` e conformidade com a skill `vault-architect`
 
-- [Next.js 15 (App Router)](https://nextjs.org/) como framework React estrutural e base para futura API/Banco de Dados
-- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [TailwindCSS](https://tailwindcss.com/) para estilização
-- [React Markdown](https://github.com/remarkjs/react-markdown) com suporte a GFM
+---
 
-## 📦 Instalação
+## 📦 Instalação e Execução
 
 ### Pré-requisitos
-Antes de começar, você precisa ter o **[Node.js](https://nodejs.org/)** instalado em sua máquina (recomendamos a versão LTS).
+- **Node.js**: v18.x ou superior (Recomendado LTS)
 
 > [!IMPORTANT]
-> **Atenção com softwares de segurança:** Alguns antivírus ou firewalls podem bloquear arquivos e execuções "suspeitas" durante o processo. Mesmo validando a confiança do arquivo no VS Code, esses softwares podem barrar a criação da pasta `node_modules` ou a execução de scripts ao rodar o `npm install`. Caso encontre erros de permissão, verifique as notificações do seu sistema de segurança.
+> **Atenção com softwares de segurança:** Antivírus no Windows podem bloquear a execução de scripts `.ps1` ou a escrita na pasta `node_modules`.
 
 > [!TIP]
-> **Atenção ao usar Windows PowerShell (Erros de Execução de Script):**
-> Caso encontre um erro de segurança/permissão como `PSSecurityException` ou `UnauthorizedAccess` ao rodar comandos como `npm` ou `npx` no PowerShell, isso ocorre porque a política padrão do Windows restringe a execução de scripts `.ps1`.
-> 
-> Você pode resolver de duas formas:
-> 1. **Liberar execução no terminal (Recomendado):** Abra o PowerShell e execute o comando abaixo para permitir a execução de scripts locais seguros para o seu usuário atual:
->    ```powershell
->    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
->    ```
-> 2. **Contornar via prompt de comando clássico:** Alternativamente, execute os comandos prefixando com `cmd /c` (ex: `cmd /c npx prisma db push` e `cmd /c npm run dev`).
+> **Windows PowerShell (Erros de Execução de Script):**
+> Caso encontre um erro de permissão (`PSSecurityException`), libere a execução para o usuário atual:
+> ```powershell
+> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
 
-
-### Passo a passo
-
-Como rodar o projeto localmente:
+### Passo a Passo
 
 1. **Clone o repositório:**
    ```bash
    git clone https://github.com/JulioFabio/trainer-card-pro.git
-2. Acesse a pasta:
-   ```bash
    cd trainer-card-pro
    ```
-3. Instale as dependências:
+
+2. **Instale as dependências:**
    ```bash
    npm install
    ```
-4. Configure o Banco de Dados local:
+
+3. **Configure e sincronize o Banco de Dados SQLite:**
    ```bash
    npx prisma db push
    ```
-5. Inicie o servidor de desenvolvimento:
+
+4. **Inicie o servidor de desenvolvimento:**
    ```bash
    npm run dev
    ```
+   Acesse a aplicação em `http://localhost:3000`.
 
-## 🛠️ Como usar
+---
 
-Abra o app no navegador após rodar `npm run dev`. A interface imita uma Pokédex com 6 abas:
+## 🛠️ Módulos & Estrutura de Abas
 
-| Aba           | Função                                                       |
-| ------------- | ------------------------------------------------------------ |
-| **Treinador** | Dados biográficos, avatar, classes e talentos                |
-| **Combate**   | Atributos, HP, perícias e evasões calculadas                 |
-| **Equipe**    | Pokémons na equipe ativa                                     |
-| **Mochila**   | Gerenciamento de itens e quantidades                         |
-| **PC**        | Baú de armazenamento de Pokémons (PC Box) com ficha completa |
-| **Notas**     | Diário de jornada com editor e preview Markdown              |
+| Aba | Função & Descrição |
+|---|---|
+| **🧑 Treinador** | Perfil completo do personagem, avatar com cropper 1:1, dados biográficos e até 4 classes PTU |
+| **⚔️ Combate** | Atributos, HP, 24 perícias ativas, evasões calculadas e capacidade de movimento |
+| **👥 Equipe** | Os 6 Pokémons ativos na party com atalho rápido para abas dinâmicas de edição inline |
+| **🎒 Mochila** | Inventário relacional de itens e controle de quantidades |
+| **💻 PC (Box)** | Armazenamento de Pokémons em até 99 caixas com capacidade de 30 slots por caixa e swap rápido |
+| **📝 Notas** | Diário de jornada com editor Markdown (GFM), categorias e auto-save |
+| **💬 PokéPapo** | Gaveta lateral retrátil de chat para rolagens de dados, histórico de combate e interação |
 
-A ficha é **salva automaticamente** no `localStorage`. Você também pode exportar/importar sua ficha como arquivo `.json`.
+---
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Principais
 
-- [x] **Ficha de Treinador** — Perfil completo com avatar, nome, conceito, dados biográficos e até 4 classes de carreira.
-- [x] **Cálculos automáticos** — HP máximo, evasões físicas/especiais/velozes e capacidade de movimento calculados automaticamente a partir dos atributos.
-- [x] **Sistema de Atributos com Caps** — Pontos de atributo com limite dinâmico baseado no nível (alerta visual quando excedido).
-- [x] **Perícias Interativas** — 24 perícias do livro com ranks (Untrained / Trained / Expert), bônus customizáveis e total calculado automaticamente.
-- [x] **Sistema de Talentos** — Adicionar/remover talentos com nome e descrição; tooltip ao passar o mouse; limite de talentos por nível.
-- [x] **Mochila (Inventário)** — Adicionar, remover itens e controlar quantidades com `+` / `-`.
-- [x] **PC Box** — Sistema completo de armazenamento de Pokémons com ficha detalhada (stats, golpes, capacidades, natureza, habilidades, evasões e mais).
-- [x] **Ficha de Pokémon** — Golpes com tipo, categoria, dano, alcance, frequência e descritores; capacidades físicas (Força, Inteligência, Salto) e alternativas.
-- [x] **Notas com Markdown** — Editor de texto com preview renderizado (suporte a tabelas, listas, tarefas e mais via GFM).
-- [x] **Temas Pokédex** — 5 paletas de cores (Vermelho, Azul, Verde, Âmbar, Ardósia) aplicadas em toda a interface dinamicamente.
-- [x] **Exportar / Importar JSON** — Backup e restauração completa da ficha.
-- [x] **Auto-save** — Dados persistidos automaticamente no navegador via `localStorage`.
-- [x] **Proteção contra perda de dados** — Prompt de confirmação ao fechar a aba.
-- [x] **SmartInput** — Campo de HP com suporte a expressões matemáticas (ex: `64-10`, `+5`).
-- [x] **Dias de Jornada e Pokédex** — Contadores globais no header do app.
-- [x] **Infraestrutura Next.js (App Router)** — Migração do Vite para Next.js 15, deixando a aplicação preparada para receber uma camada de banco de dados e backend.
+- [x] **Persistência Relacional Relâmpago** — Integrada com SQLite + Prisma 7 ORM e APIs REST com auto-save inline debitado.
+- [x] **Sistema de Abas Dinâmicas de Pokémon** — Edição inline de Pokémons da Equipe e do PC em abas persistentes/efêmeras integradas ao header.
+- [x] **Cálculos Matemáticos Automáticos** — HP máximo, evasões (Física/Especial/Veloz), iniciativa e capacidades físicas (Força, Salto, Inteligência).
+- [x] **PokéPapo & Cartões de Ataque (AttackCard)** — Gaveta retrátil de chat e cartões visuais estilo PTA 2.0 com botões interativos para rolagens de acerto e dano.
+- [x] **Link Cable (Sistema de Trocas)** — Mecânica assíncrona para solicitação e aceitação de trocas de Pokémons e itens entre treinadores.
+- [x] **ImageCropper Canvas 1:1** — Modal interativo de recorte de fotos para avatares e Pokémons.
+- [x] **SmartInput & Calculadora Inline** — Avaliação de expressões matemáticas em tempo real nos campos numéricos.
+- [x] **Temas Temáticos da Pokédex** — 5 paletas de cores dinâmicas com sincronização de variáveis CSS `--theme-color` e scrollbars customizadas.
+- [x] **Telemetria & Observabilidade DevOps** — Monitoramento `/api/health`, Request IDs com UUID, alertas de anomalia de memória e rotina de auto-rollback.
+- [x] **Documentação Viva em Colchetes (`vault-architect`)** — Grafo de conhecimento em `/docs` padronizado em `[Categoria] Nome.md` e indexador `_VaultMap.md`.
 
-## 🗺️ RoadMap
+---
 
-- [x] **Fase 1: Integração com Banco de Dados** — Banco de dados robusto com rotas de API no Next.js para persistência de dados. Concluída com SQLite, Prisma ORM e rotas CRUD.
-- [ ] Implementar naturezas com efeito matemático automático nos atributos (ex: +2 Saúde / -2 Ataque).
-- [ ] Autocomplete de espécies com Stats Base pré-definidos.
-- [ ] Validação visual de ficha — alertas quando atributos excedem o permitido para o nível.
-- [ ] Sistema de Evolução de Pokémon — troca de espécie mantendo os dados.
-- [ ] Parser de conteúdo do livro de regras para banco de dados de itens.
+## 🗺️ Roadmap do Projeto
+
+- [x] **Fase 1: Banco de Dados Relacional & APIs REST** — Migração completa de localStorage para SQLite + Prisma ORM.
+- [x] **Fase 2: Sistema de Abas Dinâmicas & Gaveta PokéPapo** — Abas efêmeras de Pokémon e gaveta lateral de combate.
+- [x] **Fase 3: Padronização Vault Architect & DevOps Observability** — Telemetria com Request IDs e documentação viva sincronizada.
+- [ ] **Fase 4: Autocomplete & Calculadora de Naturezas** — Efeito matemático automático de naturezas nos atributos base.
+- [ ] **Fase 5: Suporte a Batalhas Automatizadas de Dados** — Rolador visual de dados integrado ao PokéPapo.
+
+---
+
+## 🧠 Documentação Viva & Grafo do Obsidian
+
+O projeto possui uma documentação viva mantida na pasta `/docs`, estruturada segundo a skill `vault-architect`:
+- Indexador Mestre: [docs/_VaultMap.md](file:///c:/SecondMind/trainer-card-pro/docs/_VaultMap.md)
+- Arquitetura DB: [docs/[Arquitetura] Banco de Dados.md](file:///c:/SecondMind/trainer-card-pro/docs/%5BArquitetura%5D%20Banco%20de%20Dados.md)
+- Estilos & Temas: [docs/[Interface] Estilos e Temas.md](file:///c:/SecondMind/trainer-card-pro/docs/%5BInterface%5D%20Estilos%20e%20Temas.md)
+- Telemetria DevOps: [docs/[DevOps] Telemetria e Observabilidade.md](file:///c:/SecondMind/trainer-card-pro/docs/%5BDevOps%5D%20Telemetria%20e%20Observabilidade.md)
 
 ---
 
 ## 🤝 Créditos & Agradecimentos
 
-Este projeto foi desenvolvido com base no esforço e criatividade de:
+- **[DrMrStark](https://www.reddit.com/user/DrMrStark/)** — Criador do sistema PTA 2.0.
+- **Caio** — Tradutor oficial para PT-BR.
+- **@DAVIDFONT** — Mestre da mesa e testador principal.
 
-* **[DrMrStark](https://www.reddit.com/user/DrMrStark/)** — Criador original do sistema de RPG.
-* **Caio** — Responsável pela tradução primorosa para PT-BR.
-* **@DAVIDFONT** — Mestre da mesa, pela experiência de jogo saudável e divertida que inspirou esta ferramenta.
+---
 
-## ⚖️ Aviso Legal
-*Pokémon e todos os nomes de personagens, músicas e imagens relacionados são marcas registradas da **The Pokémon Company**, Nintendo, Game Freak e Creatures Inc. Este é um projeto de fã, sem fins lucrativos.*
+## ⚖️ Aviso Legal & Licença
 
-## 📝 Licença
-
-Este projeto é um software de código aberto licenciado sob a [MIT License](LICENSE).
-
-> **Aviso:** Esta licença aplica-se apenas ao código-fonte deste projeto. Todos os direitos sobre a marca Pokémon, personagens e mecânicas originais pertencem à **The Pokémon Company**, Nintendo e Game Freak. Este é um projeto de fã, sem fins lucrativos e para uso educacional.
+*Pokémon e todos os nomes e imagens relacionados são marcas registradas da **The Pokémon Company**, Nintendo, Game Freak e Creatures Inc. Este é um projeto de fã, sem fins lucrativos e para uso educacional.* Licenciado sob a [MIT License](LICENSE).
