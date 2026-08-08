@@ -29,6 +29,7 @@ Use esta tabela para localizar instantaneamente o arquivo de documentação e o 
 | [[\[Arquitetura\] Stack Tecnologica]] | [[Arquitetura] Stack Tecnologica.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Stack%20Tecnologica.md) | [package.json](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/package.json) | React 19, TypeScript, Next.js 15 (App Router), Tailwind CSS e dependências. |
 | [[\[Arquitetura\] Sistema de Dados]] | [[Arquitetura] Sistema de Dados.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Sistema%20de%20Dados.md) | — | Ciclo de vida, auto-save, migração profunda de localStorage e fluxo Equipe-PC. |
 | [[\[Arquitetura\] Estrutura de Diretorios]] | [[Arquitetura] Estrutura de Diretorios.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Estrutura%20de%20Diretorios.md) | — | Mapeamento completo de pastas e estrutura do repositório. |
+| [[\[Arquitetura\] Arvore de Diretorios]] | [[Arquitetura] Arvore de Diretorios.md](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/docs/%5BArquitetura%5D%20Arvore%20de%20Diretorios.md) | — | Árvore física completa em formato de texto/ASCII exportável para relatórios. |
 
 ### 🏗️ App Router & Infraestrutura (Next.js)
 
