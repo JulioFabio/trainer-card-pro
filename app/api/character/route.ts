@@ -1,23 +1,74 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
-import { withTelemetry } from '../../../lib/telemetry';
-import { memoryCache } from '../../../lib/cache';
-import { requireQueryParam } from '../../../lib/routeHelpers';
-import { safeParseJson } from '../../../lib/json';
+import { prisma } from '@/lib/prisma';
+import { withTelemetry } from '@/lib/telemetry';
+import { memoryCache } from '@/lib/cache';
+import { safeParseJson } from '@/lib/json';
+import { auth } from '@/auth';
 
+// GET: Recupera uma ficha de personagem específica ou lista todas as do usuário logado
 export const GET = withTelemetry(async function GET(request: Request) {
-  const { value: id, response } = requireQueryParam(request, 'id', 'ID do personagem é obrigatório');
-  if (response) return response;
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id');
 
-  // Check Cache first (Rule 6: Hit/Miss Tracking)
-  const cacheKey = `character:${id}`;
-  const cached = memoryCache.get<any>(cacheKey);
-  if (cached) {
-    return NextResponse.json(cached);
+  // Recupera a sessão ativa do usuário
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: 'Não autorizado. Faça login para continuar.' }, { status: 401 });
   }
 
-  const character = await prisma.character.findUnique({
-    where: { id: id! },
+  const userId = session.user.id;
+  const isGM = (session.user as any).role === 'GM';
+
+  // Cenário A: Buscar uma ficha específica por ID
+  if (id) {
+    const cacheKey = `character:${id}`;
+    const cached = memoryCache.get<any>(cacheKey);
+    if (cached) {
+      // Regra de Segurança: Validar permissão mesmo para dados cacheados
+      const isOwner = cached.userId === userId;
+      if (!isGM && !isOwner) {
+        return NextResponse.json({ error: 'Acesso negado à ficha do personagem.' }, { status: 403 });
+      }
+      return NextResponse.json(cached);
+    }
+
+    const character = await prisma.character.findUnique({
+      where: { id: id },
+      include: {
+        items: true,
+        pokemons: true,
+        notes: true,
+      }
+    });
+
+    if (!character) {
+      return NextResponse.json({ error: 'Personagem não encontrado.' }, { status: 404 });
+    }
+
+    // Regra de Segurança: Apenas o dono ou um GM pode visualizar a ficha
+    const isOwner = character.userId === userId;
+    if (!isGM && !isOwner) {
+      return NextResponse.json({ error: 'Acesso negado à ficha do personagem.' }, { status: 403 });
+    }
+
+    const parsedCharacter = {
+      ...character,
+      sheetData: safeParseJson(character.sheetData, {}),
+      pokemons: character.pokemons.map(p => ({
+        ...p,
+        pokemonData: safeParseJson(p.pokemonData, {}),
+      }))
+    };
+
+    // Cacheia a resposta por 10 segundos
+    memoryCache.set(cacheKey, parsedCharacter, 10000);
+
+    return NextResponse.json(parsedCharacter);
+  }
+
+  // Cenário B: Listagem das fichas do jogador logado (Fase 3)
+  const characters = await prisma.character.findMany({
+    where: { userId: userId },
     include: {
       items: true,
       pokemons: true,
@@ -25,42 +76,41 @@ export const GET = withTelemetry(async function GET(request: Request) {
     }
   });
 
-  if (!character) {
-    return NextResponse.json({ error: 'Personagem não encontrado' }, { status: 404 });
-  }
-
-  const parsedCharacter = {
-    ...character,
-    sheetData: safeParseJson(character.sheetData, {}),
-    pokemons: character.pokemons.map(p => ({
+  const parsedCharacters = characters.map(char => ({
+    ...char,
+    sheetData: safeParseJson(char.sheetData, {}),
+    pokemons: char.pokemons.map(p => ({
       ...p,
       pokemonData: safeParseJson(p.pokemonData, {}),
     }))
-  };
+  }));
 
-  // Cache response for 10 seconds
-  memoryCache.set(cacheKey, parsedCharacter, 10000);
-
-  return NextResponse.json(parsedCharacter);
+  return NextResponse.json(parsedCharacters);
 });
 
-
+// POST: Cria um novo personagem vinculando-o de forma segura ao usuário da sessão ativa
 export const POST = withTelemetry(async function POST(request: Request) {
-  const body = await request.json();
-  const { id, name, level, money, avatarUrl, userId, sheetData } = body;
-
-  if (!name || !userId) {
-    return NextResponse.json({ error: 'Nome e userId são obrigatórios' }, { status: 400 });
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: 'Não autorizado. Faça login para continuar.' }, { status: 401 });
   }
 
-  // Garante que o User com o userId fornecido exista para não violar a chave estrangeira
+  const body = await request.json();
+  const { id, name, level, money, avatarUrl, sheetData } = body;
+
+  if (!name) {
+    return NextResponse.json({ error: 'Nome do personagem é obrigatório.' }, { status: 400 });
+  }
+
+  const userId = session.user.id;
+
+  // Garante a existência do usuário correspondente no banco (integridade referencial)
   await prisma.user.upsert({
     where: { id: userId },
     update: {},
     create: {
       id: userId,
-      username: `treinador_${userId}`,
-      role: 'PLAYER',
+      role: (session.user as any).role || 'PLAYER',
     },
   });
 
@@ -79,12 +129,34 @@ export const POST = withTelemetry(async function POST(request: Request) {
   return NextResponse.json(newCharacter, { status: 201 });
 });
 
+// PUT: Atualiza os dados de um personagem existente após validação de propriedade ou GM
 export const PUT = withTelemetry(async function PUT(request: Request) {
+  const session = await auth();
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: 'Não autorizado. Faça login para continuar.' }, { status: 401 });
+  }
+
   const body = await request.json();
   const { id, name, level, money, avatarUrl, sheetData } = body;
 
   if (!id) {
-    return NextResponse.json({ error: 'ID do personagem é obrigatório para atualização' }, { status: 400 });
+    return NextResponse.json({ error: 'ID do personagem é obrigatório para atualização.' }, { status: 400 });
+  }
+
+  // Verifica a existência do personagem e recupera o dono para validação de segurança
+  const character = await prisma.character.findUnique({
+    where: { id },
+    select: { userId: true }
+  });
+
+  if (!character) {
+    return NextResponse.json({ error: 'Personagem não encontrado.' }, { status: 404 });
+  }
+
+  const isGM = (session.user as any).role === 'GM';
+  const isOwner = character.userId === session.user.id;
+  if (!isGM && !isOwner) {
+    return NextResponse.json({ error: 'Acesso negado. Você não tem permissão para alterar esta ficha.' }, { status: 403 });
   }
 
   const updatedCharacter = await prisma.character.update({
@@ -98,9 +170,8 @@ export const PUT = withTelemetry(async function PUT(request: Request) {
     }
   });
 
-  // Invalidate Cache on update (Rule 6)
+  // Invalida o cache
   memoryCache.delete(`character:${id}`);
 
   return NextResponse.json(updatedCharacter);
 });
-

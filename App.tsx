@@ -503,12 +503,21 @@ const App: React.FC = () => {
           <div className="bg-black/40 p-4 rounded-xl text-left font-mono text-xs text-rose-400/80 mb-6 max-h-24 overflow-y-auto">
             {initError}
           </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95"
-          >
-            Tentar Novamente
-          </button>
+          {initError.toLowerCase().includes('não autorizado') || initError.toLowerCase().includes('login') ? (
+            <a
+              href="/api/auth/signin"
+              className="block w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-600/20 text-center active:scale-95 decoration-none"
+            >
+              Fazer Login (NextAuth)
+            </a>
+          ) : (
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95"
+            >
+              Tentar Novamente
+            </button>
+          )}
         </div>
       ) : (
       <div className="flex items-center justify-center h-full w-full">

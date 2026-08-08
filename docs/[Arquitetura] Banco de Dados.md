@@ -1,7 +1,7 @@
 ---
 tags: [documentacao-viva, projeto, arquitetura, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-08-07
+ultima_atualizacao: 2026-08-08
 autor: "Antigravity"
 ---
 
@@ -34,14 +34,48 @@ Modelagem relacional do banco de dados SQLite com Prisma ORM (`prisma/schema.pri
 ```mermaid
 erDiagram
     User ||--o{ Character : "possui"
+    User ||--o{ Account : "possui"
+    User ||--o{ Session : "possui"
     Character ||--o{ Item : "carrega na mochila"
     Character ||--o{ Pokemon : "capturou"
     Character ||--o{ Note : "escreveu"
 
     User {
         String id PK
-        String username "unique"
+        String name
+        String email "unique"
+        DateTime emailVerified
+        String image
+        String username "unique, opcional"
         String role "PLAYER ou GM"
+    }
+
+    Account {
+        String id PK
+        String userId FK
+        String type
+        String provider
+        String providerAccountId
+        String refresh_token
+        String access_token
+        Int expires_at
+        String token_type
+        String scope
+        String id_token
+        String session_state
+    }
+
+    Session {
+        String id PK
+        String sessionToken "unique"
+        String userId FK
+        DateTime expires
+    }
+
+    VerificationToken {
+        String identifier
+        String token "unique"
+        DateTime expires
     }
     
     Character {
@@ -121,10 +155,42 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 ## 🗃️ Modelos Base
 
 ### User
-Representa a conta autenticada.
-- **id** (`String` / UUID)
-- **username** (`String`, Único)
+Representa a conta autenticada do usuário (integrada ao NextAuth).
+- **id** (`String` / CUID)
+- **name** (`String?`): Nome retornado pelo provedor OAuth2.
+- **email** (`String?`, Único): Email retornado pelo provedor OAuth2.
+- **emailVerified** (`DateTime?`): Timestamp de verificação do email.
+- **image** (`String?`): Avatar de perfil retornado pelo provedor.
+- **username** (`String?`, Único): Nome de usuário (mantido opcional para compatibilidade).
 - **role** (`String`): Padrão "PLAYER", aceita "GM".
+
+### Account
+Modelo interno do NextAuth que vincula o Usuário a provedores OAuth2 (como Discord).
+- **id** (`String` / CUID)
+- **userId** (`String`): FK referenciando `User`.
+- **type** (`String`): Tipo de conta (ex: oauth).
+- **provider** (`String`): Provedor de autenticação (ex: discord).
+- **providerAccountId** (`String`): ID único do usuário no provedor externo.
+- **refresh_token** (`String?`)
+- **access_token** (`String?`)
+- **expires_at** (`Int?`)
+- **token_type** (`String?`)
+- **scope** (`String?`)
+- **id_token** (`String?`)
+- **session_state** (`String?`)
+
+### Session
+Modelo interno do NextAuth para controle de sessões do usuário persistidas no banco.
+- **id** (`String` / CUID)
+- **sessionToken** (`String`, Único): Token único identificador da sessão.
+- **userId** (`String`): FK referenciando `User`.
+- **expires** (`DateTime`): Timestamp de expiração da sessão.
+
+### VerificationToken
+Modelo interno do NextAuth usado para fluxos de autenticação sem senha (Magic Links).
+- **identifier** (`String`)
+- **token** (`String`, Único)
+- **expires** (`DateTime`)
 
 ### Character
 A ficha interativa em si.

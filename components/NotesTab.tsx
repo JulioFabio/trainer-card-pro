@@ -16,6 +16,20 @@ export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) =
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [sanitizedContent, setSanitizedContent] = useState('');
+
+  // Sanitização dinâmica do Markdown para proteção contra XSS no lado do cliente
+  React.useEffect(() => {
+    let active = true;
+    import('dompurify').then((module) => {
+      if (active) {
+        setSanitizedContent(module.default.sanitize(content));
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [content]);
 
   // Busca inicial
   React.useEffect(() => {
@@ -203,8 +217,8 @@ export const NotesTab: React.FC<NotesTabProps> = ({ characterId, themeColor }) =
           />
         ) : (
           <div className="w-full h-full overflow-y-auto custom-scrollbar p-2 prose prose-zinc prose-sm sm:prose-base max-w-none">
-            {content ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            {sanitizedContent ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{sanitizedContent}</ReactMarkdown>
             ) : (
               <span className="text-zinc-300 font-black uppercase italic text-sm">
                 Nenhuma anotação para visualizar.
