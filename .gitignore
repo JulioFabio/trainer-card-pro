@@ -9,19 +9,36 @@ lerna-debug.log*
 
 # Dependencies
 node_modules
-package-lock.json
 
-# Build outputs
+# Build outputs & Cache
 dist
 .next
 build
 *.local
 next-env.d.ts
+tsconfig.tsbuildinfo
+.eslintcache
+.stylelintcache
 
-# Environment variables (sensitive data)
+# Environment variables (sensitive data & secrets)
 .env
 .env.local
 .env.*.local
+.env.*
+*.env
+
+# SQLite databases & storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+dev.db
+dev.db-journal
+prisma/*.db
+prisma/*.sqlite
+
+# Uploaded media (local storage)
+public/uploads/
 
 # IDE & Editor directories and files
 .vscode/*
@@ -34,10 +51,6 @@ next-env.d.ts
 *.njsproj
 *.sln
 *.sw?
-
-# IDE caches
-.eslintcache
-.stylelintcache
 
 # OS specific
 Thumbs.db
@@ -60,14 +73,3 @@ temp_diff_utf8.txt
 .vscode/tasks.json
 
 /src/generated/prisma
-
-# SQLite database
-dev.db
-dev.db-journal
-
-# TypeScript build cache
-tsconfig.tsbuildinfo
-
-# Uploaded media (local storage)
-public/uploads/
-
