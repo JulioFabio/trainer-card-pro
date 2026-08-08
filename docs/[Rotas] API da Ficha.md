@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, api, rotas, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-05-23
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Documentação técnica dos endpoints CRUD REST da Ficha do Treinador e Pokémons em `/app/api/character`, `/app/api/pokemon`, `/app/api/item` e `/app/api/note`.
+
+
+
 # 🛣️ Rotas: API da Ficha
 
-> Especificação dos endpoints CRUD que gerenciam o estado do personagem, seus pokémons, itens, anotações e trocas no [[Trainer Card Pro]], focando na robustez contra falhas de serialização e integridade referencial.
+> Especificação dos endpoints CRUD que gerenciam o estado do personagem, seus pokémons, itens, anotações e trocas no [[[Visao Geral] Trainer Card Pro]], focando na robustez contra falhas de serialização e integridade referencial.
 
 ---
 
@@ -105,3 +111,20 @@ Permite propor e gerenciar negociações entre dois personagens no banco SQLite.
 
 ## 🏷️ Tags
 #api #rotas #endpoints #backend #prisma #robustez #json #seguranca #user-upsert
+
+
+---
+
+## Conexões
+
+- **Banco de Dados:** [[[Arquitetura] Banco de Dados]]
+- **Frontend:** [[[Componente] App]], [[[Utilitario] SafeFetch]]
+- **Utilitários:** [[dry-code-refactor]] (`lib/routeHelpers.ts`, `lib/json.ts`)
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Endpoints CRUD operacionais com validação de payload JSON e log de telemetria.
+- [x] Upsert automático do perfil do Treinador.
+- [ ] Adicionar validação de schema rigorosa com Zod nos endpoints.

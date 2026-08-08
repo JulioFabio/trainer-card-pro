@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Este arquivo centraliza todas as constantes do sistema, incluindo temas de cores da Pokédex, perícias base do PTU, valores padrão e paletas visuais.
+
+
+
 # ⚙️ Constants
 
-> Todas as constantes, temas e dados iniciais do [[Trainer Card Pro]].
+> Todas as constantes, temas e dados iniciais do [[[Visao Geral] Trainer Card Pro]].
 > Arquivo: `constants.ts`
 
 ---
@@ -18,7 +24,7 @@ autor: "Antigravity"
 export const BASE_POINTS = 66;
 ```
 
-Base de pontos de atributo disponíveis no nível 0. Usado no cálculo de [[Features#Pontos de Atributo|pontos máximos]].
+Base de pontos de atributo disponíveis no nível 0. Usado no cálculo de [[[Arquitetura] Features e Regras#Pontos de Atributo|pontos máximos]].
 
 ---
 
@@ -45,7 +51,7 @@ export const STAT_LABELS: Record<string, string> = {
 };
 ```
 
-Labels de exibição para os 6 [[Types#Stats|atributos]]. Usado no [[App#Aba Combate]] e no [[PokemonCreationSheet]].
+Labels de exibição para os 6 [[[Dados] Tipagem TypeScript#Stats|atributos]]. Usado no [[[Componente] App#Aba Combate]] e no [[[Componente] PokemonCreationSheet]].
 
 ---
 
@@ -167,10 +173,26 @@ export const POKEDEX_THEMES: PokedexTheme[]
 | `slate` | `bg-slate-700` | `#334155` |
 
 Usado em:
-- [[App]] — seletor de tema no header
-- [[Features#Sistema de Temas]] — propagação de cores
+- [[[Componente] App]] — seletor de tema no header
+- [[[Arquitetura] Features e Regras#Sistema de Temas]] — propagação de cores
 
 ---
 
 ## 🏷️ Tags
 #constantes #dados #configuração #temas
+
+
+---
+
+## Conexões
+
+- **Componentes Visuais:** [[[Componente] App]], [[[Interface] Estilos e Temas]], [[[Componente] PokemonCreationSheet]]
+- **Tipos Relacionados:** [[[Dados] Tipagem TypeScript]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Definição de temas da Pokédex (Vermelho Classico, Azul Cyan, Verde Emerald, etc.).
+- [x] Lista padronizada de perícias PTU e valores default da ficha.
+- [ ] Adicionar novos temas customizáveis via seletor RGB.

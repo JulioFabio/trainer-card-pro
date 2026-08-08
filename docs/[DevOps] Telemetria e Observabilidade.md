@@ -1,9 +1,15 @@
 ---
 tags: [documentacao-viva, devops, monitoramento, observabilidade]
 status: "ativo"
-ultima_atualizacao: 2026-06-04
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+Especificação do sistema DevOps de telemetria, Request IDs únicos, logs JSON estruturados, health check (`/api/health`), métricas de cache e deploys com auto-rollback.
+
+
 
 # 📊 Telemetria, Observabilidade e Resiliência (DevOps)
 
@@ -89,3 +95,20 @@ Simula um fluxo de CI/CD que implanta a Pokédex em produção e executa um moni
 
 ## 🏷️ Tags
 #devops #observabilidade #logs #json #healthcheck #telemetria #prisma #cache #rollback #deploy #alertas
+
+
+---
+
+## Conexões
+
+- **Tratamento de Erros:** [[[Interface] ErrorHandler]], [[[DevOps] Analise de Erros]]
+- **Utilitários:** `lib/telemetry.ts`, `lib/cache.ts`
+- **Scripts DevOps:** `scripts/deploy-rollback.js`, `scripts/regression-test.js`
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Middleware de logs estruturados JSON com UUID por requisição.
+- [x] Endpoint de monitoramento `/api/health` e rotina de auto-rollback.
+- [ ] Painel visual web para exibição de métricas e status de saúde em tempo real.

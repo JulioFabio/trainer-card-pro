@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Definição das interfaces e tipos TypeScript principais (`TrainerData`, `Pokemon`, `ItemData`, `NoteData`, `PokedexTheme`, etc.) no arquivo `types.ts`.
+
+
+
 # 📦 Types
 
-> Todas as interfaces e tipos TypeScript do [[Trainer Card Pro]].
+> Todas as interfaces e tipos TypeScript do [[[Visao Geral] Trainer Card Pro]].
 > Arquivo: `types.ts`
 
 ---
@@ -26,9 +32,9 @@ interface Stats {
 ```
 
 Usado em:
-- [[App#Aba Combate]] — grid de atributos editáveis
-- [[PokemonCreationSheet#Sub-aba Stats]] — stats do Pokémon (com sub-objetos `base` e `lvl`)
-- [[Constants#STAT_LABELS]] — mapeamento para labels de exibição
+- [[[Componente] App#Aba Combate]] — grid de atributos editáveis
+- [[[Componente] PokemonCreationSheet#Sub-aba Stats]] — stats do Pokémon (com sub-objetos `base` e `lvl`)
+- [[[Dados] Constantes#STAT_LABELS]] — mapeamento para labels de exibição
 
 ---
 
@@ -44,8 +50,8 @@ interface Skill {
 ```
 
 Usado em:
-- [[App#Aba Combate]] — lista de perícias interativas
-- [[Constants#DEFAULT_SKILLS]] — 30+ perícias iniciais do PTU
+- [[[Componente] App#Aba Combate]] — lista de perícias interativas
+- [[[Dados] Constantes#DEFAULT_SKILLS]] — 30+ perícias iniciais do PTU
 
 ---
 
@@ -61,8 +67,8 @@ interface InventoryItem {
 ```
 
 Usado em:
-- [[App#Aba Mochila]] — itens do inventário
-- [[Features#Aba Mochila]] — CRUD de itens
+- [[[Componente] App#Aba Mochila]] — itens do inventário
+- [[[Arquitetura] Features e Regras#Aba Mochila]] — CRUD de itens
 
 ---
 
@@ -76,7 +82,7 @@ interface Talent {
 ```
 
 Usado em:
-- [[App#Aba Treinador]] — lista de talentos com tooltip
+- [[[Componente] App#Aba Treinador]] — lista de talentos com tooltip
 
 ---
 
@@ -98,7 +104,7 @@ interface PokemonMove {
 ```
 
 Usado em:
-- [[PokemonCreationSheet#Sub-aba Golpes]] — grid de 8 golpes
+- [[[Componente] PokemonCreationSheet#Sub-aba Golpes]] — grid de 8 golpes
 
 ---
 
@@ -112,8 +118,8 @@ interface PokemonCapability {
 ```
 
 Usado em:
-- [[PokemonCreationSheet#Sub-aba Capacidades]] — capacidades adicionais livres do Pokémon
-- [[Capabilities]] — descrições automáticas por valor
+- [[[Componente] PokemonCreationSheet#Sub-aba Capacidades]] — capacidades adicionais livres do Pokémon
+- [[[Dados] Capacidades PTU]] — descrições automáticas por valor
 
 ---
 
@@ -180,9 +186,9 @@ interface StoredPokemon {
 ```
 
 Usado em:
-- [[PokemonCreationSheet]] — formulário de criação/edição
-- [[PcTab]] — armazenamento nos PC boxes
-- [[TeamTab]] — Pokémon ativos na equipe
+- [[[Componente] PokemonCreationSheet]] — formulário de criação/edição
+- [[[Componente] PcTab]] — armazenamento nos PC boxes
+- [[[Componente] TeamTab]] — Pokémon ativos na equipe
 
 ---
 
@@ -197,8 +203,8 @@ interface PCBox {
 ```
 
 Usado em:
-- [[PcTab]] — navegação entre 99 boxes
-- [[TeamTab]] — busca de Pokémon por ID nos boxes
+- [[[Componente] PcTab]] — navegação entre 99 boxes
+- [[[Componente] TeamTab]] — busca de Pokémon por ID nos boxes
 
 ---
 
@@ -242,10 +248,25 @@ interface TrainerData {
 > `TrainerData` é a **interface raiz** de todo o estado da aplicação. É persistida no banco de dados SQLite relacional via endpoints Next.js e sincronizada via auto-save, com backup local em `localStorage` sob a chave `trainer_card_pro_offline_backup` em caso de erro de rede.
 
 Usado em:
-- [[App]] — estado principal via `useState<TrainerData>`
-- [[Constants#INITIAL_TRAINER_DATA]] — valores padrão
+- [[[Componente] App]] — estado principal via `useState<TrainerData>`
+- [[[Dados] Constantes#INITIAL_TRAINER_DATA]] — valores padrão
 
 ---
 
 ## 🏷️ Tags
 #tipos #interfaces #typescript #dados
+
+
+---
+
+## Conexões
+
+- **Consumidores:** [[[Componente] App]], [[[Componente] PokemonCreationSheet]], [[[Componente] TeamTab]], [[[Componente] PcTab]], [[[Componente] NotesTab]], [[[Rotas] API da Ficha]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Tipagem completa e estrita de todas as estruturas de dados do aplicativo.
+- [x] Sincronização entre modelo frontend e esquemas do Prisma.
+- [ ] Refatorar enums numéricos para string unions mais descritivos.

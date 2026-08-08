@@ -1,7 +1,7 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
@@ -9,7 +9,7 @@ autor: "Antigravity"
 
 > Banco de dados e tradutor automático de métricas de capacidade física e mental de Pokémon no sistema PTU.
 > Arquivo: `src/data/capabilities.ts` — **36 linhas**
-> Usado por: [[PokemonCreationSheet#Sub-aba Capacidades]]
+> Usado por: [[[Componente] PokemonCreationSheet#Sub-aba Capacidades]]
 
 ---
 
@@ -74,7 +74,7 @@ export const INTELLIGENCE_CAPABILITY_DESCRIPTIONS: Record<number, string>
 
 ## Integração no Fluxo de Dados
 
-A tradução automática ocorre no componente [[PokemonCreationSheet]]:
+A tradução automática ocorre no componente [[[Componente] PokemonCreationSheet]]:
 ```typescript
 const forceDesc = FORCE_CAPABILITY_DESCRIPTIONS[pokemon.capabilities.force.value] || "Desconhecido";
 ```
@@ -85,3 +85,20 @@ O jogador insere o valor do nível de capacidade nos campos numéricos apropriad
 
 ## 🏷️ Tags
 #dados #regras #ptu #capacidades #forca #salto #inteligencia
+
+
+---
+
+## Conexões
+
+- **Ficha do Pokémon:** [[[Componente] PokemonCreationSheet]]
+- **Tipagem:** [[[Dados] Tipagem TypeScript]]
+- **Constantes:** [[[Dados] Constantes]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Tabelas estáticas de conversão de atributos para capacidades PTU.
+- [x] Cálculo automático de Salto e Inteligência baseado em estatísticas do Pokémon.
+- [ ] Expandir conversões para regras da quinta geração PTU.

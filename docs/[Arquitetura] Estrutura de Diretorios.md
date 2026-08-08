@@ -1,3 +1,16 @@
+---
+tags: [documentacao-viva, projeto, arquitetura, status/ativo]
+status: "ativo"
+ultima_atualizacao: 2026-08-07
+autor: "Antigravity"
+---
+
+## Resumo
+
+Mapeamento hierárquico de toda a árvore de diretórios do repositório Trainer Card Pro, especificando o propósito de cada pasta e subpasta.
+
+
+
 # Estrutura de Diretórios - Trainer Card Pro
 
 Esta é a estrutura de diretórios e arquivos do projeto **Trainer Card Pro**, organizada de forma hierárquica.
@@ -119,3 +132,11 @@ trainer-card-pro/
     └── data/
         └── capabilities.ts           # Definição de capacidades do sistema
 ```
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Mapeamento completo das pastas `app/`, `components/`, `lib/`, `prisma/`, `scripts/` e `docs/`.
+- [ ] Atualizar estrutura conforme surgirem novos microsserviços.

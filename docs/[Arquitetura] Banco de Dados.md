@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, arquitetura, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-05-23
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Modelagem relacional do banco de dados SQLite com Prisma ORM (`prisma/schema.prisma`), cobrindo relacionamentos de Treinador, Pokémon, Itens, Notas e Trocas.
+
+
+
 # 🗄️ Arquitetura de Banco de Dados
 
-> Especificação da estrutura de dados relacionais e modelo de persistência do [[Trainer Card Pro]], implementada com SQLite, Prisma ORM 7 e `better-sqlite3` (Fase 1).
+> Especificação da estrutura de dados relacionais e modelo de persistência do [[[Visao Geral] Trainer Card Pro]], implementada com SQLite, Prisma ORM 7 e `better-sqlite3` (Fase 1).
 
 ---
 
@@ -165,3 +171,20 @@ Controla negociações p2p (trocas de itens ou pokémons entre dois Personagens)
 
 ## 🏷️ Tags
 #dados #arquitetura #prisma #sqlite #better-sqlite3 #db #modelagem #relacionamento
+
+
+---
+
+## Conexões
+
+- **Roadmap:** [[[Arquitetura] Roadmap Banco de Dados]]
+- **APIs:** [[[Rotas] API da Ficha]], [[[Rotas] Upload de Arquivos]], [[[Sistemas] Sistema de Trocas]]
+- **Configurações:** `prisma.config.ts`, `lib/prisma.ts`, `Trainer Card Pro.session.sql`
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Esquema Prisma compilado e sincronizado com SQLite em `prisma/dev.db`.
+- [x] Modelo de dados para Treinador, 6 slots de Time, 99 caixas de PC e Inventário.
+- [ ] Adicionar suporte a transações ACID explícitas em trocas assíncronas.

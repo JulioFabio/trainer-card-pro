@@ -1,9 +1,15 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-16
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+Especificação dos componentes de interface lateral retrátil PokéPapo (`PokePapo.tsx`) e cartões de ataque (`AttackCard.tsx`), integrados ao layout principal da Pokédex.
+
+
 
 # 💬 [Interface] PokéPapo e Layout
 
@@ -21,10 +27,10 @@ O AttackCard é uma representação compacta no estilo PTA 2.0 (Pokemon Tabletop
 
 ## 🔗 Conexões
 
-- **Componente Principal:** [[App]] ([App.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/App.tsx))
+- **Componente Principal:** [[[Componente] App]] ([App.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/App.tsx))
 - **Gaveta do Chat:** [[PokePapo]] ([PokePapo.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/PokePapo.tsx))
 - **Card de Combate:** [[AttackCard]] ([AttackCard.tsx](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/components/AttackCard.tsx))
-- **Temas Globais:** [[Constants]] ([constants.ts](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/constants.ts))
+- **Temas Globais:** [[[Dados] Constantes]] ([constants.ts](file:///C:/Users/Julio/OneDrive/Documentos/Trainer-Card-Pro/trainer-card-pro/constants.ts))
 
 ---
 
@@ -79,3 +85,11 @@ O `AttackCard` é estruturado com base nas regras do sistema de RPG PTA 2.0:
 - [x] Adicionado mock demonstrativo de rolagem com o ataque "Bite" do Golisopod.
 - [ ] Implementar motor real de processamento de comandos de dados (ex: `/roll 1d20+5`) no PokéPapo.
 - [ ] Integrar os ataques reais cadastrados na ficha do Pokémon com botões de disparo automático para o PokéPapo.
+
+
+---
+
+## Conexões
+
+- **Componente Pai:** [[[Componente] App]]
+- **Estilos:** [[[Interface] Estilos e Temas]]

@@ -1,7 +1,7 @@
 ---
 tags: [documentacao-viva, projeto, sistemas, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
@@ -98,3 +98,20 @@ sequenceDiagram
 
 ## 🏷️ Tags
 #backend #trocas #trade #prisma #modal #api
+
+
+---
+
+## Conexões
+
+- **Componentes:** [[[Componente] App]], [[[Componente] TeamTab]], [[[Componente] PcTab]]
+- **Banco de Dados:** [[[Arquitetura] Banco de Dados]]
+- **Utilitários:** [[[Utilitario] SafeFetch]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Modal de solicitação e aceitação de trocas de Pokémons e itens.
+- [x] Rota `/api/trade` para transferência assíncrona de propriedade de entidades.
+- [ ] Adicionar confirmação por código PIN entre jogadores.

@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `ImageCropper` é um modal interativo de recorte quadrado (1:1) baseado no Canvas HTML5 para ajuste de avatares de Treinadores e fotos de Pokémons.
+
+
 
 # ✂️ ImageCropper
 
 > Modal interativo para recorte de imagens com proporção fixa de 1:1.
 > Arquivo: `components/ImageCropper.tsx` — **90 linhas**
-> Usado em: [[App#Aba Treinador]], [[PokemonCreationSheet]]
+> Usado em: [[[Componente] App#Aba Treinador]], [[[Componente] PokemonCreationSheet]]
 
 ---
 
@@ -92,3 +98,12 @@ graph LR
 
 ## 🏷️ Tags
 #componente #crop #imagem #canvas #modal
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Canvas interativo com zoom, drag & drop e rotação de imagens.
+- [x] Exportação de dataURL base64 sanitizada.
+- [ ] Adicionar suporte a filtros visuais e molduras temáticas.

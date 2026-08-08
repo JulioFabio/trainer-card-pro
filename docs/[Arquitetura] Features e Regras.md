@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Especificação detalhada das funcionalidades principais do Trainer Card Pro, incluindo motor de regras PTU, auto-save, abas dinâmicas e cálculo automático.
+
+
+
 # 🧩 Features
 
-> Lista completa de funcionalidades do [[Trainer Card Pro]].
+> Lista completa de funcionalidades do [[[Visao Geral] Trainer Card Pro]].
 
 ---
 
@@ -15,7 +21,7 @@ autor: "Antigravity"
 
 ### Banco de Dados SQLite Relacional (Auto-save)
 - **Primary Source of Truth**: Os dados do personagem (`TrainerData`), itens, pokémons e notas são salvos no banco de dados SQLite por meio do Prisma ORM nas rotas de API `/api/character`, `/api/note`, etc.
-- **Sincronização Atômica**: O componente [[App]] monitora mudanças no estado `trainer` e dispara automaticamente requisições assíncronas `PUT` de auto-save com debounce de 1s.
+- **Sincronização Atômica**: O componente [[[Componente] App]] monitora mudanças no estado `trainer` e dispara automaticamente requisições assíncronas `PUT` de auto-save com debounce de 1s.
 
 ### Fallback em LocalStorage (Resiliência Offline)
 - Se as chamadas para a API de auto-save falharem por problemas de rede, o aplicativo salva uma cópia de segurança em `localStorage` sob a chave `trainer_card_pro_offline_backup` para evitar qualquer perda de dados, exibindo o status visual "Erro ao salvar (Salvo Localmente)" no cabeçalho.
@@ -28,7 +34,7 @@ autor: "Antigravity"
 
 ## 🎨 Sistema de Temas
 
-O sistema de [[Constants#PokedexTheme|temas visuais]] permite trocar toda a paleta de cores da interface.
+O sistema de [[[Dados] Constantes#PokedexTheme|temas visuais]] permite trocar toda a paleta de cores da interface.
 
 | Tema | ID | Cor Principal | Classe Main |
 |---|---|---|---|
@@ -51,7 +57,7 @@ A cor é propagada via:
 
 ## 📊 Cálculos Automáticos (Motor de Regras)
 
-O [[App]] calcula automaticamente valores derivados das regras do PTU usando `useMemo`:
+O [[[Componente] App]] calcula automaticamente valores derivados das regras do PTU usando `useMemo`:
 
 ### HP Máximo
 ```
@@ -111,7 +117,7 @@ Se rank = 2 (Expert)  → d20 + 4 + (2 × Mod) + Bônus
 
 ### Avatar
 - Upload de imagem com preview
-- Crop via [[ImageCropper]] antes de salvar
+- Crop via [[[Componente] ImageCropper]] antes de salvar
 - Hover mostra ícone de câmera
 
 ### Identidade
@@ -120,7 +126,7 @@ Se rank = 2 (Expert)  → d20 + 4 + (2 × Mod) + Bônus
 - **Nível Geral** — motor de todos os cálculos automáticos
 
 ### Dados Biográficos
-Renderizados via componentes [[InfoField]]:
+Renderizados via componentes [[[Componente] InfoField]]:
 - Idade, Gênero, Peso, Altura, Naturalidade, Jogador, Campanha
 
 ### Classes de Carreira
@@ -128,7 +134,7 @@ Renderizados via componentes [[InfoField]]:
 - Campos dinâmicos: `classe1..4` e `level1..4`
 
 ### Capacidade de Movimento
-- Exibido via [[DerivedBox]] — valores calculados automaticamente
+- Exibido via [[[Componente] DerivedBox]] — valores calculados automaticamente
 - Terrestre, Natação, Subaquático
 
 ### Talentos
@@ -148,7 +154,7 @@ Renderizados via componentes [[InfoField]]:
 - Exibe `HP Atual / HP Máximo`
 
 ### Grid de Atributos
-6 atributos editáveis ([[Types#Stats]]):
+6 atributos editáveis ([[[Dados] Tipagem TypeScript#Stats]]):
 - Saúde, Ataque, Defesa, Atq. Especial, Def. Especial, Velocidade
 - Cada atributo exibe seu **Modificador** calculado automaticamente
 - Exibe contagem de **Pontos Gastos / Máximo**
@@ -164,24 +170,24 @@ Renderizados via componentes [[InfoField]]:
 - Perícias de Saúde são binárias (SIM / -)
 
 ### Evasões
-- Exibidas via [[DerivedBox]] — calculadas automaticamente dos atributos
+- Exibidas via [[[Componente] DerivedBox]] — calculadas automaticamente dos atributos
 - Física, Especial, Veloz
 
 ### Movimentos
-- Exibidos via [[DerivedBox]] — calculados automaticamente
+- Exibidos via [[[Componente] DerivedBox]] — calculados automaticamente
 - Terrestre, Natação, Subaquático
 
 ---
 
 ## 👥 Aba Equipe
 
-Ver: [[TeamTab]]
+Ver: [[[Componente] TeamTab]]
 
 - Exibe até **6 Pokémon** ativos no time
 - Cards visuais com imagem, nome, espécie, tipos, HP, level
 - Drag & Drop implícito via botões de gerenciamento
-- Integração bidirecional com o [[PcTab|sistema de PC]]
-- Botão para **criar novo Pokémon** abre o [[PokemonCreationSheet]]
+- Integração bidirecional com o [[[Componente] PcTab|sistema de PC]]
+- Botão para **criar novo Pokémon** abre o [[[Componente] PokemonCreationSheet]]
 - Botão para **editar** Pokémon existente
 - Botão para **devolver ao PC** (move do time para uma box)
 
@@ -200,14 +206,14 @@ Ver: [[TeamTab]]
 
 ## 💻 Aba PC (Computador)
 
-Ver: [[PcTab]]
+Ver: [[[Componente] PcTab]]
 
 - **99 caixas** de armazenamento (sistema PC dos jogos Pokémon)
 - Navegação entre boxes com setas ← →
 - Renomear boxes inline
 - Grid de **30 slots** por box
-- Cada slot pode conter um [[Types#StoredPokemon|Pokémon]]
-- Clique em slot vazio → abre [[PokemonCreationSheet]] para criar
+- Cada slot pode conter um [[[Dados] Tipagem TypeScript#StoredPokemon|Pokémon]]
+- Clique em slot vazio → abre [[[Componente] PokemonCreationSheet]] para criar
 - Clique em Pokémon → abre sheet para editar
 - Drag & drop implícito via lógica de slots
 - Botão para mover Pokémon para a equipe
@@ -216,7 +222,7 @@ Ver: [[PcTab]]
 
 ## 📝 Aba Notas
 
-Ver: [[NotesTab]]
+Ver: [[[Componente] NotesTab]]
 
 - **Editor de texto livre** com formatação Markdown
 - Toggle entre modo **Edição** e modo **Visualização**
@@ -226,7 +232,7 @@ Ver: [[NotesTab]]
 
 ## 🖼️ Crop de Imagem
 
-Ver: [[ImageCropper]]
+Ver: [[[Componente] ImageCropper]]
 
 - Modal para recortar imagens antes de salvar
 - Controles de **zoom** (slider + scroll do mouse)
@@ -238,7 +244,7 @@ Ver: [[ImageCropper]]
 
 ## 🐾 Ficha de Pokémon
 
-Ver: [[PokemonCreationSheet]]
+Ver: [[[Componente] PokemonCreationSheet]]
 
 A sheet de criação/edição de Pokémon é organizada em **4 sub-abas**:
 
@@ -259,7 +265,7 @@ A sheet de criação/edição de Pokémon é organizada em **4 sub-abas**:
 
 ### Sub-aba Capacidades
 - **Traço de Capacidades** (nome + descrição)
-- **Força/Inteligência/Salto**: valor numérico com descrição automática via [[Capabilities]]
+- **Força/Inteligência/Salto**: valor numérico com descrição automática via [[[Dados] Capacidades PTU]]
 - **Deslocamentos**: Terrestre, Natação, Voo, Subaquático, Escavação
 - **Evasões**: Física, Especial, Veloz
 
@@ -276,3 +282,20 @@ A sheet de criação/edição de Pokémon é organizada em **4 sub-abas**:
 
 ## 🏷️ Tags
 #features #funcionalidades #documentação
+
+
+---
+
+## Conexões
+
+- **Visão Geral:** [[[Visao Geral] Trainer Card Pro]]
+- **Sistema de Armazenamento:** [[[Arquitetura] Sistema de Dados]]
+- **Arquitetura DB:** [[[Arquitetura] Banco de Dados]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Persistência relacional via SQLite + Prisma.
+- [x] Abas efêmeras e persistentes para gerenciamento de Pokémons.
+- [ ] Sistema de exportação em PDF da ficha do treinador e Pokémons.

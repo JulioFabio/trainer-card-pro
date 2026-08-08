@@ -1,13 +1,13 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-04
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
 # 🏠 App
 
-> Componente raiz do [[Trainer Card Pro]].
+> Componente raiz do [[[Visao Geral] Trainer Card Pro]].
 > Arquivo: `App.tsx` — **~780 linhas**
 
 ---
@@ -19,7 +19,7 @@ O `App` é o **componente-mãe** que orquestra todo o estado, sincronização as
 2. **Abas fixas** de navegação (6 abas da Pokédex) + **Abas dinâmicas** de fichas de Pokémon.
 3. **Conteúdo** condicional por aba ativa (incluindo fichas de Pokémon renderizadas inline).
 4. **Footer** temático do SO da Pokédex.
-5. **Modais** flutuantes (tooltip de talentos, [[ImageCropper]] e Trocas).
+5. **Modais** flutuantes (tooltip de talentos, [[[Componente] ImageCropper]] e Trocas).
 
 ---
 
@@ -37,10 +37,10 @@ Visando maximizar o aproveitamento de tela e proporcionar uma experiência premi
 
 | Variável | Tipo | Descrição |
 |---|---|---|
-| `trainer` | [[Types#TrainerData]] | Estado completo da ficha vindo da API SQLite |
+| `trainer` | [[[Dados] Tipagem TypeScript#TrainerData]] | Estado completo da ficha vindo da API SQLite |
 | `activeTab` | `string` | Aba ativa — aceita IDs fixos (`'treinador'`, `'combate'`, etc.) e dinâmicos (`'pokemon-team-<id>'`, `'pokemon-pc-<box>-<slot>'`) |
 | `pokemonTabs` | `PokemonTab[]` | Array de metadados das abas dinâmicas de Pokémon abertas |
-| `currentTheme` | [[Constants#PokedexTheme]] | Tema de cores atual |
+| `currentTheme` | [[[Dados] Constantes#PokedexTheme]] | Tema de cores atual |
 | `newItemName` | `string` | Nome do novo item (inventário) |
 | `newItemDesc` | `string` | Descrição do novo item |
 | `newItemQty` | `number` | Quantidade do novo item |
@@ -73,13 +73,13 @@ interface PokemonTab {
 
 | Nome | Dependências | Fórmula | Referência |
 |---|---|---|---|
-| `calculatedHpMax` | `saude`, `levelGeral` | `(Saúde + Nível) × 4` | [[Features#HP Máximo]] |
-| `calculatedEvasion` | `defesa`, `defEspecial`, `velocidade` | `floor(stat / 5)` | [[Features#Evasões]] |
-| `calculatedMovement` | `velocidade` | `5 + floor(vel/2)` → derivados | [[Features#Movimentação]] |
-| `totalSpentPoints` | `stats` | `Σ todos stats` | [[Features#Pontos de Atributo]] |
-| `calculatedMaxPoints` | `levelGeral` | Fórmula escalonada | [[Features#Pontos de Atributo]] |
-| `calculatedMaxTalents` | `levelGeral` | Fórmula escalonada | [[Features#Máximo de Talentos]] |
-| `calculatedStatCap` | `levelGeral` | `14 + floor(Nível/2)` | [[Features#Cap de Atributo]] |
+| `calculatedHpMax` | `saude`, `levelGeral` | `(Saúde + Nível) × 4` | [[[Arquitetura] Features e Regras#HP Máximo]] |
+| `calculatedEvasion` | `defesa`, `defEspecial`, `velocidade` | `floor(stat / 5)` | [[[Arquitetura] Features e Regras#Evasões]] |
+| `calculatedMovement` | `velocidade` | `5 + floor(vel/2)` → derivados | [[[Arquitetura] Features e Regras#Movimentação]] |
+| `totalSpentPoints` | `stats` | `Σ todos stats` | [[[Arquitetura] Features e Regras#Pontos de Atributo]] |
+| `calculatedMaxPoints` | `levelGeral` | Fórmula escalonada | [[[Arquitetura] Features e Regras#Pontos de Atributo]] |
+| `calculatedMaxTalents` | `levelGeral` | Fórmula escalonada | [[[Arquitetura] Features e Regras#Máximo de Talentos]] |
+| `calculatedStatCap` | `levelGeral` | `14 + floor(Nível/2)` | [[[Arquitetura] Features e Regras#Cap de Atributo]] |
 
 ---
 
@@ -98,8 +98,8 @@ interface PokemonTab {
 | Função | Descrição |
 |---|---|
 | `handleStatChange` | Atualiza um atributo específico (clamp ≥ 0) |
-| `handleProfileChange` | Atualiza qualquer campo de [[Types#TrainerData]] |
-| `handleAvatarUpload` | Lê imagem e envia para [[ImageCropper]] |
+| `handleProfileChange` | Atualiza qualquer campo de [[[Dados] Tipagem TypeScript#TrainerData]] |
+| `handleAvatarUpload` | Lê imagem e envia para [[[Componente] ImageCropper]] |
 | `addItem` | Adiciona item ao inventário e salva na API |
 | `updateItemQty` | Incrementa/decrementa quantidade de item no banco de dados |
 | `addTalent` | Adiciona talento com nome e descrição |
@@ -153,14 +153,14 @@ graph TD
 
 | Componente | Aba(s) | Propósito |
 |---|---|---|
-| [[InfoField]] | Treinador | Campos de dados biográficos |
-| [[DerivedBox]] | Treinador, Combate | Valores derivados (evasão, movimento) |
-| [[SmartInput]] | Combate | Input numérico inteligente |
-| [[NotesTab]] | Notas | Editor de anotações diárias |
-| [[PcTab]] | PC | Sistema de caixas do Computador |
-| [[TeamTab]] | Equipe | Pokémon ativos na party |
-| [[PokemonCreationSheet]] | Abas Dinâmicas | Ficha completa de Pokémon (renderizada inline) |
-| [[ImageCropper]] | Treinador | Crop de imagem de avatar e pokémon |
+| [[[Componente] InfoField]] | Treinador | Campos de dados biográficos |
+| [[[Componente] DerivedBox]] | Treinador, Combate | Valores derivados (evasão, movimento) |
+| [[[Componente] SmartInput]] | Combate | Input numérico inteligente |
+| [[[Componente] NotesTab]] | Notas | Editor de anotações diárias |
+| [[[Componente] PcTab]] | PC | Sistema de caixas do Computador |
+| [[[Componente] TeamTab]] | Equipe | Pokémon ativos na party |
+| [[[Componente] PokemonCreationSheet]] | Abas Dinâmicas | Ficha completa de Pokémon (renderizada inline) |
+| [[[Componente] ImageCropper]] | Treinador | Crop de imagem de avatar e pokémon |
 
 ---
 
@@ -197,9 +197,28 @@ const rootStyle = {
 };
 ```
 
-Usadas pelo [[Estilos|CSS global]] para estilizar scrollbars customizadas.
+Usadas pelo [[[Interface] Estilos e Temas|CSS global]] para estilizar scrollbars customizadas.
 
 ---
 
 ## 🏷️ Tags
 #componente #principal #estado #layout #full-screen #responsivo
+
+
+---
+
+## Conexões
+
+- **Subcomponentes:** [[[Componente] InfoField]], [[[Componente] DerivedBox]], [[[Componente] SmartInput]], [[[Componente] NotesTab]], [[[Componente] PcTab]], [[[Componente] TeamTab]], [[[Componente] PokemonCreationSheet]], [[[Componente] ImageCropper]]
+- **Tipos e Constantes:** [[[Dados] Tipagem TypeScript]], [[[Dados] Constantes]]
+- **Estilos:** [[[Interface] Estilos e Temas]] (`index.css`)
+- **Layout Principal:** [[[Arquitetura] Stack Tecnologica]] (`app/layout.tsx`)
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Gerenciamento de abas fixas da Pokédex e abas dinâmicas de Pokémon.
+- [x] Auto-save inline e sincronização de temas CSS.
+- [x] Modais de Recorte de Imagem, Trocas e Tooltips de Talentos.
+- [ ] Adicionar suporte a atalhos de teclado (hotkeys) para navegação rápida de abas.

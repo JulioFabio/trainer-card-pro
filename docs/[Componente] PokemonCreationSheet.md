@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `PokemonCreationSheet` é o formulário completo e ficha técnica do Pokémon, contendo cálculos de atributos base, estatísticas combatentes, movimentos e biografia.
+
+
 
 # 🐾 PokemonCreationSheet
 
 > Formulário completo de criação e edição de Pokémon.
 > Arquivo: `components/PokemonCreationSheet.tsx` — **538 linhas**
-> Usado por: [[PcTab]], [[TeamTab]]
+> Usado por: [[[Componente] PcTab]], [[[Componente] TeamTab]]
 
 ---
 
@@ -129,7 +135,7 @@ interface PokemonCreationSheetProps {
 
 | Função | Descrição |
 |---|---|
-| `handleImageUpload` | Lê arquivo de imagem como base64, define `imageToCrop` para abrir o [[ImageCropper]] |
+| `handleImageUpload` | Lê arquivo de imagem como base64, define `imageToCrop` para abrir o [[[Componente] ImageCropper]] |
 | `handleStatChange(key, subKey, value)` | Atualiza `base` ou `lvl` de um stat, recalcula `total = base + lvl`. Se o stat é `saude`, recalcula `hp.max = (saude + level) × 3` |
 | `updateMove(i, field, value)` | Atualiza campo de um golpe. Auto-preenche slots vazios até o índice `i` |
 
@@ -176,13 +182,13 @@ interface PokemonCreationSheetProps {
 
 ## Sub-aba Stats
 
-Tabela com 6 linhas (uma por [[Types#Stats|atributo]]):
+Tabela com 6 linhas (uma por [[[Dados] Tipagem TypeScript#Stats|atributo]]):
 
 | Coluna | Tipo | Descrição |
 |---|---|---|
 | Atributo | label | Nome do atributo (via `STAT_LABELS`) |
-| Base | [[SmartInput]] | Valor base editável |
-| Lvl | [[SmartInput]] | Bônus de nível editável |
+| Base | [[[Componente] SmartInput]] | Valor base editável |
+| Lvl | [[[Componente] SmartInput]] | Bônus de nível editável |
 | Fase | display | Fixo em `0` (placeholder futuro) |
 | Total | display | `base + lvl` (calculado) |
 
@@ -195,7 +201,7 @@ Tabela com 6 linhas (uma por [[Types#Stats|atributo]]):
 - Textarea para descrição
 
 ### Capacidades Core
-Via integração com [[Capabilities]]:
+Via integração com [[[Dados] Capacidades PTU]]:
 
 | Capacidade | Auto-Descrição |
 |---|---|
@@ -258,3 +264,12 @@ graph LR
 
 ## 🏷️ Tags
 #componente #pokemon #formulário #criação #edição
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Ficha completa responsiva com layout side-by-side de foto e estatísticas.
+- [x] Travamento de HP Máximo calculado por fórmulas PTU e barra dinâmica.
+- [ ] Adicionar cálculo automático de pontos de tutor e capacidades por nível.

@@ -1,9 +1,15 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+Documentação do sistema de estilos globais (`index.css`), detalhando temas de cores HSL/HEX, cursores de Pokébola, efeitos holográficos e animações CSS.
+
+
 
 # 🎨 Estilos
 
@@ -105,3 +111,19 @@ O projeto utiliza a fonte premium **Outfit** (do Google Fonts) de forma global p
 
 ## 🏷️ Tags
 #estilos #css #design #cursores #holograma #scrollbars #animacao #tipografia #fontes
+
+
+---
+
+## Conexões
+
+- **Componente Raiz:** [[[Componente] App]]
+- **Configurações:** [[[Arquitetura] Stack Tecnologica]] (`tailwind.config.ts`, `postcss.config.mjs`)
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Variáveis CSS raiz dinâmicas `--theme-color`.
+- [x] Estilização de scrollbar customizada e cursores temáticos.
+- [ ] Suporte nativo a modo de alto contraste para acessibilidade.

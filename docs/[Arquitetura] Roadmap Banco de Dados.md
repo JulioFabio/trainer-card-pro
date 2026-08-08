@@ -1,9 +1,15 @@
 ---
 tags: [documentacao-viva, projeto, roadmap, status/completo]
 status: "completo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+Planejamento de arquitetura e roadmap da transição do armazenamento estático/localStorage para um modelo relacional SQLite persistente com Prisma ORM.
+
+
 
 # 🗺️ [Roadmap] Fase 1 - Banco de Dados Local (SQLite)
 
@@ -37,3 +43,19 @@ autor: "Antigravity"
 
 ## 📝 Etapa 6: Sistema de Anotações (`NotesTab.tsx`)
 - [x] Adaptar o `NotesTab.tsx` para ler e salvar as anotações não mais no estado gigante do `TrainerData`, mas como registros individuais na nova tabela `Note` atrelada ao `characterId`.
+
+---
+
+## Conexões
+
+- **Arquitetura DB:** [[[Arquitetura] Banco de Dados]]
+- **Sistema de Dados:** [[[Arquitetura] Sistema de Dados]]
+- **APIs:** [[[Rotas] API da Ficha]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Definição dos modelos Prisma (`Trainer`, `Pokemon`, `Item`, `Note`, `TradeRequest`).
+- [x] Migração dos endpoints para rotas assíncronas SQLite.
+- [x] Conclusão da Fase 1 de Banco de Dados.

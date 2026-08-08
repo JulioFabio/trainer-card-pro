@@ -1,9 +1,15 @@
 ---
 tags: [documentacao-viva, projeto, status/completo]
 status: "ativo"
-ultima_atualizacao: 2026-06-04
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+Este documento traz a auditoria completa do tratamento de erros do Trainer Card Pro, mapeando pontos de falhas silenciosas, falta de feedback ao usuário e propostas de UX defensiva.
+
+
 
 # Relatório de Análise: Tratamento de Erros e Experiência do Usuário (UX)
 
@@ -223,3 +229,22 @@ Se o auto-save da API falhar por problemas de rede, a aplicação não deve perd
 2. Se a gravação falhar (ex: `catch` ativado ou `!response.ok`), a aplicação salva uma cópia dos dados localmente no `localStorage` com a chave `character_offline_backup`.
 3. Exibe o status `Erro de Conexão (Salvo Localmente)`.
 4. Quando a conexão for restabelecida ou ao recarregar, sincroniza o backup pendente com o backend.
+
+
+---
+
+## Conexões
+
+- **Barreira de Erros:** [[[Interface] ErrorHandler]] (`app/error.tsx`)
+- **Utilitário HTTP:** [[[Utilitario] SafeFetch]] (`lib/safeFetch.ts`)
+- **DevOps:** [[[DevOps] Telemetria e Observabilidade]] (`lib/telemetry.ts`)
+- **APIs:** [[[Rotas] API da Ficha]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Levantamento e auditoria de cenários de erro silencioso.
+- [x] Criação de barreiras visuais e feedbacks amigáveis.
+- [ ] Implementar retry automático com exponencial backoff em falhas de rede.
+- [ ] Adicionar modal universal de alerta para desconexão com banco SQLite.

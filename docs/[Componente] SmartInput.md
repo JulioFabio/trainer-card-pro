@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `SmartInput` é um componente de entrada numérica inteligente capaz de avaliar expressões matemáticas inline e sanitizar valores instantaneamente.
+
+
 
 # 🧮 SmartInput
 
 > Input de texto avançado com suporte a avaliação de expressões matemáticas integradas (calculadora inline).
 > Arquivo: `components/SmartInput.tsx` — **81 linhas**
-> Usado em: [[App#Aba Combate]], [[PokemonCreationSheet]]
+> Usado em: [[[Componente] App#Aba Combate]], [[[Componente] PokemonCreationSheet]]
 
 ---
 
@@ -110,3 +116,18 @@ const final = Math.round(num);
 
 ## 🏷️ Tags
 #componente #calculadora #input #matematica #expressao #seguranca
+
+
+---
+
+## Conexões
+
+- **Consumidores:** [[[Componente] App]], [[[Componente] PokemonCreationSheet]], [[[Componente] DerivedBox]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Calculadora de expressões simples (+, -, *, /) diretamente no campo numérico.
+- [x] Sanitização contra valores negativos indesejados ou Strings mal-formatadas.
+- [ ] Suporte a parênteses e fórmulas com variáveis de atributos.

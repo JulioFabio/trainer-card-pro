@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `InfoField` é um componente flexível de entrada de dados no estilo Pokedex para dados biográficos, nível, classe e notas do personagem.
+
+
 
 # 📝 InfoField
 
 > Campo de entrada de texto ou número estilizado em formato de Pokédex retrô.
 > Arquivo: `components/InfoField.tsx` — **28 linhas**
-> Usado em: [[App#Aba Treinador]]
+> Usado em: [[[Componente] App#Aba Treinador]]
 
 ---
 
@@ -47,7 +53,7 @@ O container é construído como uma linha flexível (`flex border-2 border-black
 
 ## Comportamento de Mudança (Parsing)
 
-O handler de mudança verifica o tipo do campo para converter valores numéricos adequadamente de forma a evitar que strings que representam números sejam salvas como string no estado global de [[Types#TrainerData|TrainerData]]:
+O handler de mudança verifica o tipo do campo para converter valores numéricos adequadamente de forma a evitar que strings que representam números sejam salvas como string no estado global de [[[Dados] Tipagem TypeScript#TrainerData|TrainerData]]:
 
 ```typescript
 onChange={(e) => onChange(
@@ -66,3 +72,19 @@ onChange={(e) => onChange(
 
 ## 🏷️ Tags
 #componente #biografia #input #formulario #retro
+
+
+---
+
+## Conexões
+
+- **Consumidores:** [[[Componente] App]], [[[Componente] PokemonCreationSheet]]
+- **Utilitários:** [[dry-code-refactor]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Componente genérico reutilizável para inputs textuais e numéricos de perfil.
+- [x] Formatação visual uniforme por tema.
+- [ ] Adicionar auto-complete para classes PTU predefinidas.

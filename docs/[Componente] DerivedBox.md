@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `DerivedBox` é um componente visual reutilizável para exibição e edição rápida de estatísticas derivadas (evasões, deslocamento, iniciativa e capacidades).
+
+
 
 # 📦 DerivedBox
 
 > Componente de exibição compacto para estatísticas derivadas e calculadas.
 > Arquivo: `components/DerivedBox.tsx` — **21 linhas**
-> Usado em: [[App#Aba Treinador]], [[App#Aba Combate]], [[PokemonCreationSheet#Sub-aba Capacidades]]
+> Usado em: [[[Componente] App#Aba Treinador]], [[[Componente] App#Aba Combate]], [[[Componente] PokemonCreationSheet#Sub-aba Capacidades]]
 
 ---
 
@@ -58,3 +64,19 @@ O componente é um componente funcional puro (stateless) que renderiza um layout
 
 ## 🏷️ Tags
 #componente #apresentacao #ui #derived #retro
+
+
+---
+
+## Conexões
+
+- **Consumidores:** [[[Componente] App]], [[[Componente] PokemonCreationSheet]]
+- **Estilos:** [[[Interface] Estilos e Temas]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Layout compacto com destaque numérico e suporte a tooltips explicativos.
+- [x] Estilização dinâmica por tema.
+- [ ] Adicionar animações de modificadores temporários (buffs/debuffs).

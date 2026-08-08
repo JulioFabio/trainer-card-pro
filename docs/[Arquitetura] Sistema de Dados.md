@@ -1,19 +1,25 @@
 ---
 tags: [documentacao-viva, projeto, dados, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-05-23
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Detalhamento do ciclo de vida dos dados, estratégias de auto-save, migração e sincronização entre estado em memória React e banco de dados SQLite.
+
+
+
 # 🔄 Sistema de Dados
 
-> Documentação do fluxo de dados, ciclo de vida do estado, persistência relacional SQLite e comunicação assíncrona do [[Trainer Card Pro]].
+> Documentação do fluxo de dados, ciclo de vida do estado, persistência relacional SQLite e comunicação assíncrona do [[[Visao Geral] Trainer Card Pro]].
 
 ---
 
 ## 🗺️ Visão Geral do Fluxo de Dados
 
-A aplicação Trainer Card Pro utiliza o modelo de fluxo de dados unidirecional do React, centralizado no componente [[App]]. O estado do treinador e dos Pokémon é propagado de cima para baixo (via *props*) e modificado de baixo para cima (via *callback handlers*). A grande mudança estrutural da Fase 1 é que a fonte da verdade migrou do `localStorage` local do navegador para o **banco de dados SQLite relacional**, acessado através de rotas de API robustas no Next.js.
+A aplicação Trainer Card Pro utiliza o modelo de fluxo de dados unidirecional do React, centralizado no componente [[[Componente] App]]. O estado do treinador e dos Pokémon é propagado de cima para baixo (via *props*) e modificado de baixo para cima (via *callback handlers*). A grande mudança estrutural da Fase 1 é que a fonte da verdade migrou do `localStorage` local do navegador para o **banco de dados SQLite relacional**, acessado através de rotas de API robustas no Next.js.
 
 ```mermaid
 graph TD
@@ -40,7 +46,7 @@ graph TD
 
 ## 1. Ciclo de Vida da Inicialização (Carregamento do Banco de Dados)
 
-Quando a aplicação é aberta, o [[App]] executa os seguintes passos sequenciais para construir o estado ativo:
+Quando a aplicação é aberta, o [[[Componente] App]] executa os seguintes passos sequenciais para construir o estado ativo:
 
 ### Passo A: Requisição GET de Inicialização
 O componente `App` faz uma chamada `GET` à rota `/api/character?id=<id>` buscando os dados reais persistidos no banco SQLite.
@@ -54,7 +60,7 @@ O backend faz o parse automático das strings JSON do SQLite (`sheetData` para a
 
 ## 2. Mutação de Estado e Sincronização (Auto-Save Persistente)
 
-Todas as alterações na ficha são feitas de forma imutável atualizando o estado `trainer` do [[App]].
+Todas as alterações na ficha são feitas de forma imutável atualizando o estado `trainer` do [[[Componente] App]].
 
 ### Salvar Automático Real (`Auto-Save via API`)
 Um efeito (`useEffect`) monitora alterações profundas no objeto de estado `trainer` e dispara chamadas assíncronas assépticas `PUT` para `/api/character` de forma transparente. Isso garante que cada mudança de ponto de status, edição de talento ou atualização de inventário seja sincronizada no banco de dados SQLite sem que o usuário precise clicar em nenhum botão.
@@ -67,7 +73,7 @@ Um efeito (`useEffect`) monitora alterações profundas no objeto de estado `tra
 
 ## 3. Fluxo de Dados: Equipe Principal <-> Armazenamento PC
 
-A sincronização entre a equipe ativa ([[TeamTab]]) e as caixas de armazenamento do computador ([[PcTab]]) permanece centralizada e otimizada:
+A sincronização entre a equipe ativa ([[[Componente] TeamTab]]) e as caixas de armazenamento do computador ([[[Componente] PcTab]]) permanece centralizada e otimizada:
 
 - Os Pokémon ativos no time são salvos na tabela `Pokemon` com a flag `isParty: true`.
 - Os Pokémon armazenados no PC são salvos com `isParty: false` e um campo `boxName` associado ao index de 1 a 99 do PC.
@@ -78,11 +84,11 @@ A sincronização entre a equipe ativa ([[TeamTab]]) e as caixas de armazenament
 ## 4. Comunicação dos Componentes Auxiliares
 
 ### SmartInput (Fórmula -> Número)
-O [[SmartInput]] funciona de forma isolada do estado global enquanto o usuário digita:
+O [[[Componente] SmartInput]] funciona de forma isolada do estado global enquanto o usuário digita:
 1. O usuário digita a expressão matemática (ex: `10 + 20`).
 2. O estado interno local `localValue` armazena `"10 + 20"`.
 3. No `onBlur` (ou `Enter`), a expressão é processada e convertida em `30`.
-4. Dispara o callback `onChange(30)` que envia o valor final consolidado para o [[App]], atualizando o estado de forma limpa.
+4. Dispara o callback `onChange(30)` que envia o valor final consolidado para o [[[Componente] App]], atualizando o estado de forma limpa.
 
 ### ImageCropper (Upload -> Crop -> API Save)
 1. O usuário seleciona um arquivo de imagem.
@@ -94,3 +100,20 @@ O [[SmartInput]] funciona de forma isolada do estado global enquanto o usuário 
 
 ## 🏷️ Tags
 #dados #arquitetura #fluxodedados #sincronizacao #autosave #database #sqlite #prisma
+
+
+---
+
+## Conexões
+
+- **Arquitetura DB:** [[[Arquitetura] Banco de Dados]]
+- **DevOps:** [[[DevOps] Telemetria e Observabilidade]]
+- **Utilitário HTTP:** [[[Utilitario] SafeFetch]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Auto-save inline em inputs com debounce.
+- [x] Migração de dados legados do localStorage para SQLite.
+- [ ] Implementar indicador visual de status de salvamento ("Salvo", "Salvando...").

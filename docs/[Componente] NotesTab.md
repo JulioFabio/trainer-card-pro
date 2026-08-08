@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `NotesTab` fornece um editor de diário de campanha com suporte a sintaxe GitHub Flavored Markdown (GFM), categorias e auto-save assíncrono.
+
+
 
 # 📝 NotesTab
 
 > Editor e visualizador Markdown integrado para anotações de campanha.
 > Arquivo: `components/NotesTab.tsx` — **148 linhas**
-> Usado em: [[App#Aba Notas]]
+> Usado em: [[[Componente] App#Aba Notas]]
 
 ---
 
@@ -99,3 +105,12 @@ O componente consome bibliotecas externas específicas para garantir uma renderi
 
 ## 🏷️ Tags
 #componente #editor #markdown #notas #rpg #gfm
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Editor rich-text/markdown com salvamento de anotações.
+- [x] Categorização por tags e diário de sessão.
+- [ ] Adicionar visualizador de imagens e anexos inline nas notas.

@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `PcTab` simula o sistema de armazenamento de Pokémons em caixas do Computador (PC do Bebe/Bill) em até 99 caixas com drag & drop e filtros por tipo.
+
+
 
 # 💻 PcTab
 
 > Sistema de caixas PC para armazenamento de Pokémon (99 boxes × 30 slots).
 > Arquivo: `components/PcTab.tsx` — **446 linhas**
-> Usado por: [[App#Aba PC]]
+> Usado por: [[[Componente] App#Aba PC]]
 
 ---
 
@@ -39,7 +45,7 @@ interface PcTabProps {
 | `typesInput` | `string` | `''` | Campo de texto para tipos (separados por vírgula) |
 
 > [!NOTE]
-> O antigo estado `viewMode` (`'box' | 'sheet'`) foi removido. A ficha de criação/edição agora é renderizada como uma aba dinâmica no [[App]] ao invés de um overlay local.
+> O antigo estado `viewMode` (`'box' | 'sheet'`) foi removido. A ficha de criação/edição agora é renderizada como uma aba dinâmica no [[[Componente] App]] ao invés de um overlay local.
 
 ---
 
@@ -166,7 +172,7 @@ sequenceDiagram
 
 ## Integração com Abas Dinâmicas
 
-O antigo overlay holográfico fullscreen foi substituído pelo sistema de abas dinâmicas do [[App]]. Quando o usuário clica em "Criar Pokemon" ou "Abrir Ficha", o `PcTab` invoca `openPokemonTab()` com `origin: 'pc'` e `type: 'ephemeral'`, delegando a renderização do [[PokemonCreationSheet]] para o componente pai. A aba fecha automaticamente ao navegar para outra.
+O antigo overlay holográfico fullscreen foi substituído pelo sistema de abas dinâmicas do [[[Componente] App]]. Quando o usuário clica em "Criar Pokemon" ou "Abrir Ficha", o `PcTab` invoca `openPokemonTab()` com `origin: 'pc'` e `type: 'ephemeral'`, delegando a renderização do [[[Componente] PokemonCreationSheet]] para o componente pai. A aba fecha automaticamente ao navegar para outra.
 
 ---
 
@@ -184,3 +190,12 @@ graph LR
 
 ## 🏷️ Tags
 #componente #pc #armazenamento #pokemon #boxes #abas-dinamicas
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Sistema de caixas 1-99 com capacidade de 30 Pokémons por caixa.
+- [x] Movimentação rápida de Pokémons entre PC e Equipe principal.
+- [ ] Implementar busca global por nome, espécie ou golpes em todas as caixas.

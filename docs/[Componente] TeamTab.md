@@ -1,15 +1,21 @@
 ---
 tags: [documentacao-viva, projeto, componentes, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
+
+## Resumo
+
+O `TeamTab` gerencia os 6 membros da equipe principal de combate do Treinador, permitindo reorganização, visualização rápida de status e troca com o PC.
+
+
 
 # 👥 TeamTab
 
 > Gerenciamento da equipe ativa de Pokémon (máximo 6 membros).
 > Arquivo: `components/TeamTab.tsx` — **185 linhas**
-> Usado por: [[App#Aba Equipe]]
+> Usado por: [[[Componente] App#Aba Equipe]]
 
 ---
 
@@ -36,7 +42,7 @@ interface TeamTabProps {
 | `isSelectingForSlot` | `number \| null` | Índice do slot sendo preenchido (abre modal de seleção) |
 
 > [!NOTE]
-> O antigo estado `editingPokemon` foi removido. A edição agora acontece em abas dinâmicas persistentes no [[App]].
+> O antigo estado `editingPokemon` foi removido. A edição agora acontece em abas dinâmicas persistentes no [[[Componente] App]].
 
 ---
 
@@ -80,7 +86,7 @@ interface TeamTabProps {
 - **Nome** em destaque (cor do tema)
 - **Tipos** como badges
 - **Botão ✕** para remover da equipe (canto superior direito)
-- **Click no card** → chama `openPokemonTab({ origin: 'team', type: 'persistent', pokemonId, label })`, abrindo uma aba dinâmica persistente no [[App]]
+- **Click no card** → chama `openPokemonTab({ origin: 'team', type: 'persistent', pokemonId, label })`, abrindo uma aba dinâmica persistente no [[[Componente] App]]
 - Animação de hover: `scale-105`, `shadow-2xl`, `z-50`
 
 ### Slot Vazio
@@ -105,7 +111,7 @@ Ativado quando `isSelectingForSlot !== null`:
 
 ## Integração com Abas Dinâmicas
 
-O antigo modal holográfico fullscreen (com scanlines e efeito de escala 1.13) foi substituído pelo sistema de abas dinâmicas do [[App]]. Ao clicar no card de um Pokémon da equipe, o `TeamTab` invoca `openPokemonTab()` com `origin: 'team'` e `type: 'persistent'`. A aba permanece visível na barra de navegação até ser fechada manualmente pelo botão `[X]`.
+O antigo modal holográfico fullscreen (com scanlines e efeito de escala 1.13) foi substituído pelo sistema de abas dinâmicas do [[[Componente] App]]. Ao clicar no card de um Pokémon da equipe, o `TeamTab` invoca `openPokemonTab()` com `origin: 'team'` e `type: 'persistent'`. A aba permanece visível na barra de navegação até ser fechada manualmente pelo botão `[X]`.
 
 ---
 
@@ -123,3 +129,12 @@ graph LR
 
 ## 🏷️ Tags
 #componente #equipe #pokemon #time #abas-dinamicas
+
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Renderização visual dos 6 Pokémons ativos com HP, Nível e Tipagem.
+- [x] Integração com abas dinâmicas inline de edição.
+- [ ] Adicionar botão de reordenação por Drag & Drop na equipe.

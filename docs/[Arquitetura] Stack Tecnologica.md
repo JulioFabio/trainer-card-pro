@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-05-23
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Visão geral da stack tecnológica do projeto (React 19, Next.js 15, TypeScript, Tailwind CSS, Prisma 7, SQLite, Better-SQLite3, FontAwesome).
+
+
+
 # 💻 Stack Tecnológica
 
-> Especificação de tecnologias, pacotes, compilação e configurações do ecossistema do [[Trainer Card Pro]].
+> Especificação de tecnologias, pacotes, compilação e configurações do ecossistema do [[[Visao Geral] Trainer Card Pro]].
 
 ---
 
@@ -16,8 +22,8 @@ autor: "Antigravity"
 O aplicativo é desenvolvido como uma aplicação **Next.js (App Router)** moderna, rápida e altamente otimizada:
 
 1. **React 19 (v19.2.3)**: Biblioteca de UI robusta focada em componentes reutilizáveis e hooks avançados (`useMemo`, `useCallback`, `useEffect`).
-2. **TypeScript (~v5.8.2)**: Fornece tipagem estática e segura para todo o fluxo de dados (veja [[Types]]).
-3. **Tailwind CSS (v3.4.1)**: Framework CSS utilitário para estilização rápida, responsiva e moderna (veja [[Estilos]]).
+2. **TypeScript (~v5.8.2)**: Fornece tipagem estática e segura para todo o fluxo de dados (veja [[[Dados] Tipagem TypeScript]]).
+3. **Tailwind CSS (v3.4.1)**: Framework CSS utilitário para estilização rápida, responsiva e moderna (veja [[[Interface] Estilos e Temas]]).
 4. **Next.js 15 (v15.5.18)**: Framework full-stack React com App Router, Server Components e API Routes.
 5. **Prisma ORM (v7.x)**: Mecanismo de mapeamento objeto-relacional para acesso tipado e seguro ao banco de dados SQLite local (veja [[[Arquitetura] Banco de Dados]]).
 
@@ -29,14 +35,14 @@ As bibliotecas complementares instaladas no projeto resolvem demandas específic
 
 | Pacote | Versão | Função Principal | Referência |
 |---|---|---|---|
-| **`next`** | `^15.3.0` | Framework React full-stack com App Router e otimizações de build | [[Stack Tecnológica]] |
+| **`next`** | `^15.3.0` | Framework React full-stack com App Router e otimizações de build | [[[Arquitetura] Stack Tecnologica]] |
 | **`better-sqlite3`** | `^11.8.0` | Driver SQLite nativo de alta performance escrito em C++ para Node.js | [[[Arquitetura] Banco de Dados]] |
 | **`@prisma/client`** | `^7.x` | Cliente gerado tipado do Prisma para execução de queries | [[[Arquitetura] Banco de Dados]] |
 | **`@prisma/adapter-better-sqlite3`** | `^7.x` | Driver Adapter oficial para conectar o Prisma 7 a instâncias better-sqlite3 | [[[Arquitetura] Banco de Dados]] |
-| **`react-easy-crop`** | `^5.5.6` | Recortador de imagem interativo quadrado em Canvas para fotos e avatares | [[ImageCropper]] |
-| **`react-markdown`** | `^10.1.0` | Converte texto puro em elementos React estruturados com segurança | [[NotesTab]] |
-| **`remark-gfm`** | `^4.0.1` | Adiciona tabelas, links e checklists ao interpretador Markdown | [[NotesTab]] |
-| **`@tailwindcss/typography`** | `^0.5.19` | Plugin utilitário do Tailwind para estilizar blocos HTML Markdown | [[NotesTab]] |
+| **`react-easy-crop`** | `^5.5.6` | Recortador de imagem interativo quadrado em Canvas para fotos e avatares | [[[Componente] ImageCropper]] |
+| **`react-markdown`** | `^10.1.0` | Converte texto puro em elementos React estruturados com segurança | [[[Componente] NotesTab]] |
+| **`remark-gfm`** | `^4.0.1` | Adiciona tabelas, links e checklists ao interpretador Markdown | [[[Componente] NotesTab]] |
+| **`@tailwindcss/typography`** | `^0.5.19` | Plugin utilitário do Tailwind para estilizar blocos HTML Markdown | [[[Componente] NotesTab]] |
 
 ---
 
@@ -76,3 +82,20 @@ Acesse no navegador através de: `http://localhost:3000`.
 
 ## 🏷️ Tags
 #tecnologia #react #nextjs #typescript #tailwind #configuracoes #build #prisma #sqlite
+
+
+---
+
+## Conexões
+
+- **Visão Geral:** [[[Visao Geral] Trainer Card Pro]]
+- **Arquitetura:** [[[Arquitetura] Banco de Dados]], [[[DevOps] Telemetria e Observabilidade]]
+- **Arquivos Mapeados:** `app/layout.tsx`, `app/page.tsx`, `next.config.ts`, `postcss.config.mjs`, `tailwind.config.ts`, `tsconfig.json`
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Next.js 15 App Router configurado com TypeScript estrito.
+- [x] Integração de Google Fonts (Outfit) e Tailwind CSS.
+- [ ] Atualizar dependências secundárias para versões mais recentes.

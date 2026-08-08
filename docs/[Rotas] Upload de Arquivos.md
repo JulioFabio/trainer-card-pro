@@ -1,13 +1,19 @@
 ---
 tags: [documentacao-viva, projeto, api, rotas, status/ativo]
 status: "ativo"
-ultima_atualizacao: 2026-06-15
+ultima_atualizacao: 2026-08-07
 autor: "Antigravity"
 ---
 
+## Resumo
+
+Documentação da rota de upload de mídia `/app/api/upload/route.ts` que processa formulários `multipart/form-data` para armazenamento de avatares e fotos de Pokémons.
+
+
+
 # 📤 Upload de Arquivos
 
-> Especificação da rota de API de upload do [[Trainer Card Pro]], responsável por substituir o armazenamento de Base64 em localStorage por arquivos físicos no servidor.
+> Especificação da rota de API de upload do [[[Visao Geral] Trainer Card Pro]], responsável por substituir o armazenamento de Base64 em localStorage por arquivos físicos no servidor.
 
 ---
 
@@ -73,3 +79,19 @@ Quando ocorre falha de gravação de I/O no disco físico.
   "error": "Erro interno no servidor ao processar o upload."
 }
 ```
+
+
+---
+
+## Conexões
+
+- **Componentes:** [[[Componente] ImageCropper]], [[[Componente] App]], [[[Componente] PokemonCreationSheet]]
+- **Utilitários:** [[[Utilitario] SafeFetch]]
+
+---
+
+## Estado Atual e Próximos Passos
+
+- [x] Upload em disco de imagens JPG/PNG com sanitização de nome de arquivo.
+- [x] Resposta com URL relativa para exibição no frontend.
+- [ ] Adicionar limitação de tamanho máximo de arquivo (max 5MB) e compressão WebP.
