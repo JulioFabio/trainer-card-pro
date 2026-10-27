@@ -65,12 +65,12 @@ Criar, alterar ou apagar uma ficha, ou qualquer dado ligado a ela (Pokémon, ite
 - **WHEN** a operação aponta para um item, nota, Pokémon ou ficha que não existe
 - **THEN** a resposta é `404`
 
-### Requirement: Mudança de dono de um Pokémon restrita
-Alterar a ficha à qual um Pokémon pertence SHALL ser permitido apenas ao GM. Um jogador MUST NOT conseguir mover um Pokémon para outra ficha pela rota de edição de Pokémon.
+### Requirement: Mudança de dono de um Pokémon ou item restrita
+Alterar a ficha à qual um Pokémon ou item pertence SHALL ser permitido apenas ao GM, e a ficha de destino MUST existir. Um jogador MUST NOT conseguir mover um Pokémon ou item para outra ficha pelas rotas de edição.
 
 #### Scenario: Jogador tenta mover um Pokémon
-- **WHEN** um jogador envia uma edição de Pokémon que muda a ficha de destino
-- **THEN** a resposta é `403` e o Pokémon continua na ficha original
+- **WHEN** um jogador envia uma edição de Pokémon ou de item que muda a ficha de destino
+- **THEN** a resposta é `403` e o registro continua na ficha original
 
 ### Requirement: Regras das trocas
 Uma proposta de troca SHALL exigir que o usuário seja o dono da ficha remetente (ou o GM) e que as fichas remetente e destinatária existam e sejam diferentes. Aceitar ou recusar uma troca SHALL exigir que o usuário seja o dono da ficha destinatária (ou o GM), que a troca exista e que ela ainda esteja pendente, e o novo estado só pode ser `ACCEPTED` ou `REJECTED`.

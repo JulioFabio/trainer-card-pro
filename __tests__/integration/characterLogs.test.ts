@@ -2,13 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { auth, prisma } = vi.hoisted(() => ({
   auth: vi.fn(),
-  prisma: { character: { findUnique: vi.fn(), update: vi.fn() } },
+  prisma: { user: { findUnique: vi.fn() }, character: { findUnique: vi.fn(), update: vi.fn() } },
 }));
 vi.mock("@/auth", () => ({ auth }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 
 // Telemetria e cache reais: o teste valida o que de fato vai para o console.
 const SENTINELA = "SENTINELA-XYZ";
+const CHAR_ID = "00000000-0000-4000-8000-000000000001";
 
 describe("PUT /api/character — privacidade dos logs (Integration)", () => {
   const spies: ReturnType<typeof vi.spyOn>[] = [];
@@ -29,14 +30,15 @@ describe("PUT /api/character — privacidade dos logs (Integration)", () => {
 
   it("nenhuma saída de console contém dados da ficha", async () => {
     auth.mockResolvedValue({ user: { id: "u1", role: "PLAYER" } });
-    prisma.character.findUnique.mockResolvedValue({ userId: "u1" });
-    prisma.character.update.mockResolvedValue({ id: "c1", name: "Red" });
+    prisma.user.findUnique.mockResolvedValue({ id: "u1", role: "PLAYER" });
+    prisma.character.findUnique.mockResolvedValue({ id: CHAR_ID, userId: "u1" });
+    prisma.character.update.mockResolvedValue({ id: CHAR_ID, name: "Red" });
 
     const { PUT } = await import("@/app/api/character/route");
     const res = await PUT(
       new Request("http://localhost/api/character", {
         method: "PUT",
-        body: JSON.stringify({ id: "c1", name: "Red", sheetData: { notas: SENTINELA } }),
+        body: JSON.stringify({ id: CHAR_ID, name: "Red", sheetData: { notas: SENTINELA } }),
       })
     );
 

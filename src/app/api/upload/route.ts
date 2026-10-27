@@ -1,42 +1,44 @@
-import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-import { withTelemetry } from "@/lib/telemetry";
+import { NextResponse } from 'next/server';
+import { withTelemetry } from '@/lib/telemetry';
+import { loadCharacterForWrite, requireUser } from '@/lib/api/access';
+import { badRequest, payloadTooLarge } from '@/lib/api/errors';
+import { parseValue } from '@/lib/api/parse';
+import { detectImageType, MAX_IMAGE_BYTES, saveImage } from '@/lib/api/imageUpload';
+import { characterIdSchema } from '@/lib/schemas';
+
+// Margem para os cabeçalhos do formulário multipart além do arquivo.
+const MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + 64 * 1024;
 
 export const POST = withTelemetry(async function POST(request: Request) {
-  const formData = await request.formData();
-  
-  const file = formData.get("file") as File | null;
-  const characterId = formData.get("characterId") as string | null;
+  const user = await requireUser();
 
-  if (!file || !characterId) {
-    return NextResponse.json(
-      { error: "Arquivo ou characterId ausente na requisição." },
-      { status: 400 }
-    );
+  const declared = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declared) && declared > MAX_REQUEST_BYTES) {
+    throw payloadTooLarge('A imagem deve ter no máximo 5 MB.');
   }
 
-  // Lendo o arquivo como um buffer binário
-  const buffer = Buffer.from(await file.arrayBuffer());
-  
-  // Sanitizando o nome do arquivo para evitar injeções ou caracteres inválidos
-  const safeFilename = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "");
-  
-  // Definindo o diretório de destino físico: public/uploads/{characterId}
-  const uploadDir = path.join(process.cwd(), "public", "uploads", characterId);
-  
-  // Criando a pasta recursivamente (se não existir)
-  await fs.mkdir(uploadDir, { recursive: true });
-  
-  // Caminho absoluto final do arquivo no disco
-  const filePath = path.join(uploadDir, safeFilename);
-  
-  // Salvando fisicamente
-  await fs.writeFile(filePath, buffer);
-  
-  // Caminho relativo para ser servido estaticamente pelo Next.js
-  const relativeUrl = `/uploads/${characterId}/${safeFilename}`;
-  
-  return NextResponse.json({ url: relativeUrl }, { status: 201 });
-});
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    throw badRequest('A requisição precisa ser um formulário com o arquivo e o characterId.');
+  }
 
+  const file = formData.get('file');
+  const rawCharacterId = formData.get('characterId');
+  if (!(file instanceof File) || typeof rawCharacterId !== 'string') {
+    throw badRequest('Arquivo ou characterId ausente na requisição.');
+  }
+
+  const characterId = parseValue(rawCharacterId, characterIdSchema, 'characterId');
+  await loadCharacterForWrite(user, characterId);
+
+  if (file.size > MAX_IMAGE_BYTES) throw payloadTooLarge('A imagem deve ter no máximo 5 MB.');
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const extension = detectImageType(buffer);
+  if (!extension) throw badRequest('O arquivo precisa ser uma imagem PNG, JPEG, WebP ou GIF.');
+
+  const { url } = await saveImage(characterId, buffer, extension);
+  return NextResponse.json({ url }, { status: 201 });
+});

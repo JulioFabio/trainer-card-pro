@@ -46,16 +46,15 @@ export const TradeModal: React.FC<TradeModalProps> = ({ characterId, themeColor,
     }
   };
 
-  // Temporário: Buscar todos os personagens para simular os jogadores disponíveis
+  // Fichas disponíveis como destinatário: todas as da mesa, menos a própria.
   const fetchCharacters = async () => {
     try {
-      const mockChars = [
-        { id: 'char-123', name: 'Eu Mesmo (Teste)' },
-        { id: 'rival-456', name: 'Rival (Teste)' }
-      ];
-      setAvailableCharacters(mockChars);
+      const all: { id: string; name: string; ownerName: string }[] = await safeFetch('/api/character?scope=all');
+      setAvailableCharacters(
+        all.map((c) => ({ id: c.id, name: c.ownerName && c.ownerName !== c.name ? `${c.name} (${c.ownerName})` : c.name }))
+      );
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao buscar fichas disponíveis', e);
     }
   };
 

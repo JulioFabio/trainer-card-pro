@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import { NextResponse } from 'next/server';
 import { performance } from 'perf_hooks';
+import { HttpError } from '@/lib/api/errors';
 
 export interface TelemetryStore {
   requestId: string;
@@ -108,17 +109,29 @@ export function withTelemetry(
       try {
         response = await handler(request, context);
       } catch (err) {
-        logger.error(`Request failed with unhandled error`, err, {
-          method: request.method,
-          url: request.url,
-        });
-        response = NextResponse.json(
-          {
-            error: 'Erro interno do servidor',
-            requestId,
-          },
-          { status: 500 }
-        );
+        if (err instanceof HttpError) {
+          // Recusa esperada (sessão, permissão, validação): só identificadores e motivo,
+          // nunca o corpo da requisição.
+          logger.warn(`Requisição recusada (${err.status})`, {
+            method: request.method,
+            path: new URL(request.url).pathname,
+            status: err.status,
+            reason: err.message,
+          });
+          response = NextResponse.json({ error: err.message }, { status: err.status });
+        } else {
+          logger.error(`Request failed with unhandled error`, err, {
+            method: request.method,
+            url: request.url,
+          });
+          response = NextResponse.json(
+            {
+              error: 'Erro interno do servidor',
+              requestId,
+            },
+            { status: 500 }
+          );
+        }
       }
 
       const durationMs = performance.now() - startTime;

@@ -1,14 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withTelemetry } from '@/lib/telemetry';
+import { assertCanMoveTo, loadCharacterForWrite, requireUser } from '@/lib/api/access';
+import { notFound } from '@/lib/api/errors';
+import { parseBody, parseQuery } from '@/lib/api/parse';
+import { invalidateCharacter } from '@/lib/api/characterCache';
+import { idQuerySchema, itemCreateSchema, itemUpdateSchema } from '@/lib/schemas';
+
+// Escrita em item: só o dono da ficha ou o GM.
+async function loadItemForWrite(user: Awaited<ReturnType<typeof requireUser>>, id: string) {
+  const item = await prisma.item.findUnique({ where: { id }, select: { characterId: true } });
+  if (!item) throw notFound('Item não encontrado.');
+  await loadCharacterForWrite(user, item.characterId);
+  return item;
+}
 
 export const POST = withTelemetry(async function POST(request: Request) {
-  const body = await request.json();
-  const { name, description, quantity, imageUrl, characterId } = body;
-
-  if (!name || !characterId) {
-    return NextResponse.json({ error: 'Nome e characterId são obrigatórios' }, { status: 400 });
-  }
+  const user = await requireUser();
+  const { name, description, quantity, imageUrl, characterId } = await parseBody(request, itemCreateSchema);
+  await loadCharacterForWrite(user, characterId);
 
   const newItem = await prisma.item.create({
     data: {
@@ -17,19 +27,20 @@ export const POST = withTelemetry(async function POST(request: Request) {
       quantity: quantity !== undefined ? quantity : 1,
       imageUrl,
       characterId,
-    }
+    },
   });
 
+  invalidateCharacter(characterId);
   return NextResponse.json(newItem, { status: 201 });
 });
 
 export const PUT = withTelemetry(async function PUT(request: Request) {
-  const body = await request.json();
-  const { id, name, description, quantity, imageUrl, characterId } = body;
+  const user = await requireUser();
+  const { id, name, description, quantity, imageUrl, characterId } = await parseBody(request, itemUpdateSchema);
+  const item = await loadItemForWrite(user, id);
 
-  if (!id) {
-    return NextResponse.json({ error: 'ID do item é obrigatório para atualização' }, { status: 400 });
-  }
+  const moving = characterId !== undefined && characterId !== item.characterId;
+  if (moving) await assertCanMoveTo(user, characterId);
 
   const updatedItem = await prisma.item.update({
     where: { id },
@@ -38,23 +49,22 @@ export const PUT = withTelemetry(async function PUT(request: Request) {
       ...(description !== undefined && { description }),
       ...(quantity !== undefined && { quantity }),
       ...(imageUrl !== undefined && { imageUrl }),
-      ...(characterId && { characterId }), // Usado na mecânica de trocas
-    }
+      ...(moving && { characterId }), // Usado na mecânica de trocas (só o GM)
+    },
   });
 
+  invalidateCharacter(item.characterId);
+  if (moving) invalidateCharacter(characterId);
   return NextResponse.json(updatedItem);
 });
 
-import { requireQueryParam } from '@/lib/routeHelpers';
-
 export const DELETE = withTelemetry(async function DELETE(request: Request) {
-  const { value: id, response } = requireQueryParam(request, 'id', 'ID do item é obrigatório');
-  if (response) return response;
+  const user = await requireUser();
+  const { id } = parseQuery(request, idQuerySchema);
+  const item = await loadItemForWrite(user, id);
 
-  await prisma.item.delete({
-    where: { id: id! }
-  });
+  await prisma.item.delete({ where: { id } });
 
+  invalidateCharacter(item.characterId);
   return NextResponse.json({ success: true });
 });
-
