@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { safeFetch } from '../lib/safeFetch';
+import { safeFetch } from '@/lib/safeFetch';
 
 interface TradeData {
   items: { id: string, name: string, quantity: number }[];

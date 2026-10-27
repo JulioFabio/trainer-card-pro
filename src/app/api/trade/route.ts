@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
-import { withTelemetry } from '../../../lib/telemetry';
+import { prisma } from '@/lib/prisma';
+import { withTelemetry } from '@/lib/telemetry';
 
-import { requireQueryParam } from '../../../lib/routeHelpers';
-import { safeParseJson } from '../../../lib/json';
+import { requireQueryParam } from '@/lib/routeHelpers';
+import { safeParseJson } from '@/lib/json';
 
 // GET: Lista todas as trocas pendentes envolvendo o personagem
 export const GET = withTelemetry(async function GET(request: Request) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { PCBox, StoredPokemon } from '../types';
-import { PokedexTheme } from '../constants';
+import { PCBox, StoredPokemon } from '@/types';
+import { PokedexTheme } from '@/constants';
 
 interface PcTabProps {
   boxes: PCBox[];

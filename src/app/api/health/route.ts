@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
-import { logger, withTelemetry } from '../../../lib/telemetry';
+import { prisma } from '@/lib/prisma';
+import { logger, withTelemetry } from '@/lib/telemetry';
 import { performance } from 'perf_hooks';
 
 export const GET = withTelemetry(async function GET() {

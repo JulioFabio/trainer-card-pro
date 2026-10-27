@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { PCBox, StoredPokemon } from '../types';
-import { PokedexTheme } from '../constants';
+import { PCBox, StoredPokemon } from '@/types';
+import { PokedexTheme } from '@/constants';
 
 interface TeamTabProps {
   equipeIds: string[];

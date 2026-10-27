@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
-import { withTelemetry } from "../../../lib/telemetry";
+import { withTelemetry } from "@/lib/telemetry";
 
 export const POST = withTelemetry(async function POST(request: Request) {
   const formData = await request.formData();

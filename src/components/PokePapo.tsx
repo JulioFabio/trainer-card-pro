@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PokedexTheme } from '../constants';
+import { PokedexTheme } from '@/constants';
 
 interface PokePapoProps {
   isOpen: boolean;

@@ -21,14 +21,14 @@ vi.mock('next-auth/react', () => ({
 }));
 
 // Mock do App.tsx para evitar carregar toda a árvore de dependências
-vi.mock('../../App', () => ({
+vi.mock('@/App', () => ({
   default: function MockApp() {
     return <div data-testid="mock-app">App Loaded</div>;
   },
 }));
 
 import { render, screen, fireEvent } from '@testing-library/react';
-import Home from '../../app/page';
+import Home from '@/app/page';
 
 describe('LoginScreen & Session Guard (page.tsx)', () => {
   beforeEach(() => {

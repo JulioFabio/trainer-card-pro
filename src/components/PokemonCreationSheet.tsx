@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { ImageCropper } from './ImageCropper';
-import { StoredPokemon, Stats, PokemonMove } from '../types';
-import { PokedexTheme } from '../constants';
-import { FORCE_CAPABILITY_DESCRIPTIONS, JUMP_CAPABILITY_DESCRIPTIONS, INTELLIGENCE_CAPABILITY_DESCRIPTIONS } from '../src/data/capabilities';
+import { StoredPokemon, Stats, PokemonMove } from '@/types';
+import { PokedexTheme } from '@/constants';
+import { FORCE_CAPABILITY_DESCRIPTIONS, JUMP_CAPABILITY_DESCRIPTIONS, INTELLIGENCE_CAPABILITY_DESCRIPTIONS } from '@/data/capabilities';
 import { SmartInput } from './SmartInput';
 
 interface PokemonCreationSheetProps {

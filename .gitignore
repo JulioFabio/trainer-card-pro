@@ -16,7 +16,7 @@ dist
 build
 *.local
 next-env.d.ts
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 .eslintcache
 .stylelintcache
 
@@ -32,8 +32,7 @@ tsconfig.tsbuildinfo
 *.db-journal
 *.sqlite
 *.sqlite3
-dev.db
-dev.db-journal
+dev.db*
 prisma/*.db
 prisma/*.sqlite
 

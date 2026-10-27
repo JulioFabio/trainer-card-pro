@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
-import { withTelemetry } from '../../../lib/telemetry';
+import { prisma } from '@/lib/prisma';
+import { withTelemetry } from '@/lib/telemetry';
 
 export const POST = withTelemetry(async function POST(request: Request) {
   const body = await request.json();
@@ -45,7 +45,7 @@ export const PUT = withTelemetry(async function PUT(request: Request) {
   return NextResponse.json(updatedItem);
 });
 
-import { requireQueryParam } from '../../../lib/routeHelpers';
+import { requireQueryParam } from '@/lib/routeHelpers';
 
 export const DELETE = withTelemetry(async function DELETE(request: Request) {
   const { value: id, response } = requireQueryParam(request, 'id', 'ID do item é obrigatório');

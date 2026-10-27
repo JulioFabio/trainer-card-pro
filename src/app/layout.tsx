@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
 import { SessionProvider } from '@/components/SessionProvider';
-import '../index.css';
+import '@/index.css';
 
 const outfit = Outfit({
   subsets: ['latin'],

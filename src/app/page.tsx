@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
-import App from '../App';
+import App from '@/App';
 
 // ────────────────────────────────────────────────────────────
 // Partículas flutuantes de Pokébola (decorativas)

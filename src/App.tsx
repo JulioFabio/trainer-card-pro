@@ -320,7 +320,6 @@ const App: React.FC = () => {
   // Efeito para garantir que o HP atual não ultrapasse o novo máximo calculado
   useEffect(() => {
     if (trainer.hpActual > calculatedHpMax) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrainer(prev => ({ ...prev, hpActual: calculatedHpMax }));
     }
   }, [calculatedHpMax, trainer.hpActual]);
