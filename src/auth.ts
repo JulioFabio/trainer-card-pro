@@ -1,69 +1,43 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/telemetry";
+import { resolveAuthSecret } from "@/lib/authSecret";
+import { authorizeLocalGm, authorizeProfile } from "@/lib/authorize";
 
-// Configuração centralizada do NextAuth v5 (Auth.js)
+// Configuração do NextAuth v5 (Auth.js). Dois caminhos de entrada, ambos com papel
+// lido do banco: `profile` (jogadores, caixa de seleção com senha opcional) e
+// `local-gm` (Mestre, apenas por acesso local direto ao computador).
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-fallback-secret-key-1234567890-abcdef",
+  secret: resolveAuthSecret(),
   trustHost: true,
   providers: [
     CredentialsProvider({
-      name: "Trainer Login",
+      id: "profile",
+      name: "Perfil",
       credentials: {
-        username: { label: "Nome do Treinador", type: "text", placeholder: "Ash Ketchum" },
-        email: { label: "E-mail", type: "email", placeholder: "ash@ketchum.com" },
-        role: { label: "Cargo (PLAYER ou GM)", type: "text", placeholder: "PLAYER" },
+        profileId: { label: "Perfil", type: "text" },
+        password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username) return null;
-
-        const username = (credentials.username as string).trim();
-        const rawEmail = (credentials.email as string)?.trim();
-        const email = rawEmail || `${username.toLowerCase().replace(/\s+/g, '')}@campaign.local`;
-        const role = (credentials.role as string) || "PLAYER";
-
-        // Busca o usuário existente por e-mail ou nome de treinador
-        let user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email },
-              { name: username }
-            ]
-          },
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              name: username,
-              email,
-              role,
-            },
-          });
-        } else if (user.role !== role) {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: { role },
-          });
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-        };
+        return authorizeProfile(credentials);
+      },
+    }),
+    CredentialsProvider({
+      id: "local-gm",
+      name: "Mestre (computador local)",
+      credentials: {},
+      async authorize(_credentials, request) {
+        return authorizeLocalGm(request.headers);
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 3 * 60 * 60, // 3 horas de janela de sessão (Segurança contra roubo de sessão)
+    maxAge: 3 * 60 * 60, // 3 horas de janela de sessão
     updateAge: 15 * 60,  // Atualiza o token a cada 15 minutos de atividade
+  },
+  pages: {
+    signIn: "/login",
   },
   cookies: {
     sessionToken: {
@@ -76,51 +50,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     },
   },
-  // Integração com o ecossistema de observabilidade e telemetria (DevOps Telemetry Skill)
   logger: {
     error(code, ...message) {
-      logger.error(`NextAuth Error: ${code}`, { details: message });
+      logger.error(`NextAuth Error: ${code}`, undefined, { details: message.map(String) });
     },
-    warn(code, ...message) {
-      logger.warn(`NextAuth Warn: ${code}`, { details: message });
-    },
-  },
-  events: {
-    async createUser(message) {
-      const { user } = message;
-      try {
-        // Lógica "O Primeiro a Chegar é o Rei" para auto-atribuição de GM
-        const userCount = await prisma.user.count();
-        if (userCount === 1) {
-          logger.info(`Primeiro usuário registrado no banco de dados. Atribuindo cargo de GM (Mestre) ao usuário: ${user.id}`);
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { role: "GM" },
-          });
-        }
-      } catch (err) {
-        logger.error(`Erro ao verificar total de usuários ou atribuir cargo de GM`, err);
-      }
+    warn(code) {
+      logger.warn(`NextAuth Warn: ${code}`);
     },
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role || "PLAYER";
+        token.role = (user as { role?: string }).role === "GM" ? "GM" : "PLAYER";
       }
       return token;
     },
-    async session({ session, token, user }) {
-      if (session.user) {
-        // Suporta tanto estratégia JWT quanto Database de forma híbrida e resiliente
-        if (token) {
-          session.user.id = token.id as string;
-          (session.user as any).role = (token.role as string) || "PLAYER";
-        } else if (user) {
-          session.user.id = user.id;
-          (session.user as any).role = (user as any).role || "PLAYER";
-        }
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        (session.user as { role?: string }).role = (token.role as string) || "PLAYER";
       }
       return session;
     },

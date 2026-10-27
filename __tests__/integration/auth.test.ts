@@ -1,137 +1,80 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-// Mock central do next-auth que captura as opções de configuração
-vi.mock("next-auth", () => {
-  const mNextAuth = vi.fn((options) => {
-    (global as any).lastNextAuthOptions = options;
-    return {
-      handlers: { GET: vi.fn(), POST: vi.fn() },
-      auth: vi.fn(),
-      signIn: vi.fn(),
-      signOut: vi.fn(),
-    };
-  });
-  return { default: mNextAuth };
-});
-
-// Mock do prisma para evitar acesso físico ao SQLite local
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    user: {
-      count: vi.fn(),
-      update: vi.fn(),
-    },
-  },
+const { captured, authorizeProfile, authorizeLocalGm } = vi.hoisted(() => ({
+  captured: { options: undefined as any },
+  authorizeProfile: vi.fn(),
+  authorizeLocalGm: vi.fn(),
 }));
 
-// Mock do logger de telemetria
+// Captura as opções passadas ao NextAuth para validar a configuração.
+vi.mock("next-auth", () => ({
+  default: vi.fn((options) => {
+    captured.options = options;
+    return { handlers: { GET: vi.fn(), POST: vi.fn() }, auth: vi.fn(), signIn: vi.fn(), signOut: vi.fn() };
+  }),
+}));
+vi.mock("@/lib/authorize", () => ({ authorizeProfile, authorizeLocalGm }));
 vi.mock("@/lib/telemetry", () => ({
-  logger: {
-    info: vi.fn(),
-    error: vi.fn(),
-    warn: vi.fn(),
-  },
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-describe("NextAuth Config Integration (Fase 2)", () => {
+describe("Configuração do NextAuth (Integration)", () => {
   let options: any;
 
   beforeAll(async () => {
-    // Importa a configuração central do auth para disparar a inicialização do NextAuth mockado
+    vi.stubEnv("AUTH_SECRET", "segredo-de-teste");
     await import("@/auth");
-    options = (global as any).lastNextAuthOptions;
+    options = captured.options;
   });
 
-  afterEach(() => {
-    // Limpeza rigorosa pós execução de testes (QA Rule 6)
-    vi.clearAllMocks();
+  afterEach(() => vi.clearAllMocks());
+
+  it("usa sessão JWT de 3 horas, sem adaptador de banco e com o segredo resolvido", () => {
+    expect(options.session.strategy).toBe("jwt");
+    expect(options.session.maxAge).toBe(3 * 60 * 60);
+    expect(options.adapter).toBeUndefined();
+    expect(options.secret).toBe("segredo-de-teste");
+    expect(options.cookies.sessionToken.options.httpOnly).toBe(true);
   });
 
-  it("deve carregar as configurações básicas de adaptadores e provedores", () => {
-    expect(options).toBeDefined();
-    expect(options.adapter).toBeDefined();
-    expect(options.providers).toBeDefined();
-    expect(options.providers.length).toBeGreaterThan(0);
+  it("expõe só os provedores profile e local-gm", () => {
+    const ids = options.providers.map((p: any) => p.options?.id ?? p.id);
+    expect(ids.sort()).toEqual(["local-gm", "profile"]);
   });
 
-  describe("createUser Event", () => {
-    it("deve atribuir o cargo de GM ao primeiro usuário criado no sistema", async () => {
-      const createUserEvent = options.events?.createUser;
-      expect(createUserEvent).toBeDefined();
-
-      const mockUser = { id: "user_cuid_1", name: "Primeiro Jogador" };
-      const { prisma } = (await import("@/lib/prisma")) as any;
-
-      // Simula que é o primeiro usuário do banco
-      prisma.user.count.mockResolvedValue(1);
-      prisma.user.update.mockResolvedValue({ id: "user_cuid_1", role: "GM" });
-
-      await createUserEvent({ user: mockUser });
-
-      expect(prisma.user.count).toHaveBeenCalledTimes(1);
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: mockUser.id },
-        data: { role: "GM" },
-      });
-    });
-
-    it("não deve alterar o cargo para GM se o banco já possuir mais usuários cadastrados", async () => {
-      const createUserEvent = options.events?.createUser;
-      const mockUser = { id: "user_cuid_2", name: "Segundo Jogador" };
-      const { prisma } = (await import("@/lib/prisma")) as any;
-
-      // Simula que já existem 2 usuários cadastrados
-      prisma.user.count.mockResolvedValue(2);
-
-      await createUserEvent({ user: mockUser });
-
-      expect(prisma.user.count).toHaveBeenCalledTimes(1);
-      expect(prisma.user.update).not.toHaveBeenCalled();
-    });
+  it("o provedor profile delega para authorizeProfile", async () => {
+    authorizeProfile.mockResolvedValue({ id: "p1", name: "Túlio", role: "PLAYER" });
+    const provider = options.providers.find((p: any) => (p.options?.id ?? p.id) === "profile");
+    const authorize = provider.options?.authorize ?? provider.authorize;
+    expect(await authorize({ profileId: "p1" }, new Request("http://localhost/"))).toMatchObject({ id: "p1" });
+    expect(authorizeProfile).toHaveBeenCalledWith({ profileId: "p1" });
   });
 
-  describe("Callbacks (jwt e session)", () => {
-    it("deve mapear e propagar id e role no token JWT", async () => {
-      const jwtCallback = options.callbacks?.jwt;
-      expect(jwtCallback).toBeDefined();
+  it("o provedor local-gm repassa os cabeçalhos da requisição", async () => {
+    authorizeLocalGm.mockResolvedValue(null);
+    const provider = options.providers.find((p: any) => (p.options?.id ?? p.id) === "local-gm");
+    const authorize = provider.options?.authorize ?? provider.authorize;
+    const request = new Request("http://localhost:3000/", { headers: { host: "localhost:3000" } });
+    await authorize({}, request);
+    expect(authorizeLocalGm).toHaveBeenCalledWith(request.headers);
+  });
 
-      const mockUser = { id: "user_cuid_jwt", role: "GM" };
-      const resultToken = await jwtCallback({ token: {}, user: mockUser });
+  it("callbacks propagam id e papel para o token e para a sessão", async () => {
+    const token = await options.callbacks.jwt({ token: {}, user: { id: "u1", role: "GM" } });
+    expect(token).toMatchObject({ id: "u1", role: "GM" });
 
-      expect(resultToken.id).toBe("user_cuid_jwt");
-      expect(resultToken.role).toBe("GM");
-    });
+    const session = await options.callbacks.session({ session: { user: { name: "x" } }, token });
+    expect(session.user).toMatchObject({ id: "u1", role: "GM" });
+  });
 
-    it("deve propagar claims a partir do token (JWT session strategy)", async () => {
-      const sessionCallback = options.callbacks?.session;
-      expect(sessionCallback).toBeDefined();
+  it("papel desconhecido vira PLAYER", async () => {
+    const token = await options.callbacks.jwt({ token: {}, user: { id: "u2", role: "ADMIN" } });
+    expect(token.role).toBe("PLAYER");
+  });
 
-      const mockSession = { user: { name: "Red" } };
-      const mockToken = { id: "user_cuid_jwt", role: "GM" };
-
-      const finalSession = await sessionCallback({
-        session: mockSession,
-        token: mockToken,
-        user: null,
-      });
-
-      expect(finalSession.user.id).toBe("user_cuid_jwt");
-      expect(finalSession.user.role).toBe("GM");
-    });
-
-    it("deve propagar claims a partir do user (Database session strategy)", async () => {
-      const sessionCallback = options.callbacks?.session;
-      const mockSession = { user: { name: "Green" } };
-      const mockUser = { id: "user_cuid_db", role: "PLAYER" };
-
-      const finalSession = await sessionCallback({
-        session: mockSession,
-        token: null,
-        user: mockUser,
-      });
-
-      expect(finalSession.user.id).toBe("user_cuid_db");
-      expect(finalSession.user.role).toBe("PLAYER");
-    });
+  it("não há segredo fixo no código", async () => {
+    const fs = await import("node:fs");
+    const source = fs.readFileSync("src/auth.ts", "utf8");
+    expect(source).not.toContain("development-fallback");
   });
 });

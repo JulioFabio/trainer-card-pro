@@ -14,6 +14,7 @@ model User {
   image         String?
   username      String?     @unique // Mantido opcional para compatibilidade
   role          String      @default("PLAYER") // "GM" ou "PLAYER"
+  passwordHash  String? // scrypt; nulo = perfil sem senha
   accounts      Account[]
   sessions      Session[]
   characters    Character[]
@@ -109,4 +110,10 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Configurações globais da sessão de jogo (ex.: sessionName)
+model AppSetting {
+  key   String @id
+  value String
 }
