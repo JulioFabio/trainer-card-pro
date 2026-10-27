@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { TrainerData, Stats, Skill, StoredPokemon, PCBox } from './types';
 import { INITIAL_TRAINER_DATA, POKEDEX_THEMES, DEFAULT_SKILLS, STAT_LABELS, BASE_POINTS, MAX_STAT_INITIAL } from './constants';
 import { InfoField } from './components/InfoField';
@@ -43,7 +43,12 @@ const App: React.FC = () => {
   const [isPokePapoOpen, setIsPokePapoOpen] = useState(false);
 
   // 1. CARREGAMENTO INICIAL DO BANCO DE DADOS
+  // O guarda evita carregar (e criar a ficha inicial) duas vezes: o React em modo estrito
+  // executa o efeito em dobro, e as duas execuções veriam "nenhuma ficha" e criariam duas.
+  const initStarted = useRef(false);
   useEffect(() => {
+    if (initStarted.current) return;
+    initStarted.current = true;
     const initCharacter = async () => {
       try {
         setInitError(null);
