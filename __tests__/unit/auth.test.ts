@@ -1,36 +1,39 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { auth, handlers, signIn, signOut } from "@/auth";
 
 // Mock central do next-auth para isolar as importações e configurações
-jest.mock("next-auth", () => {
-  return jest.fn(() => ({
-    handlers: {
-      GET: jest.fn(),
-      POST: jest.fn(),
-    },
-    auth: jest.fn(),
-    signIn: jest.fn(),
-    signOut: jest.fn(),
-  }));
+vi.mock("next-auth", () => {
+  return {
+    default: vi.fn(() => ({
+      handlers: {
+        GET: vi.fn(),
+        POST: vi.fn(),
+      },
+      auth: vi.fn(),
+      signIn: vi.fn(),
+      signOut: vi.fn(),
+    })),
+  };
 });
 
 // Mock do prisma para isolamento do teste unitário
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {},
 }));
 
 // Mock do logger de telemetria
-jest.mock("@/lib/telemetry", () => ({
+vi.mock("@/lib/telemetry", () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
 describe("NextAuth Configuration (Unit)", () => {
   afterEach(() => {
     // Clean-up dos mocks para garantir isolamento e resiliência de teste (QA Rule 6)
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("deve expor os métodos e manipuladores principais do NextAuth", () => {

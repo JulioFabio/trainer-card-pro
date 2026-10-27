@@ -12,7 +12,7 @@ export const memoryCache = {
     const entry = cacheStore.get(key);
     
     if (!entry) {
-      logger.info(`Cache MISS`, {
+      logger.debug(`Cache MISS`, {
         component: 'Cache',
         action: 'GET',
         key,
@@ -23,7 +23,7 @@ export const memoryCache = {
 
     if (Date.now() > entry.expiresAt) {
       cacheStore.delete(key);
-      logger.info(`Cache MISS (Expired)`, {
+      logger.debug(`Cache MISS (Expired)`, {
         component: 'Cache',
         action: 'GET',
         key,
@@ -32,7 +32,7 @@ export const memoryCache = {
       return null;
     }
 
-    logger.info(`Cache HIT`, {
+    logger.debug(`Cache HIT`, {
       component: 'Cache',
       action: 'GET',
       key,
@@ -48,7 +48,7 @@ export const memoryCache = {
       expiresAt: Date.now() + ttlMs,
     });
     
-    logger.info(`Cache SET`, {
+    logger.debug(`Cache SET`, {
       component: 'Cache',
       action: 'SET',
       key,
@@ -60,7 +60,7 @@ export const memoryCache = {
     const existed = cacheStore.has(key);
     cacheStore.delete(key);
     
-    logger.info(`Cache DELETE`, {
+    logger.debug(`Cache DELETE`, {
       component: 'Cache',
       action: 'DELETE',
       key,
@@ -72,7 +72,7 @@ export const memoryCache = {
     const size = cacheStore.size;
     cacheStore.clear();
     
-    logger.info(`Cache CLEAR`, {
+    logger.debug(`Cache CLEAR`, {
       component: 'Cache',
       action: 'CLEAR',
       previousSize: size,

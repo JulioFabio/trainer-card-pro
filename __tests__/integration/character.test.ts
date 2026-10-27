@@ -1,51 +1,52 @@
+import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import { GET, PUT } from "@/app/api/character/route";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
 // Mock do auth
-jest.mock("@/auth", () => ({
-  auth: jest.fn(),
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
 }));
 
 // Mock do prisma client
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     character: {
-      findUnique: jest.fn(),
-      update: jest.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
 // Mock do wrapper de telemetria
-jest.mock("@/lib/telemetry", () => ({
+vi.mock("@/lib/telemetry", () => ({
   withTelemetry: (fn: any) => fn,
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
 // Mock do cache em memória
-jest.mock("@/lib/cache", () => ({
+vi.mock("@/lib/cache", () => ({
   memoryCache: {
-    get: jest.fn(),
-    set: jest.fn(),
-    delete: jest.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
 describe("Character API Route Permissions (Integration)", () => {
   afterEach(() => {
     // Teardown para isolamento de testes (QA Rule 6)
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("Acesso a Fichas Individuais (GET)", () => {
     it("deve permitir que o Mestre (GM) visualize qualquer ficha do sistema", async () => {
       // Simula sessão de GM
-      (auth as jest.Mock).mockResolvedValue({ user: { id: "user_gm", role: "GM" } });
+      (auth as Mock).mockResolvedValue({ user: { id: "user_gm", role: "GM" } });
 
       const mockCharacter = {
         id: "char_player_1",
@@ -54,7 +55,7 @@ describe("Character API Route Permissions (Integration)", () => {
         sheetData: "{}",
         pokemons: [],
       };
-      (prisma.character.findUnique as jest.Mock).mockResolvedValue(mockCharacter);
+      (prisma.character.findUnique as Mock).mockResolvedValue(mockCharacter);
 
       const req = new Request("http://localhost/api/character?id=char_player_1");
       const response = await GET(req);
@@ -66,7 +67,7 @@ describe("Character API Route Permissions (Integration)", () => {
 
     it("deve permitir que o jogador comum acesse sua própria ficha", async () => {
       // Simula sessão do próprio dono
-      (auth as jest.Mock).mockResolvedValue({ user: { id: "user_player_1", role: "PLAYER" } });
+      (auth as Mock).mockResolvedValue({ user: { id: "user_player_1", role: "PLAYER" } });
 
       const mockCharacter = {
         id: "char_player_1",
@@ -75,7 +76,7 @@ describe("Character API Route Permissions (Integration)", () => {
         sheetData: "{}",
         pokemons: [],
       };
-      (prisma.character.findUnique as jest.Mock).mockResolvedValue(mockCharacter);
+      (prisma.character.findUnique as Mock).mockResolvedValue(mockCharacter);
 
       const req = new Request("http://localhost/api/character?id=char_player_1");
       const response = await GET(req);
@@ -87,7 +88,7 @@ describe("Character API Route Permissions (Integration)", () => {
 
     it("deve rejeitar com 403 se o jogador tentar acessar a ficha de outro jogador", async () => {
       // Simula sessão de outro jogador
-      (auth as jest.Mock).mockResolvedValue({ user: { id: "user_player_2", role: "PLAYER" } });
+      (auth as Mock).mockResolvedValue({ user: { id: "user_player_2", role: "PLAYER" } });
 
       const mockCharacter = {
         id: "char_player_1",
@@ -96,7 +97,7 @@ describe("Character API Route Permissions (Integration)", () => {
         sheetData: "{}",
         pokemons: [],
       };
-      (prisma.character.findUnique as jest.Mock).mockResolvedValue(mockCharacter);
+      (prisma.character.findUnique as Mock).mockResolvedValue(mockCharacter);
 
       const req = new Request("http://localhost/api/character?id=char_player_1");
       const response = await GET(req);
@@ -109,11 +110,11 @@ describe("Character API Route Permissions (Integration)", () => {
 
   describe("Alteração de Fichas (PUT)", () => {
     it("deve permitir que o Mestre (GM) altere a ficha de qualquer jogador", async () => {
-      (auth as jest.Mock).mockResolvedValue({ user: { id: "user_gm", role: "GM" } });
+      (auth as Mock).mockResolvedValue({ user: { id: "user_gm", role: "GM" } });
 
       const mockCharacter = { id: "char_player_1", userId: "user_player_1" };
-      (prisma.character.findUnique as jest.Mock).mockResolvedValue(mockCharacter);
-      (prisma.character.update as jest.Mock).mockResolvedValue({
+      (prisma.character.findUnique as Mock).mockResolvedValue(mockCharacter);
+      (prisma.character.update as Mock).mockResolvedValue({
         id: "char_player_1",
         name: "Red Modificado",
       });
@@ -130,10 +131,10 @@ describe("Character API Route Permissions (Integration)", () => {
     });
 
     it("deve negar permissão (403) para jogador tentando alterar ficha de terceiros", async () => {
-      (auth as jest.Mock).mockResolvedValue({ user: { id: "user_player_2", role: "PLAYER" } });
+      (auth as Mock).mockResolvedValue({ user: { id: "user_player_2", role: "PLAYER" } });
 
       const mockCharacter = { id: "char_player_1", userId: "user_player_1" };
-      (prisma.character.findUnique as jest.Mock).mockResolvedValue(mockCharacter);
+      (prisma.character.findUnique as Mock).mockResolvedValue(mockCharacter);
 
       const req = new Request("http://localhost/api/character", {
         method: "PUT",

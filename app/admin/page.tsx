@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
@@ -47,12 +48,12 @@ export default async function AdminPage() {
             <span className="text-slate-400 text-sm">
               Conectado como <strong className="text-white">{session.user.name || session.user.email}</strong>
             </span>
-            <a
+            <Link
               href="/"
               className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2 rounded-lg border border-slate-700 transition-colors"
             >
               Voltar ao App
-            </a>
+            </Link>
           </div>
         </div>
       </header>

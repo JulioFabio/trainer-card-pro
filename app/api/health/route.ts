@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-import { withTelemetry } from '../../../lib/telemetry';
+import { logger, withTelemetry } from '../../../lib/telemetry';
 import { performance } from 'perf_hooks';
 
 export const GET = withTelemetry(async function GET() {
@@ -14,6 +14,7 @@ export const GET = withTelemetry(async function GET() {
     dbTimingMs = performance.now() - start;
     dbStatus = 'healthy';
   } catch (err) {
+    logger.error('Health check: falha na conexão com o banco', err, { component: 'Health' });
     dbStatus = 'unhealthy';
   }
 

@@ -1,50 +1,50 @@
-import NextAuth from "next-auth";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 // Mock central do next-auth que captura as opções de configuração
-jest.mock("next-auth", () => {
-  const mNextAuth = jest.fn((options) => {
+vi.mock("next-auth", () => {
+  const mNextAuth = vi.fn((options) => {
     (global as any).lastNextAuthOptions = options;
     return {
-      handlers: { GET: jest.fn(), POST: jest.fn() },
-      auth: jest.fn(),
-      signIn: jest.fn(),
-      signOut: jest.fn(),
+      handlers: { GET: vi.fn(), POST: vi.fn() },
+      auth: vi.fn(),
+      signIn: vi.fn(),
+      signOut: vi.fn(),
     };
   });
-  return mNextAuth;
+  return { default: mNextAuth };
 });
 
 // Mock do prisma para evitar acesso físico ao SQLite local
-jest.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
-      count: jest.fn(),
-      update: jest.fn(),
+      count: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
 // Mock do logger de telemetria
-jest.mock("@/lib/telemetry", () => ({
+vi.mock("@/lib/telemetry", () => ({
   logger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
 describe("NextAuth Config Integration (Fase 2)", () => {
   let options: any;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Importa a configuração central do auth para disparar a inicialização do NextAuth mockado
-    require("@/auth");
+    await import("@/auth");
     options = (global as any).lastNextAuthOptions;
   });
 
   afterEach(() => {
     // Limpeza rigorosa pós execução de testes (QA Rule 6)
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("deve carregar as configurações básicas de adaptadores e provedores", () => {
@@ -60,7 +60,7 @@ describe("NextAuth Config Integration (Fase 2)", () => {
       expect(createUserEvent).toBeDefined();
 
       const mockUser = { id: "user_cuid_1", name: "Primeiro Jogador" };
-      const { prisma } = require("@/lib/prisma");
+      const { prisma } = (await import("@/lib/prisma")) as any;
 
       // Simula que é o primeiro usuário do banco
       prisma.user.count.mockResolvedValue(1);
@@ -78,7 +78,7 @@ describe("NextAuth Config Integration (Fase 2)", () => {
     it("não deve alterar o cargo para GM se o banco já possuir mais usuários cadastrados", async () => {
       const createUserEvent = options.events?.createUser;
       const mockUser = { id: "user_cuid_2", name: "Segundo Jogador" };
-      const { prisma } = require("@/lib/prisma");
+      const { prisma } = (await import("@/lib/prisma")) as any;
 
       // Simula que já existem 2 usuários cadastrados
       prisma.user.count.mockResolvedValue(2);

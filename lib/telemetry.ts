@@ -15,46 +15,52 @@ export function generateRequestId(): string {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
+const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 } as const;
+type LogLevel = keyof typeof LEVELS;
+
+// Lido uma vez no carregamento do módulo; valor inválido cai no padrão `info`.
+const envLevel = process.env.LOG_LEVEL?.toLowerCase();
+const threshold: number = envLevel && envLevel in LEVELS ? LEVELS[envLevel as LogLevel] : LEVELS.info;
+
+function emit(
+  level: LogLevel,
+  sink: (line: string) => void,
+  message: string,
+  extra: Record<string, unknown> = {}
+) {
+  // Filtra antes de montar o JSON: um log desligado não paga a serialização.
+  if (LEVELS[level] < threshold) return;
+  const store = telemetryContext.getStore();
+  sink(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: level.toUpperCase(),
+      requestId: store?.requestId || null,
+      message,
+      ...extra,
+    })
+  );
+}
+
 export const logger = {
+  debug(message: string, context?: any) {
+    emit('debug', console.log, message, context);
+  },
+
   info(message: string, context?: any) {
-    const store = telemetryContext.getStore();
-    console.log(
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'INFO',
-        requestId: store?.requestId || null,
-        message,
-        ...context,
-      })
-    );
+    emit('info', console.log, message, context);
   },
 
   warn(message: string, context?: any) {
-    const store = telemetryContext.getStore();
-    console.warn(
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'WARN',
-        requestId: store?.requestId || null,
-        message,
-        ...context,
-      })
-    );
+    emit('warn', console.warn, message, context);
   },
 
   error(message: string, error?: any, context?: any) {
-    const store = telemetryContext.getStore();
-    console.error(
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'ERROR',
-        requestId: store?.requestId || null,
-        message,
-        error: error instanceof Error ? error.message : String(error || 'Unknown Error'),
-        stack: error instanceof Error ? error.stack : undefined,
-        ...context,
-      })
-    );
+    emit('error', console.error, message, {
+      error: error instanceof Error ? error.message : String(error || 'Unknown Error'),
+      stack: error instanceof Error ? error.stack : undefined,
+      ...context,
+    });
   },
 };
 
