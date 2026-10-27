@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint && npm test",
-    "seed:dev": "node scripts/seed-dev.ts"
+    "seed:dev": "node scripts/seed-dev.ts",
+    "shots": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -46,6 +47,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.3.0",
     "jsdom": "^29.1.1",
+    "playwright-core": "^1.64.1",
     "postcss": "^8.5.6",
     "prettier": "^3.7.4",
     "prisma": "^7.8.0",

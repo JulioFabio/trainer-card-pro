@@ -74,3 +74,7 @@ temp_diff_utf8.txt
 .vscode/tasks.json
 
 /src/generated/prisma
+
+# Prints da interface (npm run shots) e área temporária do script
+/screenshots/
+/.shots/

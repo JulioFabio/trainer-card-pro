@@ -11,6 +11,7 @@ Next.js 15 (App Router), React 19, TypeScript `strict`, TailwindCSS 3, Prisma 7 
 - `npm run check`: typecheck + lint + testes. É o critério de pronto de toda change.
 - `npm test` / `npm run test:watch`: Vitest. `npm run typecheck`, `npm run lint`.
 - `npm run dev`: servidor em `localhost:3000`. Health check em `GET /api/health`.
+- `npm run shots [rótulo]`: prints das telas (Mestre, jogador, abas, trocas, admin, celular) em `screenshots/<data-hora>[-rótulo]/` e `screenshots/latest/`. Usa um banco temporário em `.shots/`, então não mexe no `dev.db` nem atrapalha o `npm run dev`. A pasta é ignorada pelo git.
 
 ## Fontes da verdade
 
@@ -34,3 +35,4 @@ Next.js 15 (App Router), React 19, TypeScript `strict`, TailwindCSS 3, Prisma 7 
 - Nunca logar dados de ficha, notas, corpos de requisição ou `params` de queries.
 - `any` gera aviso de lint; não introduza novos em código novo.
 - Cada change deve deixar o app funcionando e `npm run check` verde.
+- Depois de qualquer mudança que afete a interface, rode `npm run shots <rótulo>` e olhe os prints antes de dizer que terminou; avise o mestre onde estão.

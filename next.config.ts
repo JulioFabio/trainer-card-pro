@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // NEXT_DIST_DIR permite rodar uma segunda instância (npm run shots) sem disputar a pasta .next.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   reactStrictMode: true,
   devIndicators: false,
   serverExternalPackages: ['better-sqlite3'],
