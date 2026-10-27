@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { getSessionName } from '@/lib/profiles';
 import { deleteCharacterAction } from './actions';
+import ProfilesPanel from './ProfilesPanel';
 
 // Server Component para o Painel do Mestre (GM)
 export default async function AdminPage() {
@@ -27,6 +29,17 @@ export default async function AdminPage() {
       name: 'asc',
     },
   });
+
+  const sessionName = await getSessionName();
+  const hasMasterPassword = users.some((u) => u.role === 'GM' && !!u.passwordHash);
+  const profiles = users
+    .filter((u) => u.role === 'PLAYER')
+    .map((u) => ({
+      id: u.id,
+      name: u.name ?? '',
+      hasPassword: !!u.passwordHash,
+      characterCount: u.characters.length,
+    }));
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-rose-500 selection:text-white pb-12">
@@ -60,6 +73,8 @@ export default async function AdminPage() {
 
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <ProfilesPanel sessionName={sessionName} hasMasterPassword={hasMasterPassword} profiles={profiles} />
+
         <div className="mb-8">
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Controle Geral de Fichas</h2>
           <p className="mt-2 text-sm text-slate-400">

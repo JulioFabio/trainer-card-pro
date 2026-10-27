@@ -15,7 +15,7 @@ import { PokemonCreationSheet } from './components/PokemonCreationSheet';
 import { PokePapo } from './components/PokePapo';
 import { AttackCard } from './components/AttackCard';
 import { safeFetch } from './lib/safeFetch';
-import { signIn } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 
 // Tab agora é string para suportar IDs dinâmicos como 'pokemon-team-abc123'
 type Tab = string;
@@ -501,29 +501,20 @@ const App: React.FC = () => {
           </div>
 
           <h2 className="text-xl font-black uppercase tracking-wider text-white mb-2">
-            Pokédex OS // Login
+            Pokédex OS // Acesso
           </h2>
           <p className="text-slate-400 text-xs mb-8 leading-relaxed">
-            Bem-vindo, Treinador! Identifique-se para acessar suas fichas, inventário, PC e diário de campanha.
+            Não foi possível carregar a sua ficha. Volte à tela de entrada para escolher o seu perfil novamente.
           </p>
 
           <div className="flex flex-col gap-3">
             <button
               type="button"
-              onClick={() => signIn('discord')}
-              className="w-full py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#5865F2]/30 flex items-center justify-center gap-3 active:scale-95 border-none cursor-pointer"
+              onClick={() => { window.location.href = '/login'; }}
+              className="w-full py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 border-none cursor-pointer"
             >
-              <i className="fa-brands fa-discord text-lg"></i>
-              Entrar com o Discord
-            </button>
-
-            <button
-              type="button"
-              onClick={() => signIn()}
-              className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 border-none cursor-pointer"
-            >
-              <i className="fa-solid fa-envelope"></i>
-              Outras Opções (E-mail / Dev Login)
+              <i className="fa-solid fa-right-to-bracket"></i>
+              Voltar à tela de entrada
             </button>
           </div>
 
@@ -587,6 +578,10 @@ const App: React.FC = () => {
             {/* Botões de Gestão - compactos */}
             <button onClick={() => setShowTradeModal(true)} title="Sistema de Trocas (Link Cable)" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-emerald-400 transition-all">
               <i className="fa-solid fa-right-left text-[13px]" />
+            </button>
+
+            <button onClick={() => signOut({ callbackUrl: '/login?sair=1' })} title="Sair" className="w-9 h-9 rounded-full bg-black/30 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-black/50 hover:border-rose-400 transition-all">
+              <i className="fa-solid fa-right-from-bracket text-[13px]" />
             </button>
 
           </div>

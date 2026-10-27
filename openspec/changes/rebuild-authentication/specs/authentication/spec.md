@@ -51,10 +51,10 @@ O papel do usuário (`GM` ou `PLAYER`) SHALL vir sempre do banco de dados. Nenhu
 - **THEN** nenhuma sessão é aberta e nenhum perfil é criado
 
 ### Requirement: Entrada automática do Mestre no computador local
-O sistema SHALL abrir sessão com o papel `GM` sem senha quando a requisição vier do acesso local direto ao computador onde o app está instalado. Considera-se acesso local direto uma requisição cujo host é `localhost`, `127.0.0.1` ou `[::1]` e que não carrega nenhum cabeçalho de proxy ou túnel (`x-forwarded-for`, `x-forwarded-host`, `forwarded`, `x-real-ip`, `cf-connecting-ip`, `via`). Requisições que não forem acesso local direto MUST NOT receber o papel `GM` por esse caminho.
+O sistema SHALL abrir sessão com o papel `GM` sem senha quando a requisição vier do acesso local direto ao computador onde o app está instalado. Considera-se acesso local direto uma requisição cujo host é `localhost`, `127.0.0.1` ou `[::1]` e cuja origem declarada é a própria máquina. Como o servidor Next registra o endereço de origem em `x-forwarded-for` e o host em `x-forwarded-host` em toda requisição, esses dois cabeçalhos só são aceitos quando `x-forwarded-for` contém exclusivamente endereços de loopback e `x-forwarded-host` é igual ao host; qualquer outro valor desqualifica. A presença de `forwarded`, `x-real-ip`, `cf-connecting-ip` ou `via` também desqualifica. Requisições que não forem acesso local direto MUST NOT receber o papel `GM` por esse caminho.
 
 #### Scenario: Mestre abre o app no próprio computador
-- **WHEN** a requisição tem host `localhost:3000` e nenhum cabeçalho de proxy
+- **WHEN** a requisição tem host `localhost:3000`, `x-forwarded-for` igual a `::1` e `x-forwarded-host` igual a `localhost:3000` (como o servidor os registra)
 - **THEN** uma sessão com papel `GM` é aberta sem pedir senha
 
 #### Scenario: Acesso pelo link do túnel
@@ -62,7 +62,7 @@ O sistema SHALL abrir sessão com o papel `GM` sem senha quando a requisição v
 - **THEN** nenhuma sessão `GM` é aberta e a tela de entrada de jogadores é mostrada
 
 #### Scenario: Host falsificado atrás do túnel
-- **WHEN** a requisição declara host `localhost` mas carrega `x-forwarded-for` ou `cf-connecting-ip`
+- **WHEN** a requisição declara host `localhost` mas carrega `x-forwarded-for` com endereço externo, `x-forwarded-host` diferente do host, ou `cf-connecting-ip`
 - **THEN** nenhuma sessão `GM` é aberta
 
 #### Scenario: Acesso pela rede local
