@@ -4,80 +4,98 @@
 
 Estado observado em 27/10/2026 (ver `proposal.md` para a motivação):
 
-- **`src/auth.ts`:** NextAuth v5 (beta.31) com `PrismaAdapter`, um provedor `Credentials` que cria ou promove a conta com base em `username`, `email` e `role` vindos do cliente, sessão JWT de 3 h, cookie `httpOnly` e o evento `createUser` que dá `GM` ao primeiro usuário. O segredo cai num valor fixo se `AUTH_SECRET` faltar. `trustHost: true` é necessário por causa do túnel.
-- **Telas:** `src/app/page.tsx` é um componente cliente que decide entre a tela de login manual e o `App` com `useSession`. `src/App.tsx` (~linha 505) ainda tem um bloco de login com botão de Discord e `signIn()` que a guarda de `page.tsx` torna inalcançável. `SessionProvider` envolve o layout.
-- **Banco:** `User` tem `name`, `email` (único), `username` (único, opcional, hoje sem uso), `role` e relações do adaptador (`Account`, `Session`, `VerificationToken`). Não há `passwordHash`. O projeto não usa migrations do Prisma (não existe `prisma/migrations`), então o esquema é aplicado com `prisma db push`. O `dev.db` já tem contas criadas pelo login antigo, sem senha.
-- **Autorização atual:** `deleteCharacterAction` confere o papel no banco a cada chamada, o que é o padrão a seguir. As rotas de API só checam se há sessão (a autorização por dono/GM é a fase 3).
-- **Dependências:** nenhuma biblioteca de hash instalada. Módulos nativos como `bcrypt`/`argon2` exigem compilação no Windows.
+- **`src/auth.ts`:** NextAuth v5 (beta.31) com `PrismaAdapter`, um provedor `Credentials` que cria ou promove a conta a partir de `username`, `email` e `role` vindos do cliente, sessão JWT de 3 h, cookie `httpOnly`, o evento `createUser` ("primeiro usuário vira GM") e `trustHost: true`, necessário por causa do túnel. O segredo cai num valor fixo se `AUTH_SECRET` faltar.
+- **Telas:** `src/app/page.tsx` é um componente cliente que decide entre a tela de login manual e o `App` com `useSession`. `src/App.tsx` (~linha 505) tem um bloco de login com botão de Discord e `signIn()` que a guarda de `page.tsx` torna inalcançável. `SessionProvider` envolve o layout.
+- **Banco:** `User` tem `name`, `email` (único), `username` (único, opcional, sem uso), `role` e as relações do adaptador. Não há `passwordHash`. O projeto não usa migrations do Prisma (não existe `prisma/migrations`): o esquema é aplicado com `prisma db push`. O `dev.db` guarda contas e fichas criadas pelo login antigo, que o mestre decidiu descartar.
+- **Execução:** `dev:all` sobe o Next e um túnel (`localtunnel`), que encaminha as requisições para `localhost:3000`. Isso torna insuficiente testar só o endereço de origem: pelo túnel, a conexão também chega de `127.0.0.1`.
+- **Node:** v24, que executa TypeScript direto (remoção de tipos), desde que os imports usem a extensão `.ts` e não usem o alias `@/`.
+- **Autorização atual:** `deleteCharacterAction` confere o papel no banco a cada chamada, padrão a seguir. As rotas de API só checam se há sessão (fase 3).
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Identidade confiável: sem senha correta não há sessão, e o papel nunca vem do cliente.
-- Nenhum cadastro público, nem na janela entre a instalação e a criação do GM, além do `/setup`.
-- Código de autenticação testável sem navegador, com os cenários da spec cobertos por testes.
+- Ninguém vira GM pelo link, e o papel nunca vem do cliente.
+- Entrada simples para a mesa: escolher o nome, senha só se o mestre quiser.
+- O mestre sempre consegue entrar e recuperar acesso estando no computador onde o app está instalado.
+- Servir de base para a versão compilada: nada de editar `.env` à mão.
+- Cenários da spec cobertos por testes automatizados.
 
 **Non-Goals:**
+- Impedir que um jogador escolha o perfil de outro (confiança entre jogadores é decisão do mestre).
+- Empacotamento, instalador e GitHub Releases (change própria).
 - Autorização das rotas de API (fase 3) e remoção das tabelas do adaptador (fase 4).
-- Recuperação de senha por e-mail e login social.
-- Revogar sessões já emitidas quando a senha muda: elas expiram em até 3 h.
-- Limite de tentativas distribuído: o app roda em um único processo.
+- Limite de tentativas que sobreviva a reinício ou distribuído: o app roda em um único processo.
 
 ## Decisions
 
-### D1. Hash com `scrypt` do módulo `crypto`
-Formato guardado: `scrypt$<N>$<salt-base64>$<hash-base64>`, com salt de 16 bytes, chave de 64 bytes e `timingSafeEqual` na comparação. Os parâmetros ficam no próprio valor, então podem subir depois sem invalidar as senhas antigas. Quando o nome não existe, o login compara contra um hash fixo falso para igualar o tempo de resposta.
-- *Alternativa:* `bcryptjs` (JS puro). Funciona, mas é uma dependência a mais para um problema que o Node já resolve.
-- *Alternativa:* `argon2`/`bcrypt` nativos. Exigem compilação no Windows; descartado.
+### D1. Dois provedores `Credentials`, sem adaptador
+`src/auth.ts` passa a ter dois provedores, ambos devolvendo `{ id, name, role }` lidos do banco, com sessão JWT de 3 h:
+- `profile`: recebe `profileId` e `password`. Busca o perfil, aplica o limitador, verifica a senha só se o perfil tiver uma, e devolve a identidade. Ignora qualquer outro campo, inclusive `role`.
+- `local-gm`: sem campos. Usa o segundo argumento de `authorize(credentials, request)` para chamar `isLocalRequest(request.headers)`; se for acesso local, devolve o usuário GM (criado na primeira vez), senão `null`.
+Remove `PrismaAdapter` e o evento `createUser`: com JWT e credenciais, o adaptador só servia para a regra do "primeiro usuário". O cookie, os 3 h e `trustHost` continuam.
+- *Alternativa:* um só provedor com um campo "modo". Mistura duas políticas de confiança no mesmo caminho; descartado.
 
-### D2. Esquema: `passwordHash` e `username` normalizado
-`User.passwordHash String?`. O `username` (já único) passa a guardar o nome de login normalizado (`trim` + minúsculas), e o `name` guarda o texto como o GM digitou, para exibição. Contas antigas têm `username` nulo e não têm senha, então não conseguem entrar; o `username` delas é preenchido quando ganham senha (no `/setup` ou na redefinição pelo GM), sem script de backfill. Se dois nomes antigos colidirem depois de normalizados, a operação falha com mensagem clara e o GM resolve renomeando um deles.
-- *Alternativa:* login por `email`. Os jogadores não têm e-mail real hoje (o login antigo inventava `@campaign.local`).
+### D2. Detecção de acesso local em `src/lib/localRequest.ts`
+`isLocalRequest(headers)` é verdadeiro quando o `host` (sem porta) é `localhost`, `127.0.0.1` ou `[::1]` **e** nenhum destes cabeçalhos está presente: `x-forwarded-for`, `x-forwarded-host`, `forwarded`, `x-real-ip`, `cf-connecting-ip`, `via`. Pelo túnel o `Host` é o do túnel e os proxies acrescentam `x-forwarded-for`/`cf-*`; uma requisição que tente falsificar `Host: localhost` ainda carrega os cabeçalhos do proxy. Acesso pelo IP da rede local (`192.168.x.x`) tem `Host` diferente e vira jogador.
+- Limite conhecido: a garantia depende de o proxy do túnel acrescentar seus cabeçalhos, o que `localtunnel` e `cloudflared` fazem. Um proxy reverso que os remova quebraria a regra. Registrado em Riscos e verificado na tarefa final.
+- *Alternativa:* endereço de origem da conexão. Pelo túnel a conexão chega de `127.0.0.1`, então não distingue o mestre; descartado.
+- *Alternativa:* cookie ou chave secreta entregue só na máquina local. Mais forte, mas pede um passo manual a mais para o mestre; ficaria como evolução.
 
-### D3. NextAuth sem adaptador, só `Credentials` + JWT
-Remove o `PrismaAdapter` e o evento `createUser`: com sessão JWT e um único provedor de credenciais, o adaptador não faz nada além de gerar as regras de "primeiro usuário". `authorize` normaliza o nome, consulta o limitador, busca a conta, verifica a senha e devolve `{ id, name, role }` lido do banco. O callback `jwt` copia `id` e `role` apenas no login; o callback `session` os expõe. O cookie, os 3 h e o `trustHost` continuam como estão.
+### D3. Esquema: perfis, senha opcional e configurações
+- `User.passwordHash String?`: nulo significa "sem senha". `User.username` (já único) guarda o nome normalizado (`trim` + minúsculas) para a unicidade; `name` guarda o texto como o mestre digitou. `email` deixa de ser usado.
+- O GM é uma linha de `User` com `role = "GM"` e `name = "Mestre"`, criada na primeira entrada local. Sua `passwordHash` é a senha do Mestre. Só existe um GM.
+- Nova tabela `AppSetting { key String @id, value String }`, com a chave `sessionName`. Valor padrão exibido quando ausente: "Minha Mesa".
+- Banco zerado com `prisma db push --force-reset` depois de `dev.db.bak`. Isso apaga também as linhas das tabelas de adaptador e o restante dos dados antigos.
 
-### D4. Limitador de tentativas em memória
-Um `Map` por nome normalizado com contagem e instante da primeira falha da janela: 5 falhas em 15 min bloqueiam por 15 min; sucesso apaga a entrada; entradas vencidas são removidas ao consultar. Fica em `src/lib/loginLimiter.ts`, com relógio injetável para os testes. Chave por nome (não por IP), porque atrás do túnel o IP de origem não é confiável.
-- Consequência: um atacante pode bloquear o login de um jogador por 15 min digitando senhas erradas para o nome dele. Numa mesa pequena isso é aceito; o GM não fica trancado para sempre.
-- *Alternativa:* tabela no banco. Sobrevive a reinício, mas adiciona escrita a cada login falho; desnecessário aqui.
+### D4. Senhas com `scrypt`
+`src/lib/password.ts`: formato `scrypt$<N>$<salt-base64>$<hash-base64>`, salt de 16 bytes, chave de 64 bytes, `timingSafeEqual`. Os parâmetros ficam no valor, então podem subir depois sem invalidar senhas antigas. A senha tem mínimo de 4 caracteres, escolha deliberada para uma mesa casual. Sem dependência nova.
 
-### D5. Guarda no servidor e telas separadas
-`src/app/page.tsx` vira componente de servidor: chama `auth()`; sem sessão, redireciona para `/setup` (se nenhuma conta tem senha) ou `/login`; com sessão, renderiza o `App`. `/login` e `/setup` são páginas com formulário cliente; `/login` redireciona para `/` se já houver sessão, e `/setup` redireciona para `/login` quando o cadastro inicial já foi feito. "Cadastro inicial pendente" é `count(User com passwordHash) === 0`, calculado em `src/lib/setupState.ts`.
+### D5. Limitador em memória, por perfil
+`src/lib/loginLimiter.ts`: um `Map` por `id` de perfil com contagem e início da janela; 5 falhas em 15 min bloqueiam por 15 min; sucesso apaga a entrada; relógio injetável nos testes. Chave por perfil porque atrás do túnel o IP não é confiável. Consequência aceita: quem errar a senha de propósito trava aquele perfil por 15 min.
 
-### D6. Ações de servidor para contas
-- `setupGmAction` (público, mas só funciona enquanto o cadastro inicial está pendente; faz a checagem e a escrita numa transação para duas requisições simultâneas não criarem dois GMs).
-- `createPlayerAction`, `resetPlayerPasswordAction` em `src/app/admin/actions.ts`, ambas conferindo o papel `GM` no banco a cada chamada (mesmo padrão de `deleteCharacterAction`).
-- `changeOwnPasswordAction`, para qualquer usuário autenticado, exigindo a senha atual.
-Todas validam a entrada (nome 2–40 caracteres, senha ≥ 8), registram só o que aconteceu e quem fez (nunca a senha) e usam o `logger`.
+### D6. Segredo por instalação em `src/lib/authSecret.ts`
+Ordem: `AUTH_SECRET` do ambiente; senão o arquivo `.auth-secret` na pasta de dados; senão gera 32 bytes aleatórios, grava o arquivo (modo `0600`) e usa. A pasta de dados é `process.env.APP_DATA_DIR` ou a raiz do projeto (onde já está o `dev.db`). Durante `next build` (`NEXT_PHASE=phase-production-build`) não cria arquivo, para que um build distribuível nunca embuta um segredo. Os arquivos `.auth-secret` e `RESET_SENHA_MESTRE` entram no `.gitignore`.
 
-### D7. `AUTH_SECRET` obrigatória
-Sem valor padrão. `authorize` checa a variável e, se ausente, registra `logger.error` e devolve `null`; a configuração do Auth.js passa o segredo sem fallback, então o Auth.js também recusa a requisição. Não lança exceção na importação para não quebrar o `next build`.
+### D7. Reset da senha do Mestre em `src/instrumentation.ts`
+O hook `register()` do Next roda uma vez na inicialização do servidor. Ele chama `applyMasterPasswordReset()` (`src/lib/masterReset.ts`): se `RESET_SENHA_MESTRE` existe na pasta de dados, zera `passwordHash` do GM, apaga o arquivo e registra `logger.warn`. A lógica fica numa função pura e testável; o `register()` só a chama no runtime Node.
+- *Alternativa:* checar o arquivo a cada tentativa de entrada. Evita reiniciar, mas custa um acesso a disco por tentativa; reiniciar o app é aceitável aqui.
 
-### D8. Limpeza do login antigo
-Remove o formulário manual de `page.tsx`, o bloco de login e o import de `signIn` em `App.tsx`, `loginScreen.test.tsx`, o botão de Discord e o `SessionProvider` (o logout usa `signOut` de `next-auth/react`, que dispensa o provedor). O `App` ganha um botão de sair e de trocar senha no cabeçalho, com mudança mínima.
+### D8. Telas e guarda no servidor
+- `src/app/page.tsx` vira componente de servidor: com sessão renderiza o `App`; sem sessão redireciona para `/login`.
+- `/login` (servidor + formulário cliente): carrega o nome da sessão e a lista de perfis (nome, identificador e se exige senha) por consulta direta ao banco, sem endpoint público de listagem e sem expor o hash. Se `isLocalRequest` for verdadeiro, mostra um componente que chama `signIn('local-gm')` sozinho; senão mostra o seletor, o campo de senha (só aparece para perfil com senha) e o perfil Mestre apenas se houver senha do Mestre. O `local-gm` revalida o acesso no servidor, então o cliente não pode forçá-lo.
+- `/admin` ganha: lista de perfis (criar, renomear, remover com confirmação, definir/remover senha), campo do nome da sessão e senha do Mestre.
+- Logout: botão no cabeçalho do `App` chamando `signOut` de `next-auth/react`, que dispensa o `SessionProvider` (removido).
 
-### D9. Telas novas seguem o `DESIGN.md`
-As telas `/login`, `/setup`, o formulário do admin e o diálogo de troca de senha usam os papéis tipográficos, raios e sombras do `DESIGN.md`, preservando a estética Pokédex (carcaça colorida, contorno preto, sombra dura, lente ciano). Para isso, o `tailwind.config.ts` recebe os tokens da "Configuração inicial" da skill `pokedex-ui` (`fontSize`, `borderRadius`, `boxShadow`, `colors.type`). A adição é aditiva e não muda nenhuma tela existente.
+### D9. Ações de servidor para gestão
+`createProfileAction`, `renameProfileAction`, `removeProfileAction`, `setProfilePasswordAction` (senha vazia remove), `setMasterPasswordAction` e `setSessionNameAction` em `src/app/admin/actions.ts`. Todas conferem `role === "GM"` no banco a cada chamada (mesmo padrão de `deleteCharacterAction`), validam o nome (1–40 caracteres) e a senha (mínimo de 4), registram quem fez o quê pelo `logger` e nunca registram senhas. Remover um perfil apaga as fichas dele por cascata do esquema; a interface pede confirmação.
+
+### D10. Seed de desenvolvimento
+`scripts/seed-dev.ts` (rodado com `node scripts/seed-dev.ts`, via `npm run seed:dev`) cria "Túlio", "Robert" e "Black" no banco limpo, com o nome da sessão "Mesa de Teste". Importa só `src/lib/password.ts` por caminho relativo com extensão `.ts`, sem o alias, e usa o cliente do Prisma direto. Não é chamado por nada do app e não entra na versão distribuída.
+
+### D11. Telas seguem o `DESIGN.md`
+As telas novas usam os papéis tipográficos, raios e sombras do `DESIGN.md`, preservando a estética Pokédex (carcaça colorida, contorno preto, sombra dura, lente ciano). Para isso o `tailwind.config.ts` recebe os tokens da "Configuração inicial" da skill `pokedex-ui` (`fontSize`, `borderRadius`, `boxShadow`, `colors.type`). A adição não muda nenhuma tela existente.
 
 ## Risks / Trade-offs
 
-- [GM esquece a senha e fica trancado: `/setup` já está fechado] → Fora do escopo deste change, mas registrado: a saída é editar o banco (`passwordHash` nulo e outro GM) ou criar um segundo GM antes. Uma recuperação por linha de comando pode virar uma change própria.
-- [Contas antigas ficam sem acesso até o GM redefinir a senha] → Esperado e comunicado na tarefa de verificação; as fichas não são tocadas.
-- [`prisma db push` altera o `dev.db` real] → Copiar `dev.db` para um backup antes; a mudança é só uma coluna anônima nova e nula.
-- [Bloqueio por nome permite negar o login de um jogador] → Aceito (D4); expira em 15 min.
-- [Sessão antiga continua válida após troca de senha] → Aceito (Non-Goal); expira em até 3 h.
-- [Rotas de API ainda só checam "há sessão"] → Coberto pela fase 3; esta change não piora a situação e fecha a entrada principal.
-- [Beta do NextAuth muda a API] → A versão está fixada no `package-lock.json`; os testes de `authorize` isolam a lógica própria do framework.
+- [O túnel ou um proxy futuro não acrescenta cabeçalhos e um visitante remoto passa por "local"] → A regra exige `Host` local **e** ausência de cabeçalhos de proxy; a tarefa final simula as duas situações. Se algum dia o app rodar atrás de um proxy que os remova, trocar por chave local (alternativa de D2).
+- [Qualquer jogador entra como qualquer outro, inclusive apagando a ficha de um colega] → Aceito pela mesa. Os dados mais sensíveis (perfil Mestre e painel) continuam protegidos. A fase 3 deve reavaliar "autorização por dono": neste modelo ela só protege contra acidente, não contra má-fé, e pode ser simplificada.
+- [Zerar o banco apaga todas as fichas atuais] → Decisão explícita do mestre; backup em `dev.db.bak` antes (fora do git).
+- [Mestre esquece a senha do Mestre] → Recuperação pelo arquivo `RESET_SENHA_MESTRE` e reinício (D7). O acesso pelo próprio computador nunca depende dessa senha.
+- [Bloqueio por perfil permite travar a entrada de alguém por 15 min] → Aceito (D5).
+- [Segredo gerado em arquivo: copiar a pasta para outro computador carrega o segredo] → Sem consequência prática: o segredo só assina sessões; apagar `.auth-secret` gera outro e encerra as sessões.
+- [Beta do NextAuth] → Versão fixada no `package-lock.json`; a lógica própria fica em funções puras (`localRequest`, `password`, `loginLimiter`) testadas sem o framework.
+- [`instrumentation.ts` não roda em algum modo de execução] → Verificado na tarefa final com `next dev` e `next start`.
 
 ## Migration Plan
 
-1. Copiar `dev.db` para `dev.db.bak` (fora do git, já ignorado) e rodar `prisma db push` com o esquema novo.
-2. Subir o app: como nenhuma conta tem senha, `/` leva a `/setup`. O GM entra com o nome da conta antiga (preserva as fichas) e define a senha.
-3. O GM cria ou redefine as contas dos jogadores pelo painel e repassa as senhas.
+1. Copiar `dev.db` para `dev.db.bak`; atualizar `prisma/schema.prisma`; aplicar com `prisma db push --force-reset` (o banco fica vazio).
+2. Em desenvolvimento, `npm run seed:dev` cria os perfis de teste.
+3. Abrir o app pelo computador do mestre: ele entra como GM, define o nome da sessão e cria os perfis (ou usa o seed) e, se quiser, senhas por perfil e a senha do Mestre.
+4. Passar o link aos jogadores.
 
-Rollback: reverter os commits e restaurar o `dev.db.bak`; a coluna `passwordHash` é inofensiva se ficar.
+Rollback: reverter os commits e restaurar `dev.db.bak`.
 
 ## Open Questions
 
-- Recuperação de senha do GM por linha de comando (ver Riscos): fica para uma change futura se a mesa quiser.
+- Para a fase 3: manter alguma autorização por dono nas rotas de ficha ou deixar só "tem sessão" e "é GM"? Depende de a mesa querer proteção contra acidente.
+- Para a change de empacotamento: onde fica a pasta de dados da versão instalada (`APP_DATA_DIR`) e como o instalador a cria.
