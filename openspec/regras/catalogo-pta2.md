@@ -1,6 +1,6 @@
 # Catálogo de Regras — PTA 2.0
 
-Fonte: `conteudo/pokemon-livro-do-jogador-biblioteca-elfica.txt`, onde "L123" indica a linha do arquivo.
+Fonte: `openspec/regras/fonte/pokemon-livro-do-jogador-biblioteca-elfica.txt`, onde "L123" indica a linha do arquivo.
 Este catálogo é a especificação do motor de regras (M2). Os exemplos de cada regra viram testes automatizados.
 
 ## Como revisar
@@ -24,7 +24,7 @@ Convenção geral (L475–478): **toda fração arredonda para baixo**, por exem
   - Atributo ≤ 9: `Mod = Atributo − 10`.
   - Atributo ≥ 10: `Mod = ⌊(Atributo − 10) / 2⌋`.
 - **Exemplos:** Atributo 5 → −5; 9 → −1; 10 → 0; 11 → 0; 14 → 2; 18 → 4.
-- ⚠ **Código atual:** usa `⌊(Atributo − 10) / 2⌋` para todos os valores (`App.tsx:254` e `:318`), então Atributo 5 dá −3 em vez de −5. **Esta é uma das contas quebradas.**
+- ⚠ **Código atual:** usa `⌊(Atributo − 10) / 2⌋` para todos os valores (`src/App.tsx:254` e `:318`), então Atributo 5 dá −3 em vez de −5. **Esta é uma das contas quebradas.**
 - **Revisão:** [ ] Certa  [ ] Diferente na mesa  [ ] Varia por mestre
 
 ### R1.2 Fases não afetam Modificadores de humanos
@@ -54,7 +54,7 @@ Convenção geral (L475–478): **toda fração arredonda para baixo**, por exem
 ### R2.1 PV máximos do humano
 - **Regra (L240–247):** a Saúde não tem Modificador. `PV máx = (Nível + Saúde) × 4`.
 - **Exemplo:** Nível 5 e Saúde 8 → 52.
-- **Código atual:** está igual (`App.tsx:264`).
+- **Código atual:** está igual (`src/App.tsx:264`).
 - **Revisão:** [ ] Certa  [ ] Diferente na mesa  [ ] Varia por mestre
 
 ### R2.2 PV máximos do Pokémon
@@ -96,7 +96,7 @@ Convenção geral (L475–478): **toda fração arredonda para baixo**, por exem
   - Cada valor base vai **no máximo a 6**. Bônus de outras fontes levam até **9**, que é o teto absoluto.
 - **Exemplo:** Defesa 17 → 3; Defesa 40 → 6, por causa do teto.
 - ⚠ **Contradição no livro:** na seção de Pokémon (L550–553), o texto diz "para cada **10** pontos de Velocidade, 1 de Evasão". Com isso, a Evasão Veloz do Pokémon seria `⌊Velocidade / 10⌋`. **Qual vale: /5 para todos ou /10 para Pokémon?**
-- ⚠ **Código atual:** o humano não tem o teto de 6 (`App.tsx:268–271`), e a Evasão do Pokémon é digitada à mão (`PokemonCreationSheet.tsx:79`).
+- ⚠ **Código atual:** o humano não tem o teto de 6 (`src/App.tsx:268–271`), e a Evasão do Pokémon é digitada à mão (`PokemonCreationSheet.tsx:79`).
 - **Revisão:** [ ] Certa  [ ] Diferente na mesa  [ ] Varia por mestre
 
 ### R3.2 Qual Evasão se aplica
@@ -261,7 +261,7 @@ Convenção geral (L475–478): **toda fração arredonda para baixo**, por exem
   - **Subaquático:** 3. Passa a **4** se o MA ou o MD for ≥ 3.
 - **Exemplo:** MA 2 e MV 4 → Terrestre 3 + 2 = 5. MD 6 → Natação 2 + 3 = 5.
 - ⚠ **A confirmar:** "metade de seu MA ou MV" significa usar o maior dos dois, ou o jogador escolhe?
-- ⚠ **Código atual:** usa `5 + ⌊Velocidade / 2⌋`, Natação = metade do Terrestre e Subaquático = metade da Natação (`App.tsx:276–278`). **Tudo diferente do livro.**
+- ⚠ **Código atual:** usa `5 + ⌊Velocidade / 2⌋`, Natação = metade do Terrestre e Subaquático = metade da Natação (`src/App.tsx:276–278`). **Tudo diferente do livro.**
 - **Revisão:** [ ] Certa  [ ] Diferente na mesa  [ ] Varia por mestre
 
 ---

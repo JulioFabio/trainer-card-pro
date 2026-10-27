@@ -15,21 +15,22 @@ Next.js 15 (App Router), React 19, TypeScript `strict`, TailwindCSS 3, Prisma 7 
 ## Fontes da verdade
 
 - **Comportamento e requisitos:** `openspec/specs/` e a change ativa em `openspec/changes/`. Fluxo: `/opsx:propose` → `/opsx:apply` → `/opsx:archive`. Os programas de refatoração estão listados em `openspec/config.yaml`.
-- **Visual:** `DESIGN.md` na raiz. Ao mexer em UI (`.tsx`, `className`, `index.css`, `tailwind.config.ts`), use a skill `pokedex-ui`. A estética não muda; só as proporções seguem as escalas do documento.
+- **Visual:** `DESIGN.md` na raiz. Ao mexer em UI (`.tsx`, `className`, `src/index.css`, `tailwind.config.ts`), use a skill `pokedex-ui`. A estética não muda; só as proporções seguem as escalas do documento.
 - Não há documentação viva em `docs/`. O código, o `schema.prisma` e as specs são a referência. Não recrie descrições por componente.
 
 ## Estrutura
 
-- `app/`: rotas e páginas (`app/api/*` para a API, `app/admin` para o painel do GM).
-- `components/`: componentes React. `App.tsx` na raiz é o shell principal (será quebrado numa change futura).
-- `lib/`: `prisma.ts` (cliente), `telemetry.ts` (logger e `withTelemetry`), `queryLog.ts`, `cache.ts`, `safeFetch.ts`, `routeHelpers.ts`.
-- `prisma/schema.prisma`: modelo de dados. `auth.ts`: configuração do NextAuth.
+- `src/`: todo o código da aplicação. Imports entre módulos usam o alias `@/` (= `src/`); `../` é proibido pelo lint.
+- `src/app/`: rotas e páginas (`src/app/api/*` para a API, `src/app/admin` para o painel do GM).
+- `src/components/`: componentes React. `src/App.tsx` é o shell principal (será quebrado numa change futura).
+- `src/lib/`: `prisma.ts` (cliente), `telemetry.ts` (logger e `withTelemetry`), `queryLog.ts`, `cache.ts`, `safeFetch.ts`, `routeHelpers.ts`.
+- `prisma/schema.prisma`: modelo de dados. `src/auth.ts`: configuração do NextAuth. `src/constants.ts` e `src/types.ts`: constantes e tipos globais.
 - `__tests__/unit` e `__tests__/integration`: testes Vitest. Arquivos `.test.ts` rodam em `node`, `.test.tsx` em `jsdom`.
 
 ## Convenções
 
 - Testes com imports explícitos de `vitest` (sem globals). Mocks com `vi.mock`; variáveis usadas dentro do mock vêm de `vi.hoisted`.
-- Logs só pelo `logger` de `lib/telemetry.ts`, nunca `console` direto. Nível por `LOG_LEVEL` (padrão `info`), queries lentas por `SLOW_QUERY_MS` (padrão 100).
+- Logs só pelo `logger` de `src/lib/telemetry.ts`, nunca `console` direto. Nível por `LOG_LEVEL` (padrão `info`), queries lentas por `SLOW_QUERY_MS` (padrão 100).
 - Nunca logar dados de ficha, notas, corpos de requisição ou `params` de queries.
 - `any` gera aviso de lint; não introduza novos em código novo.
 - Cada change deve deixar o app funcionando e `npm run check` verde.

@@ -1,6 +1,6 @@
 ---
 name: pokedex-ui
-description: Aplica o DESIGN.md do Trainer Card Pro em qualquer trabalho de UI — criar ou editar componentes .tsx, mexer em className, estilos inline, index.css ou tailwind.config. Preserva a estética da Pokédex e corrige proporções (tipografia, espaçamento, alturas, raios, bordas, sombras, cores) para as escalas do documento.
+description: Aplica o DESIGN.md do Trainer Card Pro em qualquer trabalho de UI — criar ou editar componentes .tsx, mexer em className, estilos inline, src/index.css ou tailwind.config. Preserva a estética da Pokédex e corrige proporções (tipografia, espaçamento, alturas, raios, bordas, sombras, cores) para as escalas do documento.
 ---
 
 # Pokédex UI — aplicar o DESIGN.md

@@ -7,7 +7,7 @@ brand:
   tagline: Ficha de personagem digital para o sistema de RPG Pokémon (PTA 2.0 / PTU)
   aesthetic: Pokédex eletrônica retrofuturista, flat de alto contraste com contorno preto de mangá
 colors:
-  themes:            # carcaça da Pokédex, trocável pelo usuário (constants.ts → POKEDEX_THEMES)
+  themes:            # carcaça da Pokédex, trocável pelo usuário (src/constants.ts → POKEDEX_THEMES)
     rose:    { main: "#e11d48", dark: "#9f1239", light: "#fff1f2" }   # padrão
     blue:    { main: "#2563eb", dark: "#1e40af", light: "#eff6ff" }
     emerald: { main: "#059669", dark: "#065f46", light: "#ecfdf5" }
@@ -133,7 +133,7 @@ O que torna isso bom, e não pode se perder:
 
 ## 2. Auditoria de proporções
 
-A contagem foi feita sobre `App.tsx`, `components/*.tsx` e `app/admin/page.tsx`.
+A contagem foi feita sobre `src/App.tsx`, `src/components/*.tsx` e `src/app/admin/page.tsx`.
 
 | # | Problema | Evidência no código | Efeito |
 |---|---|---|---|
@@ -373,9 +373,9 @@ Raio `panel`, `p-6`, sombra `overlay`. Ícone em `display`, título em `heading`
 
 ## 9. Ordem sugerida de migração
 
-1. Criar os tokens no `tailwind.config.ts` (`fontSize`, `borderRadius`, `boxShadow`, `colors.type`) e no `:root` do `index.css`.
+1. Criar os tokens no `tailwind.config.ts` (`fontSize`, `borderRadius`, `boxShadow`, `colors.type`) e no `:root` do `src/index.css`.
 2. Migrar os componentes compartilhados: `InfoField`, `DerivedBox`, `AttackCard`, `SmartInput`.
-3. Migrar o shell do `App.tsx`: header, abas, gutter e padding de conteúdo.
+3. Migrar o shell do `src/App.tsx`: header, abas, gutter e padding de conteúdo.
 4. Migrar as abas Treinador, Combate e Mochila.
 5. Migrar `TeamTab`, `PcTab`, `PokemonCreationSheet` (é o arquivo com mais `text-[7px]`/`[8px]` e 43 estilos inline), `NotesTab` e `TradeModal`.
 6. Migrar o `PokePapo`, corrigindo o padding esquerdo.
