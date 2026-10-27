@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
+import { SessionProvider } from '@/components/SessionProvider';
 import '../index.css';
 
 const outfit = Outfit({
@@ -50,7 +51,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-slate-100 min-h-screen font-sans">
-        {children}
+        <SessionProvider>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -9,13 +8,10 @@ import { logger } from "@/lib/telemetry";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "development-fallback-secret-key-1234567890-abcdef",
+  trustHost: true,
   providers: [
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID || "",
-      clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
-    }),
     CredentialsProvider({
-      name: "Mock Dev Login",
+      name: "Trainer Login",
       credentials: {
         username: { label: "Nome do Treinador", type: "text", placeholder: "Ash Ketchum" },
         email: { label: "E-mail", type: "email", placeholder: "ash@ketchum.com" },
@@ -23,14 +19,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.username) return null;
-        
-        const username = credentials.username as string;
-        const email = (credentials.email as string) || `${username.toLowerCase().replace(/\s+/g, '')}@dev.com`;
+
+        const username = (credentials.username as string).trim();
+        const rawEmail = (credentials.email as string)?.trim();
+        const email = rawEmail || `${username.toLowerCase().replace(/\s+/g, '')}@campaign.local`;
         const role = (credentials.role as string) || "PLAYER";
 
-        // Busca ou cria o usuário correspondente no banco SQLite local
-        let user = await prisma.user.findUnique({
-          where: { email },
+        // Busca o usuário existente por e-mail ou nome de treinador
+        let user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email },
+              { name: username }
+            ]
+          },
         });
 
         if (!user) {
@@ -43,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
         } else if (user.role !== role) {
           user = await prisma.user.update({
-            where: { email },
+            where: { id: user.id },
             data: { role },
           });
         }

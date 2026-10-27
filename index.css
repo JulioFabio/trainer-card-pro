@@ -175,3 +175,54 @@ input[type='number']::-webkit-outer-spin-button {
   z-index: 9999;
   border-radius: inherit;
 }
+
+/* ===== LOGIN SCREEN ANIMATIONS ===== */
+@keyframes float-pokeball {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes login-pokeball-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg) scale(1.02); }
+  75% { transform: rotate(6deg) scale(1.02); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float-pokeball {
+  animation: float-pokeball 15s linear infinite;
+}
+
+.animate-login-pokeball {
+  animation: login-pokeball-wobble 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+

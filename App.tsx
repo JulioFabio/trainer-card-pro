@@ -15,6 +15,7 @@ import { PokemonCreationSheet } from './components/PokemonCreationSheet';
 import { PokePapo } from './components/PokePapo';
 import { AttackCard } from './components/AttackCard';
 import { safeFetch } from './lib/safeFetch';
+import { signIn } from 'next-auth/react';
 
 // Tab agora é string para suportar IDs dinâmicos como 'pokemon-team-abc123'
 type Tab = string;
@@ -46,21 +47,19 @@ const App: React.FC = () => {
     const initCharacter = async () => {
       try {
         setInitError(null);
-        const mockCharId = 'char-123';
         let data: any = null;
         
-        try {
-          data = await safeFetch(`/api/character?id=${mockCharId}`);
-        } catch (fetchErr: any) {
-          if (fetchErr.message.includes('404') || fetchErr.message.includes('não encontrado')) {
-            data = await safeFetch('/api/character', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: 'Treinador', userId: 'user-123', id: mockCharId })
-            });
-          } else {
-            throw fetchErr;
-          }
+        // Busca as fichas pertencentes ao usuário autenticado na sessão ativa
+        const userCharacters = await safeFetch('/api/character');
+        if (Array.isArray(userCharacters) && userCharacters.length > 0) {
+          data = userCharacters[0];
+        } else {
+          // Se for o primeiro acesso do usuário, cria a ficha inicial vinculada à sua conta
+          data = await safeFetch('/api/character', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Treinador' })
+          });
         }
 
         if (data) {
@@ -355,7 +354,7 @@ const App: React.FC = () => {
           }));
         } catch {}
       }
-    }, 1000); // 1 segundo de debounce
+    }, 1500); // 1.5s de debounce (otimizado para alta concorrência de múltiplos jogadores simultâneos)
     
     return () => clearTimeout(saveTimer);
   }, [trainer, characterId, isInitializing, initError]);
@@ -490,34 +489,54 @@ const App: React.FC = () => {
            <span className="text-white font-black uppercase tracking-widest text-sm">Carregando Banco de Dados...</span>
         </div>
       ) : initError ? (
-        <div className="max-w-md w-full bg-zinc-900 border-4 border-rose-500 rounded-[2rem] p-8 text-center shadow-[0_0_30px_rgba(239,68,68,0.3)]">
-          <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500 border-2 border-rose-500/30">
-            <i className="fa-solid fa-cloud-slash text-4xl animate-bounce"></i>
+        <div className="max-w-md w-full bg-slate-900 border-4 border-cyan-500/50 rounded-[2.5rem] p-8 text-center shadow-[0_0_50px_rgba(6,182,212,0.2)] backdrop-blur-xl relative overflow-hidden">
+          {/* Luzes do Header Pokédex */}
+          <div className="flex items-center gap-2 mb-6 justify-center">
+            <div className="w-4 h-4 rounded-full bg-cyan-400 border border-white shadow-[0_0_10px_#22d3ee] animate-pulse" />
+            <div className="w-3 h-3 rounded-full bg-amber-400 border border-white/50" />
+            <div className="w-3 h-3 rounded-full bg-emerald-400 border border-white/50" />
           </div>
-          <h2 className="text-lg font-black uppercase tracking-widest text-rose-500 mb-2">
-            Erro de Conexão
+
+          <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-cyan-400 border-2 border-cyan-500/30 shadow-inner">
+            <i className="fa-solid fa-id-card text-4xl animate-bounce"></i>
+          </div>
+
+          <h2 className="text-xl font-black uppercase tracking-wider text-white mb-2">
+            Pokédex OS // Login
           </h2>
-          <p className="text-zinc-400 text-xs mb-6 leading-relaxed">
-            Não foi possível carregar os dados da sua Pokédex. Verifique a conexão com o servidor local.
+          <p className="text-slate-400 text-xs mb-8 leading-relaxed">
+            Bem-vindo, Treinador! Identifique-se para acessar suas fichas, inventário, PC e diário de campanha.
           </p>
-          <div className="bg-black/40 p-4 rounded-xl text-left font-mono text-xs text-rose-400/80 mb-6 max-h-24 overflow-y-auto">
-            {initError}
-          </div>
-          {initError.toLowerCase().includes('não autorizado') || initError.toLowerCase().includes('login') ? (
-            <a
-              href="/api/auth/signin"
-              className="block w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-cyan-600/20 text-center active:scale-95 decoration-none"
-            >
-              Fazer Login (NextAuth)
-            </a>
-          ) : (
+
+          <div className="flex flex-col gap-3">
             <button
-              onClick={() => window.location.reload()}
-              className="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-rose-500/20 active:scale-95"
+              type="button"
+              onClick={() => signIn('discord')}
+              className="w-full py-4 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#5865F2]/30 flex items-center justify-center gap-3 active:scale-95 border-none cursor-pointer"
             >
-              Tentar Novamente
+              <i className="fa-brands fa-discord text-lg"></i>
+              Entrar com o Discord
             </button>
-          )}
+
+            <button
+              type="button"
+              onClick={() => signIn()}
+              className="w-full py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-2 active:scale-95 border-none cursor-pointer"
+            >
+              <i className="fa-solid fa-envelope"></i>
+              Outras Opções (E-mail / Dev Login)
+            </button>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-mono text-slate-500">
+            <span>SISTEMA CRIPTOGRAFADO</span>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-cyan-400 hover:underline uppercase font-bold bg-transparent border-none cursor-pointer"
+            >
+              Recarregar
+            </button>
+          </div>
         </div>
       ) : (
       <div className="flex items-center justify-center h-full w-full">
