@@ -13,7 +13,6 @@ Este projeto foi desenvolvido com:
 - [React Markdown](https://github.com/remarkjs/react-markdown) com suporte a GFM
 - [Google Fonts (Outfit)](https://fonts.google.com/specimen/Outfit) para tipografia moderna
 - Telemetria DevOps com Request IDs únicos, monitoramento `/api/health` e logs JSON estruturados
-- Documentação Viva integrada ao Obsidian Vault em `/docs` com o indexador `_VaultMap.md` (`vault-architect`)
 
 ## 📦 Instalação
 
@@ -99,13 +98,12 @@ A ficha é **salva automaticamente** no banco de dados SQLite relacional via API
 - [x] **PokéPapo & Cartões de Ataque (AttackCard)** — Gaveta retrátil de chat e cartões visuais PTA 2.0 com botões para rolagens de acerto e dano.
 - [x] **Link Cable (Sistema de Trocas)** — Mecânica assíncrona para solicitação e aceitação de trocas de Pokémons e itens entre treinadores.
 - [x] **Telemetria & Observabilidade DevOps** — Monitoramento `/api/health`, Request IDs com UUID por requisição, alertas de anomalia de memória e rotina de auto-rollback.
-- [x] **Documentação Viva Obsidian (`vault-architect`)** — Grafo de conhecimento em `/docs` padronizado com categorias em colchetes `[Categoria] Nome.md` e indexador mestre `_VaultMap.md`.
 
 ## 🗺️ RoadMap
 
 - [x] **Fase 1: Integração com Banco de Dados** — Banco de dados robusto com rotas de API no Next.js para persistência de dados. Concluída com SQLite, Prisma ORM e rotas CRUD.
 - [x] **Fase 2: Sistema de Abas Dinâmicas & Gaveta PokéPapo** — Abas inline para edição de Pokémons e gaveta retrátil de chat para combate.
-- [x] **Fase 3: Padronização Vault Architect & DevOps Observability** — Observabilidade de API, health check `/api/health` e documentação viva sincronizada no Obsidian.
+- [x] **Fase 3: DevOps Observability** — Observabilidade de API, health check `/api/health` e logs JSON estruturados.
 - [ ] Implementar naturezas com efeito matemático automático nos atributos (ex: +2 Saúde / -2 Ataque).
 - [ ] Autocomplete de espécies com Stats Base pré-definidos.
 - [ ] Validação visual de ficha — alertas quando atributos excedem o permitido para o nível.
