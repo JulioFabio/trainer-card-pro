@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -32,8 +33,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    ".shots/next/types/**/*.ts",
     "next-env.d.ts",
-    ".shots/next/types/**/*.ts"
+    ".shots-e2e/next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,5 +1,22 @@
 # Spec Delta
 
+## MODIFIED Requirements
+
+### Requirement: Limites de tamanho e de valores
+O sistema SHALL aplicar limites às entradas: nomes e títulos com no máximo 100 caracteres, descrições com no máximo 2.000, conteúdo de nota com no máximo 100.000, `level` entre 1 e 100, `money` entre 0 e 1.000.000.000, `quantity` entre 0 e 9.999, dados de trocas (`tradeData`) com no máximo 1 MB e o corpo de qualquer requisição com no máximo 10 MB. A ficha (`sheetData`) não tem mais um teto próprio: as fotos dos Pokémon deixam de ficar embutidas nela, e o que sobra é limitado pelo corpo.
+
+#### Scenario: Ficha grande demais
+- **WHEN** o corpo da requisição, com a ficha enviada, ultrapassa 10 MB
+- **THEN** a resposta é `413` e a ficha anterior permanece
+
+#### Scenario: Nível fora da faixa
+- **WHEN** o `level` enviado é 0, 101 ou fracionário
+- **THEN** a resposta é `400`
+
+#### Scenario: Valores dentro dos limites
+- **WHEN** todos os campos respeitam os limites
+- **THEN** a requisição é aceita
+
 ## ADDED Requirements
 
 ### Requirement: Esquema completo de Pokémon e de item

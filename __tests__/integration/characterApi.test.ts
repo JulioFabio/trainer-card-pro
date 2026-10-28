@@ -1,16 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { auth, prisma, cache } = vi.hoisted(() => ({
+const { auth, prisma, cache, store } = vi.hoisted(() => ({
   auth: vi.fn(),
   prisma: {
     user: { findUnique: vi.fn() },
-    character: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
+    character: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   },
   cache: { get: vi.fn(), set: vi.fn(), delete: vi.fn() },
+  store: { loadCharacterSheet: vi.fn(), saveCharacterSheet: vi.fn() },
 }));
 vi.mock("@/auth", () => ({ auth }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("@/lib/cache", () => ({ memoryCache: cache }));
+// O armazenamento da ficha tem testes próprios contra um banco real (characterStore.test.ts).
+vi.mock("@/lib/characterModel/store", () => store);
+
+import { CharacterModelError } from "@/lib/characterModel/errors";
 
 import { GET, POST, PUT } from "@/app/api/character/route";
 import { IDS, USERS, req, signInAs, silenceConsole, consoleOutput } from "../helpers/api";
@@ -21,16 +26,18 @@ const robertSheet = {
   id: IDS.charRobert,
   name: "Robert",
   userId: IDS.robert,
-  sheetData: JSON.stringify({ notas: "x" }),
-  pokemons: [{ id: "p", pokemonData: "{}" }],
-  items: [],
+  sheetData: "{}",
   notes: [],
 };
+
+const robertSheetData = { notas: "x", equipe: [], pcBoxes: [], inventario: [], talentos: [] };
 
 describe("API /api/character (Integration)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     cache.get.mockReturnValue(null);
+    store.loadCharacterSheet.mockResolvedValue(robertSheetData);
+    store.saveCharacterSheet.mockResolvedValue(undefined);
     silenceConsole();
   });
   afterEach(() => vi.restoreAllMocks());
@@ -50,7 +57,9 @@ describe("API /api/character (Integration)", () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.name).toBe("Robert");
-      expect(data.sheetData).toEqual({ notas: "x" });
+      expect(data.sheetData).toEqual(robertSheetData);
+      expect(data).not.toHaveProperty("pokemons");
+      expect(store.loadCharacterSheet).toHaveBeenCalledWith(expect.anything(), IDS.charRobert);
     });
 
     it("o GM e o dono também leem", async () => {
@@ -134,6 +143,25 @@ describe("API /api/character (Integration)", () => {
       });
     });
 
+    it("grava a ficha enviada pelo armazenamento, com o sheetData completo", async () => {
+      signIn(USERS.tulio);
+      prisma.character.create.mockResolvedValue({ id: IDS.charTulio, name: "Red", userId: IDS.tulio });
+      const sheet = { nomePersonagem: "Red", equipe: [], pcBoxes: [] };
+      const res = await POST(req("POST", "/api/character", { name: "Red", sheetData: sheet }));
+      expect(res.status).toBe(201);
+      expect(prisma.character.create).toHaveBeenCalledWith({ data: expect.objectContaining({ sheetData: "{}" }) });
+      expect(store.saveCharacterSheet).toHaveBeenCalledWith(expect.anything(), IDS.charTulio, sheet);
+    });
+
+    it("ficha recusada na criação: erro do modelo e a ficha vazia é removida", async () => {
+      signIn(USERS.tulio);
+      prisma.character.create.mockResolvedValue({ id: IDS.charTulio, name: "Red", userId: IDS.tulio });
+      store.saveCharacterSheet.mockRejectedValue(new CharacterModelError("equipe: no máximo 6 Pokémon."));
+      const res = await POST(req("POST", "/api/character", { name: "Red", sheetData: { equipe: [] } }));
+      expect(res.status).toBe(400);
+      expect(prisma.character.delete).toHaveBeenCalledWith({ where: { id: IDS.charTulio } });
+    });
+
     it("Tentativa de definir o dono ou o id: 400, nada criado", async () => {
       signIn(USERS.tulio);
       for (const extra of [{ userId: IDS.robert }, { id: IDS.charRobert }]) {
@@ -200,6 +228,35 @@ describe("API /api/character (Integration)", () => {
         req("PUT", "/api/character", { id: IDS.charRobert, name: "", level: 3, avatarUrl: null, sheetData: { a: 1 } })
       );
       expect(res.status).toBe(200);
+    });
+
+    it("a ficha vai para o armazenamento e não para a coluna sheetData", async () => {
+      signIn(USERS.robert);
+      prisma.character.findUnique.mockResolvedValue({ id: IDS.charRobert, userId: IDS.robert });
+      prisma.character.update.mockResolvedValue({ id: IDS.charRobert });
+      const sheet = { a: 1, equipe: [] };
+      await PUT(req("PUT", "/api/character", body({ sheetData: sheet })));
+      expect(store.saveCharacterSheet).toHaveBeenCalledWith(expect.anything(), IDS.charRobert, sheet);
+      expect(prisma.character.update.mock.calls[0][0].data).not.toHaveProperty("sheetData");
+    });
+
+    it("ficha recusada pelo modelo: 400 ou 413 e nenhum campo é alterado", async () => {
+      signIn(USERS.robert);
+      prisma.character.findUnique.mockResolvedValue({ id: IDS.charRobert, userId: IDS.robert });
+      store.saveCharacterSheet.mockRejectedValueOnce(new CharacterModelError("Foto inválida."));
+      expect((await PUT(req("PUT", "/api/character", body({ sheetData: { a: 1 } })))).status).toBe(400);
+      store.saveCharacterSheet.mockRejectedValueOnce(new CharacterModelError("Foto grande demais.", 413));
+      expect((await PUT(req("PUT", "/api/character", body({ sheetData: { a: 1 } })))).status).toBe(413);
+      expect(prisma.character.update).not.toHaveBeenCalled();
+      expect(cache.delete).not.toHaveBeenCalled();
+    });
+
+    it("sem sheetData o armazenamento não é chamado", async () => {
+      signIn(USERS.robert);
+      prisma.character.findUnique.mockResolvedValue({ id: IDS.charRobert, userId: IDS.robert });
+      prisma.character.update.mockResolvedValue({ id: IDS.charRobert });
+      await PUT(req("PUT", "/api/character", body()));
+      expect(store.saveCharacterSheet).not.toHaveBeenCalled();
     });
 
     it("Acesso negado: o log não contém os dados enviados", async () => {

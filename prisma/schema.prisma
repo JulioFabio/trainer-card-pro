@@ -34,30 +34,167 @@ model Character {
   items    Item[]
   pokemons Pokemon[]
   notes    Note[]
+  talents  Talent[]
+  pcBoxes  PcBox[]
 }
 
 model Item {
   id          String  @id @default(uuid())
+  ref         String // id usado pelo front (Date.now())
+  position    Int     @default(0)
   name        String
-  description String?
+  description String  @default("")
   quantity    Int     @default(1)
   imageUrl    String?
 
   characterId String
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, ref])
 }
 
-model Pokemon {
-  id         String  @id @default(uuid())
-  nickname   String
-  species    String
-  isParty    Boolean @default(false)
-  boxName    String?
-  imageUrl   String?
-  pokemonData String @default("{}") // Campo flexível JSON com stats, golpes, etc.
+model Talent {
+  id          String @id @default(uuid())
+  position    Int
+  name        String
+  description String @default("")
 
   characterId String
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+}
+
+// Só existe linha para caixa do PC com nome diferente de "Box N"
+model PcBox {
+  id     String @id @default(uuid())
+  number Int // 1 a 99
+  name   String
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, number])
+}
+
+model Pokemon {
+  id                      String  @id @default(uuid())
+  ref                     String // id usado pelo front (Date.now())
+  boxNumber               Int // 1 a 99
+  slot                    Int // 0 a 29 dentro da caixa
+  partySlot               Int? // 0 a 5; nulo = fora da equipe
+  nickname                String  @default("")
+  species                 String  @default("")
+  level                   Int     @default(1)
+  gender                  String  @default("U") // M, F ou U
+  ball                    String  @default("")
+  imageUrl                String?
+  nature                  String  @default("")
+  natureFeatures          String  @default("")
+  elementalDamageBonus    Int     @default(0)
+  traitName               String  @default("")
+  traitDescription        String  @default("")
+  hpCurrent               Int     @default(0)
+  hpMax                   Int     @default(0)
+  evasionPhysical         Int     @default(0)
+  evasionSpecial          Int     @default(0)
+  evasionSpeed            Int     @default(0)
+  moveLand                Int     @default(0)
+  moveFly                 Int     @default(0)
+  moveSwim                Int     @default(0)
+  moveUnderwater          Int     @default(0)
+  moveBurrow              Int     @default(0)
+  forceValue              Int     @default(0)
+  forceDescription        String  @default("")
+  intelligenceValue       Int     @default(0)
+  intelligenceDescription String  @default("")
+  jumpValue               Int     @default(0)
+  jumpDescription         String  @default("")
+
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  types        PokemonType[]
+  abilities    PokemonAbility[]
+  moves        PokemonMove[]
+  capabilities PokemonCapability[]
+  stats        PokemonStat[]
+
+  @@unique([characterId, ref])
+  @@unique([characterId, boxNumber, slot])
+  @@unique([characterId, partySlot])
+}
+
+model PokemonType {
+  id       String @id @default(uuid())
+  position Int
+  type     String
+
+  pokemonId String
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@index([pokemonId])
+}
+
+model PokemonAbility {
+  id          String @id @default(uuid())
+  position    Int
+  name        String
+  description String @default("")
+
+  pokemonId String
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@index([pokemonId])
+}
+
+model PokemonMove {
+  id          String @id @default(uuid())
+  ref         String // id do golpe usado pelo front
+  position    Int
+  name        String @default("")
+  type        String @default("")
+  category    String @default("Status") // Físico, Especial ou Status
+  frequency   String @default("")
+  range       String @default("")
+  damage      String @default("")
+  accuracy    String @default("")
+  descriptor  String @default("")
+  description String @default("")
+
+  pokemonId String
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@unique([pokemonId, ref])
+}
+
+// Capacidades extras (as de Força, Inteligência e Salto ficam em Pokemon)
+model PokemonCapability {
+  id       String @id @default(uuid())
+  position Int
+  name     String
+  value    String @default("")
+
+  pokemonId String
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@index([pokemonId])
+}
+
+model PokemonStat {
+  id          String @id @default(uuid())
+  kind        String // total, base ou lvl
+  saude       Int    @default(0)
+  ataque      Int    @default(0)
+  defesa      Int    @default(0)
+  atqEspecial Int    @default(0)
+  defEspecial Int    @default(0)
+  velocidade  Int    @default(0)
+
+  pokemonId String
+  pokemon   Pokemon @relation(fields: [pokemonId], references: [id], onDelete: Cascade)
+
+  @@unique([pokemonId, kind])
 }
 
 model Note {

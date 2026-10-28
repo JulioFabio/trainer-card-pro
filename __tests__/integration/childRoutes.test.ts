@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { auth, prisma, cache } = vi.hoisted(() => {
+const { auth, prisma, cache, records, store } = vi.hoisted(() => {
   const model = () => ({ findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() });
   return {
     auth: vi.fn(),
@@ -12,11 +12,19 @@ const { auth, prisma, cache } = vi.hoisted(() => {
       pokemon: model(),
     },
     cache: { get: vi.fn(), set: vi.fn(), delete: vi.fn() },
+    // Pokémon e itens passam pelo módulo de registros (testado contra banco real em characterRecords.test.ts).
+    records: {
+      createPokemon: vi.fn(), updatePokemon: vi.fn(), deletePokemon: vi.fn(), getPokemon: vi.fn(), listPokemons: vi.fn(),
+      createItem: vi.fn(), updateItem: vi.fn(), deleteItem: vi.fn(), getItem: vi.fn(), listItems: vi.fn(),
+    },
+    store: { migrateIfLegacy: vi.fn() },
   };
 });
 vi.mock("@/auth", () => ({ auth }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
 vi.mock("@/lib/cache", () => ({ memoryCache: cache }));
+vi.mock("@/lib/characterModel/records", () => records);
+vi.mock("@/lib/characterModel/store", () => store);
 
 import * as noteRoute from "@/app/api/note/route";
 import * as itemRoute from "@/app/api/item/route";
@@ -28,13 +36,25 @@ interface Kind {
   name: string;
   path: string;
   recordId: string;
-  model: typeof prisma.note;
+  model: typeof prisma.note; // leitura do dono (findUnique) e as escritas (create/update/delete)
   route: { POST: Handler; PUT: Handler; DELETE: Handler };
   createBody: (characterId: string) => object;
   updateBody: (id: string) => object;
   invalidCreate: object;
   canMove: boolean;
 }
+
+const stats = { saude: 1, ataque: 1, defesa: 1, atqEspecial: 1, defEspecial: 1, velocidade: 1 };
+const pokemonBody = {
+  name: "Pika", species: "Pikachu", level: 5, gender: "M", types: ["ELÉTRICO"], ball: "Poke Ball",
+  nature: "", natureFeatures: "", elementalDamageBonus: 0,
+  capabilityTrait: { name: "", description: "" },
+  abilities: [], stats: { ...stats, base: stats, lvl: stats }, hp: { current: 10, max: 10 },
+  evasions: { fisica: 1, especial: 1, veloz: 1 },
+  movements: { terrestre: 1, voo: 0, natacao: 0, subaquatico: 0, escavacao: 0 },
+  capabilities: { force: { value: 1, description: "" }, intelligence: { value: 1, description: "" }, jump: { value: 1, description: "" }, other: [] },
+  moves: [], boxNumber: 1, slot: 0,
+};
 
 const kinds: Kind[] = [
   {
@@ -52,7 +72,7 @@ const kinds: Kind[] = [
     name: "item",
     path: "/api/item",
     recordId: IDS.itemRobert,
-    model: prisma.item,
+    model: { findUnique: prisma.item.findUnique, create: records.createItem, update: records.updateItem, delete: records.deleteItem } as unknown as typeof prisma.note,
     route: itemRoute,
     createBody: (characterId) => ({ characterId, name: "Poção", quantity: 2 }),
     updateBody: (id) => ({ id, quantity: 3 }),
@@ -63,10 +83,10 @@ const kinds: Kind[] = [
     name: "Pokémon",
     path: "/api/pokemon",
     recordId: IDS.pokemonRobert,
-    model: prisma.pokemon,
+    model: { findUnique: prisma.pokemon.findUnique, create: records.createPokemon, update: records.updatePokemon, delete: records.deletePokemon } as unknown as typeof prisma.note,
     route: pokemonRoute,
-    createBody: (characterId) => ({ characterId, nickname: "Pika", species: "Pikachu" }),
-    updateBody: (id) => ({ id, nickname: "Raichu" }),
+    createBody: (characterId) => ({ characterId, ...pokemonBody }),
+    updateBody: (id) => ({ id, name: "Raichu" }),
     invalidCreate: { characterId: IDS.charRobert, species: "Pikachu" },
     canMove: true,
   },
@@ -89,6 +109,7 @@ describe.each(kinds)("rotas de $name (Integration)", (k) => {
     k.model.create.mockResolvedValue({ id: k.recordId });
     k.model.update.mockResolvedValue({ id: k.recordId });
     k.model.delete.mockResolvedValue({ id: k.recordId });
+    store.migrateIfLegacy.mockResolvedValue(false);
   });
   afterEach(() => vi.restoreAllMocks());
 
@@ -165,7 +186,7 @@ describe.each(kinds)("rotas de $name (Integration)", (k) => {
   if (k.canMove) {
     describe("mudança de ficha", () => {
       const move = (characterId: string) =>
-        k.route.PUT(req("PUT", k.path, { id: k.recordId, characterId }));
+        k.route.PUT(req("PUT", k.path, { id: k.recordId, ...(characterId && { characterId }) }));
 
       it("jogador tenta mover: 403 e o registro continua onde está", async () => {
         signIn(USERS.robert);
@@ -176,9 +197,7 @@ describe.each(kinds)("rotas de $name (Integration)", (k) => {
       it("GM move para uma ficha existente e invalida as duas fichas", async () => {
         signIn(USERS.gm);
         expect((await move(IDS.charTulio)).status).toBe(200);
-        expect(k.model.update).toHaveBeenCalledWith(
-          expect.objectContaining({ data: expect.objectContaining({ characterId: IDS.charTulio }) })
-        );
+        expect(JSON.stringify(k.model.update.mock.calls[0])).toContain(IDS.charTulio);
         expect(cache.delete).toHaveBeenCalledWith(`character:${IDS.charRobert}`);
         expect(cache.delete).toHaveBeenCalledWith(`character:${IDS.charTulio}`);
       });
@@ -195,4 +214,53 @@ describe.each(kinds)("rotas de $name (Integration)", (k) => {
       });
     });
   }
+});
+
+describe.each([
+  { name: "Pokémon", path: "/api/pokemon", route: pokemonRoute, list: records.listPokemons, get: records.getPokemon, owner: prisma.pokemon.findUnique },
+  { name: "item", path: "/api/item", route: itemRoute, list: records.listItems, get: records.getItem, owner: prisma.item.findUnique },
+])("leitura de $name (Integration)", (k) => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    silenceConsole();
+    prisma.character.findUnique.mockResolvedValue({ id: IDS.charRobert, userId: IDS.robert });
+    store.migrateIfLegacy.mockResolvedValue(false);
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("sem sessão: 401", async () => {
+    signInAs(auth, prisma.user.findUnique, null);
+    expect((await k.route.GET(req("GET", `${k.path}?characterId=${IDS.charRobert}`))).status).toBe(401);
+    expect(k.list).not.toHaveBeenCalled();
+  });
+
+  it("jogador lista os registros da ficha de outro: 200 com a lista completa", async () => {
+    signInAs(auth, prisma.user.findUnique, USERS.tulio);
+    k.list.mockResolvedValue([{ id: "a" }, { id: "b" }]);
+    const res = await k.route.GET(req("GET", `${k.path}?characterId=${IDS.charRobert}`));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual([{ id: "a" }, { id: "b" }]);
+    expect(store.migrateIfLegacy).toHaveBeenCalled();
+  });
+
+  it("jogador lê um registro de outro pelo id: 200", async () => {
+    signInAs(auth, prisma.user.findUnique, USERS.tulio);
+    k.get.mockResolvedValue({ id: IDS.pokemonRobert });
+    expect((await k.route.GET(req("GET", `${k.path}?id=${IDS.pokemonRobert}`))).status).toBe(200);
+  });
+
+  it("registro ou ficha inexistente: 404", async () => {
+    signInAs(auth, prisma.user.findUnique, USERS.tulio);
+    k.get.mockResolvedValue(null);
+    expect((await k.route.GET(req("GET", `${k.path}?id=${IDS.pokemonRobert}`))).status).toBe(404);
+    prisma.character.findUnique.mockResolvedValue(null);
+    expect((await k.route.GET(req("GET", `${k.path}?characterId=${IDS.charRobert}`))).status).toBe(404);
+  });
+
+  it("sem parâmetro, com os dois ou com id inválido: 400", async () => {
+    signInAs(auth, prisma.user.findUnique, USERS.tulio);
+    expect((await k.route.GET(req("GET", k.path))).status).toBe(400);
+    expect((await k.route.GET(req("GET", `${k.path}?id=${IDS.pokemonRobert}&characterId=${IDS.charRobert}`))).status).toBe(400);
+    expect((await k.route.GET(req("GET", `${k.path}?id=../x`))).status).toBe(400);
+  });
 });

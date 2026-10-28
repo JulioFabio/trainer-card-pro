@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { pokemonRecordSchema } from '@/lib/characterModel/schemas';
 
 // Limites da API (spec request-validation).
 export const LIMITS = {
@@ -10,8 +11,7 @@ export const LIMITS = {
   levelMax: 100,
   moneyMax: 1_000_000_000,
   quantityMax: 9_999,
-  sheetDataBytes: 8 * 1024 * 1024, // as fotos dos Pokémon ainda ficam embutidas (fase 4 as tira)
-  pokemonDataBytes: 1024 * 1024,
+  positionMax: 100_000,
   tradeDataBytes: 1024 * 1024,
 } as const;
 
@@ -50,7 +50,7 @@ export const characterCreateSchema = z
     level: level.optional(),
     money: money.optional(),
     avatarUrl: imageUrl.nullish(),
-    sheetData: jsonObject(LIMITS.sheetDataBytes).optional(),
+    sheetData: z.record(z.string(), z.unknown()).optional(), // sem teto próprio: o corpo é limitado em parse.ts
   })
   .strict();
 
@@ -62,10 +62,11 @@ export const characterUpdateSchema = z
     level: level.optional(),
     money: money.optional(),
     avatarUrl: imageUrl.nullish(),
-    sheetData: jsonObject(LIMITS.sheetDataBytes).optional(),
+    sheetData: z.record(z.string(), z.unknown()).optional(), // sem teto próprio: o corpo é limitado em parse.ts
   })
   .strict();
 
+// Item: o `ref` (identificador do front) é sempre definido pelo servidor.
 export const itemCreateSchema = z
   .object({
     characterId: id,
@@ -73,6 +74,7 @@ export const itemCreateSchema = z
     description: text(LIMITS.description).nullish(),
     quantity: quantity.optional(),
     imageUrl: imageUrl.nullish(),
+    position: z.number().int().min(0).max(LIMITS.positionMax).optional(),
   })
   .strict();
 
@@ -83,6 +85,7 @@ export const itemUpdateSchema = z
     description: text(LIMITS.description).nullish(),
     quantity: quantity.optional(),
     imageUrl: imageUrl.nullish(),
+    position: z.number().int().min(0).max(LIMITS.positionMax).optional(),
     characterId: id.optional(),
   })
   .strict();
@@ -103,30 +106,10 @@ export const noteUpdateSchema = z
   })
   .strict();
 
-export const pokemonCreateSchema = z
-  .object({
-    characterId: id,
-    nickname: requiredText(LIMITS.name),
-    species: requiredText(LIMITS.name),
-    isParty: z.boolean().optional(),
-    boxName: text(LIMITS.name).nullish(),
-    imageUrl: imageUrl.nullish(),
-    pokemonData: jsonObject(LIMITS.pokemonDataBytes).optional(),
-  })
-  .strict();
+// Pokémon: modelo completo e estrito (campos aninhados, golpes, habilidades, atributos).
+export const pokemonCreateSchema = pokemonRecordSchema.extend({ characterId: id });
 
-export const pokemonUpdateSchema = z
-  .object({
-    id,
-    nickname: text(LIMITS.name).optional(),
-    species: text(LIMITS.name).optional(),
-    isParty: z.boolean().optional(),
-    boxName: text(LIMITS.name).nullish(),
-    imageUrl: imageUrl.nullish(),
-    pokemonData: jsonObject(LIMITS.pokemonDataBytes).optional(),
-    characterId: id.optional(),
-  })
-  .strict();
+export const pokemonUpdateSchema = pokemonRecordSchema.partial().extend({ id, characterId: id.optional() });
 
 export const tradeCreateSchema = z
   .object({
@@ -153,6 +136,14 @@ export const characterQuerySchema = z
   .strict();
 
 export const idQuerySchema = z.object({ id }).strict();
+
+// Leitura de Pokémon e de itens: por registro (?id=) ou por ficha (?characterId=), um dos dois.
+export const recordQuerySchema = z
+  .object({ id: id.optional(), characterId: id.optional() })
+  .strict()
+  .refine((q) => (q.id === undefined) !== (q.characterId === undefined), {
+    error: 'informe id ou characterId, só um dos dois.',
+  });
 
 export const tradeListQuerySchema = z.object({ characterId: id }).strict();
 

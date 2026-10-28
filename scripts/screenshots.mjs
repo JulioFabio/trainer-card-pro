@@ -114,7 +114,8 @@ async function main() {
       await page.waitForLoadState('networkidle');
     });
 
-    for (const [n, tab] of [['03', 'Combate'], ['04', 'Equipe'], ['05', 'Mochila'], ['06', 'PC'], ['07', 'Notas']]) {
+    // Equipe, Mochila e PC aparecem preenchidos nos prints do Túlio (ficha rica do seed).
+    for (const [n, tab] of [['03', 'Combate'], ['07', 'Notas']]) {
       await shot(page, `${n}-aba-${tab.toLowerCase()}`, async () => {
         await page.getByText(tab, { exact: true }).first().click();
       });
@@ -149,12 +150,17 @@ async function main() {
       await pp.getByText('Mochila', { exact: true }).first().waitFor({ timeout: 60_000 });
       await pp.waitForLoadState('networkidle');
     });
+    for (const [n, tab] of [['11', 'Equipe'], ['12', 'Mochila'], ['13', 'PC']]) {
+      await shot(pp, `${n}-tulio-aba-${tab.toLowerCase()}`, async () => {
+        await pp.getByText(tab, { exact: true }).first().click();
+      });
+    }
     await player.close();
 
     // ── Celular ──────────────────────────────────────────────────────
     const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true });
     const mp = await mobile.newPage();
-    await shot(mp, '11-entrada-celular', async () => {
+    await shot(mp, '14-entrada-celular', async () => {
       await mp.goto(`${BASE}/login?sair=1`, { waitUntil: 'networkidle' });
       await mp.locator('select').waitFor();
     });

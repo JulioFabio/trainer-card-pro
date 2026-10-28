@@ -70,9 +70,14 @@ describe("parseBody e esquemas (Unit)", () => {
   });
 
   it("Ficha grande demais: 413", async () => {
-    const big = { sheetData: { foto: "x".repeat(8 * 1024 * 1024 + 10) } };
+    const big = { sheetData: { foto: "x".repeat(10 * 1024 * 1024 + 10) } };
     const err = await failure(() => parseBody(post({ id: UUID, ...big }), characterUpdateSchema));
     expect(err?.status).toBe(413);
+  });
+
+  it("ficha de 8 MB passa: o teto próprio do sheetData deixou de existir", async () => {
+    const data = await parseBody(post({ id: UUID, sheetData: { foto: "x".repeat(8 * 1024 * 1024 + 10) } }), characterUpdateSchema);
+    expect(data.id).toBe(UUID);
   });
 
   it("ficha com fotos em base64 de alguns MB ainda é aceita", async () => {

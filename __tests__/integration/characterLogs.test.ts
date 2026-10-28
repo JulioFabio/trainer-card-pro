@@ -6,6 +6,7 @@ const { auth, prisma } = vi.hoisted(() => ({
 }));
 vi.mock("@/auth", () => ({ auth }));
 vi.mock("@/lib/prisma", () => ({ prisma }));
+vi.mock("@/lib/characterModel/store", () => ({ loadCharacterSheet: vi.fn(), saveCharacterSheet: vi.fn() }));
 
 // Telemetria e cache reais: o teste valida o que de fato vai para o console.
 const SENTINELA = "SENTINELA-XYZ";
