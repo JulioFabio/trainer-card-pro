@@ -16,20 +16,23 @@ O sistema SHALL guardar cada Pokémon, e também seus tipos, habilidades, golpes
 - **WHEN** qualquer ficha é salva
 - **THEN** o `sheetData` guardado não contém as chaves `inventario`, `talentos`, `equipe` nem `pcBoxes`
 
-### Requirement: Formato de leitura e gravação inalterado
-A leitura da ficha (`GET /api/character`) SHALL devolver o mesmo formato que o app já consome: um `sheetData` completo com `inventario`, `talentos`, `equipe` (ids dos Pokémon na ordem da equipe) e `pcBoxes` (99 caixas numeradas de 1 a 99, cada uma com seus Pokémon e o nome da caixa), montado a partir das tabelas. A gravação (`PUT /api/character`) SHALL aceitar esse mesmo formato. Gravar e ler de volta MUST devolver uma ficha equivalente à enviada; dentro de uma caixa, os Pokémon são devolvidos em ordem de posição.
+### Requirement: Formato de leitura inalterado
+A leitura da ficha (`GET /api/character`) SHALL devolver o mesmo formato que o app já consome: um `sheetData` completo com `inventario`, `talentos`, `equipe` e `pcBoxes`, montado a partir das tabelas. A equipe SHALL ser a lista dos ids dos Pokémon na ordem da equipe, e `pcBoxes` SHALL ter sempre as 99 caixas numeradas de 1 a 99, cada uma com seu nome e seus Pokémon em ordem de posição.
 
 #### Scenario: Ficha vazia
 - **WHEN** uma ficha nova é lida
 - **THEN** o `sheetData` tem `inventario`, `talentos` e `equipe` vazios e 99 caixas chamadas "Box 1" a "Box 99", sem Pokémon
 
-#### Scenario: Ida e volta com equipe e PC
-- **WHEN** uma ficha com itens, talentos, três Pokémon em caixas diferentes e dois deles na equipe é gravada e lida de volta
-- **THEN** a ficha lida é equivalente à gravada, incluindo posições, nomes de caixa e a ordem da equipe
-
 #### Scenario: Ids usados pelo front
 - **WHEN** a ficha usa ids como `"1730000000000"` para Pokémon e itens
 - **THEN** a leitura devolve exatamente esses ids, e a equipe continua referenciando os Pokémon por eles
+
+### Requirement: Ida e volta equivalente
+A gravação (`PUT /api/character`) SHALL aceitar o mesmo formato que a leitura devolve. Gravar uma ficha e lê-la de volta MUST devolver uma ficha equivalente à enviada, exceto pela ordem dos Pokémon dentro de uma caixa, que segue a posição.
+
+#### Scenario: Ida e volta com equipe e PC
+- **WHEN** uma ficha com itens, talentos, três Pokémon em caixas diferentes e dois deles na equipe é gravada e lida de volta
+- **THEN** a ficha lida é equivalente à gravada, incluindo posições, nomes de caixa e a ordem da equipe
 
 ### Requirement: Gravação só do que mudou
 A gravação da ficha SHALL ocorrer em uma única transação: se qualquer parte falhar, nada é alterado. O sistema SHALL comparar o conteúdo recebido com o guardado e SHALL escrever apenas os registros que mudaram, criando os novos e apagando os que deixaram de existir no conteúdo recebido.
