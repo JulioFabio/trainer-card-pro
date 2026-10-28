@@ -1,6 +1,6 @@
 # Regras dos Pokémons
 
-Fonte: Pokémon – RPG de Mesa, Livro do Jogador, p. 8–11, 19–20 e 182, 195–198. Espécies (atributos base, golpes por nível, capacidades) ficam no **Livro dos Pokémons**, que não faz parte desta extração.
+Fonte: Pokémon – RPG de Mesa, Livro do Jogador, p. 8–11, 19–20 e 182, 195–198. Os dados de cada espécie (atributos base, golpes por nível, capacidades) estão em `especies.csv`, e as definições de Capacidades em `capacidades.md`, ambos extraídos do **Livro dos Pokémons**.
 
 ## Atributos e PV
 - **PV máx = Nível + 3 × Saúde.**
