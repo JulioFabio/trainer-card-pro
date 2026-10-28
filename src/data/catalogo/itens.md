@@ -61,10 +61,10 @@ Categorias: Geral, Suco, Abricó, Fruta, Item Mágico, Item Mantido, Medicinal (
 | Charti | Fruta | Fruta Charti (fruta real: Alcachofra). Se sofrer dano de Pedra que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Picante; Seco |
 | Haban | Fruta | Fruta Haban (fruta real: Araçá). Se sofrer dano de Dragão que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Amargo; Doce |
 | Coba | Fruta | Fruta Coba (fruta real: Babaco). Se sofrer dano de Voador que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Amargo; Seco |
-| Babiri | Fruta | Fruta Babiri (fruta real: Biribá). Se sofrer dano de Metal que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Picante; Seco |
+| Babiri | Fruta | Fruta Babiri (fruta real: Biribá). Se sofrer dano de Aço que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Picante; Seco |
 | Occa | Fruta | Fruta Occa (fruta real: Cacau). Se sofrer dano de Fogo que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Doce; Picante |
-| Shuca | Fruta | Fruta Shuca (fruta real: Caju). Se sofrer dano de Terra que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Doce; Picante |
-| Colbur | Fruta | Fruta Colbur (fruta real: Cardo). Se sofrer dano de Trevas que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Amargo; Azedo |
+| Shuca | Fruta | Fruta Shuca (fruta real: Caju). Se sofrer dano de Terrestre que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Doce; Picante |
+| Colbur | Fruta | Fruta Colbur (fruta real: Cardo). Se sofrer dano de Sombrio que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Amargo; Azedo |
 | Chople | Fruta | Fruta Chople (fruta real: Chipotle). Se sofrer dano de Lutador que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Amargo; Picante |
 | Yache | Fruta | Fruta Yache (fruta real: Chirimoia). Se sofrer dano de Gelo que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Azedo; Seco |
 | Wacan | Fruta | Fruta Wacan (fruta real: Guajilote). Se sofrer dano de Elétrico que seria superefetivo, sofre apenas dano neutro. Pode ser item Mantido e comida em combate como Ação Livre. | 275 | Consumo | Azedo; Doce |
@@ -108,7 +108,7 @@ Categorias: Geral, Suco, Abricó, Fruta, Item Mágico, Item Mantido, Medicinal (
 | Atualização | Item Mantido | Soma 15 a todo ganho de pontos de experiência. | 3000 | Constante |  |
 | Bandana | Item Mantido | Quando reduzido a 0 PV ou menos por um ataque, role 1d20; com 16+ fica com 1 PV. | 6700 | Por Encontro |  |
 | Bateria | Item Mantido | Quando acertado por um Golpe Elétrico, eleva 1 Fase de Ataque. | 200 | Consumo |  |
-| Bola de Ferro | Item Mantido | Velocidade cai à metade e o portador ganha a Capacidade Afundamento. Se era imune a dano de Terra, perde a imunidade. | 1000 | Constante |  |
+| Bola de Ferro | Item Mantido | Velocidade cai à metade e o portador ganha a Capacidade Afundamento. Se era imune a dano de Terrestre, perde a imunidade. | 1000 | Constante |  |
 | Bola de Fumaça | Item Mantido | Cria fumaça com os efeitos de Cortina de Fumaça numa Explosão de 2 m. | 2000 | Consumo |  |
 | Boneca | Item Mantido | Um pokémon alvo com Inteligência menor que 5 fica distraído por 1d6 rodadas: presta atenção na boneca e não ataca nem persegue outros, a menos que seja provocado. | 1000 | Consumo |  |
 | Bulbo | Item Mantido | Quando acertado por um Golpe de Água, eleva 1 Fase de Ataque Especial. | 200 | Consumo |  |
@@ -156,7 +156,7 @@ Categorias: Geral, Suco, Abricó, Fruta, Item Mágico, Item Mantido, Medicinal (
 | Raiz Grande | Item Mantido | Golpes que curam conforme o dano causado curam o dobro. | 1000 | Constante |  |
 | Restos | Item Mantido | O portador recupera 1/16 dos PV máximos por rodada até o fim do encontro. | 2000 | Consumo |  |
 | Retardante | Item Mantido | Categoria: item pesado que tira 4 Fases de um Atributo. Cauda Retardante = Velocidade; Luvas Retardantes = Ataque; Olhos Retardantes = Ataque Especial. | 1000 | Constante |  |
-| Revestimento Metálico | Item Mantido | O portador é tratado como só do Tipo Metal até sofrer um dano que o Tipo Metal resiste ou ignora. | 3000 | Diária |  |
+| Revestimento Metálico | Item Mantido | O portador é tratado como só do Tipo Aço até sofrer um dano que o Tipo Aço resiste ou ignora. | 3000 | Diária |  |
 | Rocha Gelada | Item Mantido | Granizo usado pelo portador dura 3 minutos (18 rodadas) em vez de 2 (12 rodadas). | 3500 | Diária |  |
 | Rocha Magmática | Item Mantido | O portador ganha a Habilidade Flamejante, mas se um inimigo for Queimado por ela, o portador também fica Queimado. | 3000 | Constante |  |
 | Rocha Quente | Item Mantido | Dia de Sol usado pelo portador dura 3 minutos (18 rodadas) em vez de 2 (12 rodadas). | 3500 | Diária |  |
@@ -279,10 +279,10 @@ Categorias: Geral, Suco, Abricó, Fruta, Item Mágico, Item Mantido, Medicinal (
 | Registro: Expansão da Aura | Registro | Registro (TM/HM) que ensina o Golpe Expansão da Aura (Lutador) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Pontapé | Registro | Registro (TM/HM) que ensina o Golpe Pontapé (Lutador) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Quebra Telha | Registro | Registro (TM/HM) que ensina o Golpe Quebra Telha (Lutador) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Asa de Aço | Registro | Registro (TM/HM) que ensina o Golpe Asa de Aço (Metal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Canhão de Luz | Registro | Registro (TM/HM) que ensina o Golpe Canhão de Luz (Metal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Chifre Certeiro | Registro | Registro (TM/HM) que ensina o Golpe Chifre Certeiro (Metal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Girobola | Registro | Registro (TM/HM) que ensina o Golpe Girobola (Metal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Asa de Aço | Registro | Registro (TM/HM) que ensina o Golpe Asa de Aço (Aço) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Canhão de Luz | Registro | Registro (TM/HM) que ensina o Golpe Canhão de Luz (Aço) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Chifre Certeiro | Registro | Registro (TM/HM) que ensina o Golpe Chifre Certeiro (Aço) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Girobola | Registro | Registro (TM/HM) que ensina o Golpe Girobola (Aço) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Atração | Registro | Registro (TM/HM) que ensina o Golpe Atração (Normal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Aumento de Massa | Registro | Registro (TM/HM) que ensina o Golpe Aumento de Massa (Normal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Bravata | Registro | Registro (TM/HM) que ensina o Golpe Bravata (Normal) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. Golpe Universal: qualquer pokémon pode aprender. |  |  |  |
@@ -326,19 +326,19 @@ Categorias: Geral, Suco, Abricó, Fruta, Item Mágico, Item Mantido, Medicinal (
 | Registro: Refletor | Registro | Registro (TM/HM) que ensina o Golpe Refletor (Psíquico) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Sala de Truques | Registro | Registro (TM/HM) que ensina o Golpe Sala de Truques (Psíquico) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Tela de Luz | Registro | Registro (TM/HM) que ensina o Golpe Tela de Luz (Psíquico) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Terremoto | Registro | Registro (TM/HM) que ensina o Golpe Terremoto (Terra) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Tremor | Registro | Registro (TM/HM) que ensina o Golpe Tremor (Terra) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Brutalidade | Registro | Registro (TM/HM) que ensina o Golpe Brutalidade (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Confisco | Registro | Registro (TM/HM) que ensina o Golpe Confisco (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Esfera de Sombras | Registro | Registro (TM/HM) que ensina o Golpe Esfera de Sombras (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Garra Sombria | Registro | Registro (TM/HM) que ensina o Golpe Garra Sombria (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Lançamento | Registro | Registro (TM/HM) que ensina o Golpe Lançamento (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Pulso Sombrio | Registro | Registro (TM/HM) que ensina o Golpe Pulso Sombrio (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Retribuição | Registro | Registro (TM/HM) que ensina o Golpe Retribuição (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Revogação | Registro | Registro (TM/HM) que ensina o Golpe Revogação (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Roubo | Registro | Registro (TM/HM) que ensina o Golpe Roubo (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Tormento | Registro | Registro (TM/HM) que ensina o Golpe Tormento (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
-| Registro: Vociferação | Registro | Registro (TM/HM) que ensina o Golpe Vociferação (Trevas) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Terremoto | Registro | Registro (TM/HM) que ensina o Golpe Terremoto (Terrestre) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Tremor | Registro | Registro (TM/HM) que ensina o Golpe Tremor (Terrestre) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Brutalidade | Registro | Registro (TM/HM) que ensina o Golpe Brutalidade (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Confisco | Registro | Registro (TM/HM) que ensina o Golpe Confisco (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Esfera de Sombras | Registro | Registro (TM/HM) que ensina o Golpe Esfera de Sombras (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Garra Sombria | Registro | Registro (TM/HM) que ensina o Golpe Garra Sombria (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Lançamento | Registro | Registro (TM/HM) que ensina o Golpe Lançamento (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Pulso Sombrio | Registro | Registro (TM/HM) que ensina o Golpe Pulso Sombrio (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Retribuição | Registro | Registro (TM/HM) que ensina o Golpe Retribuição (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Revogação | Registro | Registro (TM/HM) que ensina o Golpe Revogação (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Roubo | Registro | Registro (TM/HM) que ensina o Golpe Roubo (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Tormento | Registro | Registro (TM/HM) que ensina o Golpe Tormento (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
+| Registro: Vociferação | Registro | Registro (TM/HM) que ensina o Golpe Vociferação (Sombrio) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Bomba de Lodo | Registro | Registro (TM/HM) que ensina o Golpe Bomba de Lodo (Venenoso) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Injetar Veneno | Registro | Registro (TM/HM) que ensina o Golpe Injetar Veneno (Venenoso) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |
 | Registro: Onda de Lama | Registro | Registro (TM/HM) que ensina o Golpe Onda de Lama (Venenoso) a pokémons compatíveis. Vendido em Pokélojas de cidades grandes; preço a critério do Narrador. |  |  |  |

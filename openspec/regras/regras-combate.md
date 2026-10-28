@@ -70,28 +70,28 @@ Fonte: Pokémon – RPG de Mesa, Livro do Jogador, p. 8, 11–19, 182, 195–198
 - **Imunidade ×0:** sem dano e sem os outros efeitos do Golpe, a menos que o alvo queira.
 
 ### Tabela de Tipos (atacante → defensor)
-O livro usa a tabela oficial (Gen 6+). Os 18 Tipos: Água, Dragão, Elétrico, Fada, Fantasma, Fogo, Gelo, Inseto, Lutador, Metal, Normal, Pedra, Planta, Psíquico, Terra, Trevas, Venenoso, Voador.
+O livro usa a tabela oficial (Gen 6+). Os 18 Tipos: Água, Dragão, Elétrico, Fada, Fantasma, Fogo, Gelo, Inseto, Lutador, Aço, Normal, Pedra, Planta, Psíquico, Terrestre, Sombrio, Venenoso, Voador.
 
 | Golpe | ×2 contra | ×½ contra | ×0 contra |
 |---|---|---|---|
-| Normal | | Pedra, Metal | Fantasma |
-| Fogo | Planta, Gelo, Inseto, Metal | Fogo, Água, Pedra, Dragão | |
-| Água | Fogo, Terra, Pedra | Água, Planta, Dragão | |
-| Elétrico | Água, Voador | Elétrico, Planta, Dragão | Terra |
-| Planta | Água, Terra, Pedra | Fogo, Planta, Venenoso, Voador, Inseto, Dragão, Metal | |
-| Gelo | Planta, Terra, Voador, Dragão | Fogo, Água, Gelo, Metal | |
-| Lutador | Normal, Gelo, Pedra, Trevas, Metal | Venenoso, Voador, Psíquico, Inseto, Fada | Fantasma |
-| Venenoso | Planta, Fada | Venenoso, Terra, Pedra, Fantasma | Metal |
-| Terra | Fogo, Elétrico, Venenoso, Pedra, Metal | Planta, Inseto | Voador |
-| Voador | Planta, Lutador, Inseto | Elétrico, Pedra, Metal | |
-| Psíquico | Lutador, Venenoso | Psíquico, Metal | Trevas |
-| Inseto | Planta, Psíquico, Trevas | Fogo, Lutador, Venenoso, Voador, Fantasma, Metal, Fada | |
-| Pedra | Fogo, Gelo, Voador, Inseto | Lutador, Terra, Metal | |
-| Fantasma | Psíquico, Fantasma | Trevas | Normal |
-| Dragão | Dragão | Metal | Fada |
-| Trevas | Psíquico, Fantasma | Lutador, Trevas, Fada | |
-| Metal | Gelo, Pedra, Fada | Fogo, Água, Elétrico, Metal | |
-| Fada | Lutador, Dragão, Trevas | Fogo, Venenoso, Metal | |
+| Normal | | Pedra, Aço | Fantasma |
+| Fogo | Planta, Gelo, Inseto, Aço | Fogo, Água, Pedra, Dragão | |
+| Água | Fogo, Terrestre, Pedra | Água, Planta, Dragão | |
+| Elétrico | Água, Voador | Elétrico, Planta, Dragão | Terrestre |
+| Planta | Água, Terrestre, Pedra | Fogo, Planta, Venenoso, Voador, Inseto, Dragão, Aço | |
+| Gelo | Planta, Terrestre, Voador, Dragão | Fogo, Água, Gelo, Aço | |
+| Lutador | Normal, Gelo, Pedra, Sombrio, Aço | Venenoso, Voador, Psíquico, Inseto, Fada | Fantasma |
+| Venenoso | Planta, Fada | Venenoso, Terrestre, Pedra, Fantasma | Aço |
+| Terrestre | Fogo, Elétrico, Venenoso, Pedra, Aço | Planta, Inseto | Voador |
+| Voador | Planta, Lutador, Inseto | Elétrico, Pedra, Aço | |
+| Psíquico | Lutador, Venenoso | Psíquico, Aço | Sombrio |
+| Inseto | Planta, Psíquico, Sombrio | Fogo, Lutador, Venenoso, Voador, Fantasma, Aço, Fada | |
+| Pedra | Fogo, Gelo, Voador, Inseto | Lutador, Terrestre, Aço | |
+| Fantasma | Psíquico, Fantasma | Sombrio | Normal |
+| Dragão | Dragão | Aço | Fada |
+| Sombrio | Psíquico, Fantasma | Lutador, Sombrio, Fada | |
+| Aço | Gelo, Pedra, Fada | Fogo, Água, Elétrico, Aço | |
+| Fada | Lutador, Dragão, Sombrio | Fogo, Venenoso, Aço | |
 
 Com dois Tipos, multiplique os dois valores.
 
@@ -103,13 +103,13 @@ Máximo de **2 Condições** ao mesmo tempo. Se uma 3ª for imposta, quem a caus
 | **Atordoamento** | Não faz nenhuma Ação por 1 rodada | Acaba sozinho depois de 1 rodada |
 | **Confusão (humano)** | No início do turno, 1d20: abaixo de 11 não age | Repouso |
 | **Confusão (pokémon)** | A cada Ação de Movimento ou de Golpe, 1d20. 1–10: sofre dano igual a 2× o próprio Bônus Elemental (sem atributos nem Tipos). 11–15: age normalmente. 16–20: curado. | Rolagem 16–20 |
-| **Congelamento** | Não faz nenhuma Ação | 1×/rodada, 1d20 ≥ 16 (≥ 11 para pokémons de Fogo, Gelo ou Lutador). Também descongela se atingido por Golpe de dano de Fogo, Lutador, Metal ou Pedra. |
+| **Congelamento** | Não faz nenhuma Ação | 1×/rodada, 1d20 ≥ 16 (≥ 11 para pokémons de Fogo, Gelo ou Lutador). Também descongela se atingido por Golpe de dano de Fogo, Lutador, Aço ou Pedra. |
 | **Crítico** | Dura uma rolagem de dano: o Dano Basal é dobrado | Após a rolagem |
 | **Paixão** (só pokémons) | Antes de usar Golpe, 1d20. 1–10: não pode mirar o Golpe em quem ama (a menos que seja benéfico). 11–19: normal. 20: curado. | Rolagem 20 |
 | **Paralisia** | Velocidade à metade. A cada rodada, 1d20 ≥ mínimo para agir (tabela abaixo); se falhar, não se move nem usa Ação Padrão ou de Golpe. Pokémons Elétrico e Dragão que tiram 20 podem gastar todas as ações da rodada para se curar. Enviado da pokébola Paralisado, começa na 6ª rodada da tabela. | 1 hora de descanso |
 | **Queimadura** | −2 Fases de Defesa. No fim de cada rodada perde 1/10 dos PV máx (humano: 1/20). Não afeta quem está em repouso ou na pokébola. | 1×/turno, gastando Ação Padrão (humano) ou de Golpe (pokémon): 1d20 ≥ 17 (≥ 13 para pokémon de Fogo) |
 | **Sono** | Não age. A cada rodada, 1d20 ≥ mínimo para acordar (tabela abaixo). Enviado da pokébola dormindo, começa na 3ª rodada. Sono do Golpe Descansar: dorme exatamente 2 rodadas, sem teste. | Rolagem |
-| **Veneno** | −2 Fases de Defesa Especial. No fim de cada rodada perde 1/10 dos PV máx (humano: 1/20). **Veneno Mortal:** perda extra a cada rodada (tabela abaixo) e não pode ser curado por rolagem. Pokémons Metal e Venenoso são imunes. Não afeta na pokébola nem em repouso completo. | 1×/turno, gastando Ação Padrão ou de Golpe: 1d20 ≥ 17 |
+| **Veneno** | −2 Fases de Defesa Especial. No fim de cada rodada perde 1/10 dos PV máx (humano: 1/20). **Veneno Mortal:** perda extra a cada rodada (tabela abaixo) e não pode ser curado por rolagem. Pokémons Aço e Venenoso são imunes. Não afeta na pokébola nem em repouso completo. | 1×/turno, gastando Ação Padrão ou de Golpe: 1d20 ≥ 17 |
 
 | Rodada | 1ª | 2ª | 3ª | 4ª | 5ª | 6ª | 7ª | 8ª | 9ª | 10ª | 11ª+ |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -120,7 +120,7 @@ Máximo de **2 Condições** ao mesmo tempo. Se uma 3ª for imposta, quem a caus
 ## Terrenos
 | Terreno | Deslocamento usado | Notas |
 |---|---|---|
-| Regular | Terrestre | Terra, grama curta, cimento, pisos |
+| Regular | Terrestre | Terrestre, grama curta, cimento, pisos |
 | Gelado (subtipo de Regular) | Terrestre | Escorrega até o fim do gelo ou até bater num Bloqueador. Colisão com criatura: o primeiro para, o segundo continua o deslizamento. Teste de Parada: Ação Padrão ou de Golpe, 1d20 ≥ 14, para onde quiser. |
 | Terroso | Escavação | Atravessar o solo sem túnel |
 | Superfície | Natação | Água até a metade da altura (relativo ao tamanho da criatura) |

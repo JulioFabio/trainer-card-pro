@@ -18,12 +18,12 @@ Análise,Ativação,Horária,,"pelas próximas cinco rodadas, se o turno do pok�
 Anátema,Gatilho,Horária,ser acertado por um Golpe,"o Golpe é afetado pelos efeitos de Desabilitar automaticamente. Esta Habilidade só entra em vigor depois dos efeitos do Golpe que ativou o Gatilho, mas ela funciona mesmo que o pokémon Anátema fique inconsciente pelo Golpe sofrido."
 Antecipação,Ativação,Horária,,"durante um encontro, você pode usar esta Habilidade em um oponente, que revelará se possui algum Golpe superefetivo contra você. Além disso, role 1d20. Se o resultado for 11 ou mais, o alvo revelará até 3 Golpes dele que são superefetivos contra você. Se o resultado for 16 ou mais, ele revelará até 5 Golpes dele que são superefetivos contra você e a Dificuldade de Acurácia destes cinco Golpes é aumentada em 1 quando são usados contra você."
 Arena de Areia,Ativação,Diária,,"uma grande parede de areia de 10 metros de altura cerca o encontro. O diâmetro da Arena de Areia pode ser escolhido, a um mínimo de 10 metros e um máximo de 40 metros. Deve haver solo suficiente a ser manipulado para que esta Habilidade seja usada. As paredes se unem em cima para formar o teto, de modo que é impossível deixar a área por cima. Caso destruídas, as paredes são restauradas instantaneamente. Se o pokémon ativador de Arena de Areia fica inconsciente ou é convocado de volta para a pokébola, a Arena de Areia se desmancha."
-Arenoso,Ativação,Diária,,"enquanto o clima for uma Tempestade de Areia, o pokémon pode ativar esta Habilidade, cujo efeito permanece até o fim do encontro. Arenoso torna o pokémon imune aos efeitos de Tempestades de Areia e o faz adicionar uma quantidade igual a seu Bônus Elemental às rolagens de dano de Golpes Metálicos, de Pedra e de Terra."
+Arenoso,Ativação,Diária,,"enquanto o clima for uma Tempestade de Areia, o pokémon pode ativar esta Habilidade, cujo efeito permanece até o fim do encontro. Arenoso torna o pokémon imune aos efeitos de Tempestades de Areia e o faz adicionar uma quantidade igual a seu Bônus Elemental às rolagens de dano de Golpes Metálicos, de Pedra e de Terrestre."
 Armadura,Constante,,,imunidade a Críticos.
 Arrogância,Gatilho,Constante,este pokémon deixa outro pokémon inconsciente usando um Golpe.,eleve uma Fase de Ataque.
 Asas de Vendavais,Ativação,Horária,,o pokémon pode usar um Golpe Voador como uma Ação de Interrupção.
 Aspereza,Gatilho,Constante,ser acertado por um Golpe Corpo a Corpo.,o atacante perde um oitavo de seus PV máximos. Não aplique vulnerabilidades ou resistências nem Atributos a este dano.
-Aura de Trevas,Ativação,Horária,,"pelo resto do encontro, Golpes de Trevas adicionam às rolagens de dano uma quantidade igual ao dobro do Bônus Elemental do usuário do Golpe. Isso ocorre de maneira independente do Bônus Elemental do pokémon abranger ou não Golpes de Trevas e se acumula com o próprio Bônus Elemental se houver."
+Aura de Trevas,Ativação,Horária,,"pelo resto do encontro, Golpes de Sombrio adicionam às rolagens de dano uma quantidade igual ao dobro do Bônus Elemental do usuário do Golpe. Isso ocorre de maneira independente do Bônus Elemental do pokémon abranger ou não Golpes de Sombrio e se acumula com o próprio Bônus Elemental se houver."
 Aura Feérica,Ativação,Horária,,"pelo resto do encontro, Golpes do Tipo Fada adicionam às rolagens de dano uma quantidade igual ao dobro do Bônus Elemental do usuário do Golpe. Isso ocorre de maneira independente do Bônus Elemental do pokémon abranger ou não Golpes do Tipo Fada e se acumula com o próprio Bônus Elemental se houver."
 Barbárie,Gatilho,Constante,os Pontos de Vida do pokémon são reduzidos abaixo da metade de seus PV máximos.,eleve duas Fases de Ataque Especial dele.
 Bateria,Ativação,Horária,,eleve uma Fase de Ataque Especial de todos os aliados adjacentes.
@@ -122,10 +122,10 @@ Inflamável,Constante,,,"quando este pokémon recebe Queimadura, eleve duas Fase
 Insônia,Constante,,,imunidade a Sono.
 Intimidar,Ativação,Horária,,um alvo perde uma Fase de Ataque.
 Isolamento Térmico,Constante,,,o pokémon sofre apenas metade do dano que sofreria por dano de Fogo.
-Justiceiro,Gatilho,Constante,sofrer dano de Trevas.,eleva uma Fase de Ataque.
+Justiceiro,Gatilho,Constante,sofrer dano de Sombrio.,eleva uma Fase de Ataque.
 Lentidão,Gatilho,Constante,um encontro começa.,"pelas três primeiras rodadas, o Ataque e a Velocidade do pokémon são reduzidos à metade."
 Leveza,Gatilho,Constante,consumir um item Mantido.,eleve duas Fases de Velocidade.
-Levitação,Constante,,,imunidade a Golpes de Terra.
+Levitação,Constante,,,imunidade a Golpes de Terrestre.
 Ligação,Gatilho,Constante,usar um Golpe com o Descritor Saraivada.,"o Golpe pode ser usado pelo maior número de vezes possível, mesmo que haja falhas em acertar."
 Ligeiro,Constante,,,"quando este pokémon recebe Congelamento, Queimadura, Sono ou Veneno, eleve duas Fases da Velocidade dele. Se ele for curado da Condição, ele perde as duas Fases de Velocidade. Quando este pokémon recebe Paralisia, eleve quatro Fases da Velocidade dele. Se for curado da Paralisia, ele perde as quatro Fases da Velocidade."
 Lodo,Gatilho,Constante,"sofrer dano por um destes Gol- pes: Absorção, Chifre Sanguessuga, Gigadreno, Megadreno, Sanguessuga, Semente Sanguessuga, Soco de Drenagem.","após calcular a quantidade de Pontos de Vida que o atacante recuperaria usando o Golpe, ele sofre esta quantidade de dano, em vez de recuperar PV. Não aplique resistências e vulnerabilidades nem Atributos."

@@ -24,7 +24,7 @@ As regras estão resumidas e organizadas. Os catálogos (golpes, habilidades, cl
 - **CSV:** UTF-8 sem BOM, separador `,`, texto com vírgula entre aspas, uma linha por entrada, sem quebras de linha dentro das células.
 - **Célula vazia = não existe.** Nunca "-" ou "N/A".
 - **Listas dentro de uma célula** são separadas por `; `: `descritor` em golpes, `perícias` e `características` em classes, `sabores` em itens.
-- **Tipos**, sempre escritos assim: Água, Dragão, Elétrico, Fada, Fantasma, Fogo, Gelo, Inseto, Lutador, Metal, Normal, Pedra, Planta, Psíquico, Terra, Trevas, Venenoso, Voador. O livro chama o Tipo de "Metal" nas tabelas e de "Metálico" no texto corrido; nos catálogos ficou sempre **Metal**.
+- **Tipos**, sempre com o nome da tradução oficial brasileira: Água, Aço, Dragão, Elétrico, Fada, Fantasma, Fogo, Gelo, Inseto, Lutador, Normal, Pedra, Planta, Psíquico, Sombrio, Terrestre, Venenoso, Voador. O livro usa as traduções antigas ("Metal", "Trevas", "Terra"); por decisão do Mestre elas foram trocadas por **Aço**, **Sombrio** e **Terrestre** nos catálogos e nos textos de regras. Ficaram como no livro só os nomes próprios de entradas que contêm essas palavras (Aura de Trevas, Metal Leve, Metal Pesado, Metal Precioso, Velocidade na Terra, Controle de Terra).
 - **Atributos:** Saúde, Ataque, Defesa, Ataque Especial, Defesa Especial, Velocidade.
 - **Aptidões:** Estilo, Beleza, Ternura, Perspicácia, Vigor.
 
